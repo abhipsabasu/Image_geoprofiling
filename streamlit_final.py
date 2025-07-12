@@ -48,11 +48,11 @@ def load_data():
     return image_files, countries
 
 @st.cache_data
-def get_responses():
-    return []
+def get_responses(num):
+    return [None] * num
 
 image_files, countries = load_data()
-responses = get_responses()
+responses = get_responses(len(image_files))
 
 # CSV_PATH = "responses.csv"  # File to save responses
 
@@ -142,14 +142,14 @@ if st.session_state.index < len(image_files):
             st.error('Answer the questions')
         else:
         # Save response
-            responses.append({
+            responses[st.session_state.index] = {
                 "name": st.session_state.prolific_id,
                 "image": image_name,
                 "rating": rating,
                 "clues": clue_text,
                 "net_rating": net_rating,
                 "awareness": awareness
-            })
+            }
 
             # if os.path.exists(CSV_PATH):
             #     df.to_csv(CSV_PATH, mode="a", header=False, index=False)
