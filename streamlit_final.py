@@ -124,7 +124,7 @@ if st.session_state.index < len(image_files):
         net_rating = st.radio(
             "Select a score:",
             options=["Choose an option", -1, 0, 1, 2],
-            format_func=lambda x: f"{x} . {'No I could not find out even from the internet' if x==0 else 'I could only determine the continent' if x==1 else 'The mentioned country matches with the true country as per the internet' if x==-1 else 'The mentioned country does not match the true country as per the internet' if x==2 else ''}"
+            format_func=lambda x: f"{x} . {'No I could not find out even from the internet' if x==0 else 'I could only determine the continent' if x==1 else 'The mentioned country matches with the true country as per the internet' if x==2 else 'The mentioned country does not match the true country as per the internet' if x==-1 else ''}"
         )
     if rating in [-1, 1, 2]:
         clue_text = st.text_area("What visual clues or indicators helped you make this judgment?", height=100)
@@ -143,7 +143,7 @@ if st.session_state.index < len(image_files):
         else:
         # Save response
             responses.append({
-                "name": st.session_state.user_name,
+                "name": st.session_state.prolific_id,
                 "image": image_name,
                 "rating": rating,
                 "clues": clue_text,
