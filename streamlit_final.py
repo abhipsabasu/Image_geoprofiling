@@ -107,7 +107,6 @@ if st.session_state.index < len(image_files):
         st.image(image, use_container_width=True)
     except:
         st.error("Could not load image.")
-        continue
     
     st.markdown(f"Given that this image is from {country}, how much visual evidence (e.g., specific architecture, writing, landmarks, vegetations, etc), do you see that supports this?")
     rating = st.radio(
