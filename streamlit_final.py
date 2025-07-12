@@ -161,12 +161,11 @@ if st.session_state.index < len(image_files):
             st.rerun()
 else:
     doc_ref = db.collection("Image_geolocalization").document(st.session_state.prolific_id)
-        doc_ref.set({
-            "prolific_id": st.session_state.prolific_id,
-            "timestamp": firestore.SERVER_TIMESTAMP,
-            "responses": all_responses
-        })
-        st.session_state.submitted_all = True
-        df = pd.DataFrame(all_responses)
-        st.success("Survey complete. Thank you!")
+    doc_ref.set({
+        "prolific_id": st.session_state.prolific_id,
+        "timestamp": firestore.SERVER_TIMESTAMP,
+        "responses": responses
+    })
+    st.session_state.submitted_all = True
+    st.success("Survey complete. Thank you!")
     st.write("✅ Survey complete! Thank you.")
