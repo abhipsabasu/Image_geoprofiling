@@ -93,6 +93,8 @@ if not st.session_state.prolific_id:
 
 # --- SESSION STATE ---
 
+if "responses" not in st.session_state:
+    st.session_state.responses = []
 # Current image
 if st.session_state.index < len(image_files):
     
@@ -142,14 +144,14 @@ if st.session_state.index < len(image_files):
             st.error('Answer the questions')
         else:
         # Save response
-            responses[st.session_state.index] = {
+            st.session_state.responses.append({
                 "name": st.session_state.prolific_id,
                 "image": image_name,
                 "rating": rating,
                 "clues": clue_text,
                 "net_rating": net_rating,
                 "awareness": awareness
-            }
+            })
 
             # if os.path.exists(CSV_PATH):
             #     df.to_csv(CSV_PATH, mode="a", header=False, index=False)
@@ -165,7 +167,7 @@ else:
     doc_ref.set({
         "prolific_id": st.session_state.prolific_id,
         "timestamp": firestore.SERVER_TIMESTAMP,
-        "responses": responses
+        "responses": st.session_state.responses
     })
     st.session_state.submitted_all = True
     st.success("Survey complete. Thank you!")
