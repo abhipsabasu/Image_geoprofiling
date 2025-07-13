@@ -66,6 +66,12 @@ if "index" not in st.session_state:
 if "prolific_id" not in st.session_state:
     st.session_state.prolific_id = None
 
+def reset_selections():
+    st.session_state.pop("q1", None)
+    st.session_state.pop("q2", None)
+    st.session_state.pop("q3", None)
+    st.session_state.pop("q4", None)
+
 # ---- UI ----
 st.title("Image Origin Survey")
 st.markdown("""
@@ -73,6 +79,7 @@ Please help us evaluate how well visual cues in each image indicate the mentione
 For each image:
 - Rate how strongly the image supports the stated country.
 - Mention any clues you used to make your judgment.
+
 After answering the questions corresponding to an image, click on *Submit and Next* once, and wait till the next image is loaded.
 """)
 if "prolific_id" not in st.session_state:
@@ -118,7 +125,8 @@ if st.session_state.index < len(image_files):
         "Select a score:",
         options=["Choose an option", -1, 0, 1, 2, 3],
         format_func=lambda x: f"{x} . {'Enough evidence, but wrong country mentioned' if x==-1 else 'No evidence at all' if x==0 else 'A few evidence that may indicate the continent of the mentioned country, but not the country itself' if x==2 else 'Enough evidence to indicate the country' if x==3 else 'There are visual indications like architectural style, vegetations, etc, but I do not know if they indicate the mentioned country' if x==1 else ''}",
-        index=0
+        index=0,
+        key='q1'
     )
     net_rating = None
     clue_text = None
@@ -128,15 +136,16 @@ if st.session_state.index < len(image_files):
             "Select a score:",
             options=["Choose an option", -1, 0, 1, 2],
             format_func=lambda x: f"{x} . {'No I could not find out even from the internet' if x==0 else 'I could only determine the continent' if x==1 else 'The mentioned country matches with the true country as per the internet' if x==2 else 'The mentioned country does not match the true country as per the internet' if x==-1 else ''}"
+            key='q2'
         )
     if rating in [-1, 2, 3]:
-        clue_text = st.text_area("What visual clues or indicators helped you make this judgment?", height=100)
+        clue_text = st.text_area("What visual clues or indicators helped you make this judgment?", height=100, key='q3')
     st.markdown(f"To what extent are you aware of the country {country}?")
     awareness = st.radio(
         "Select a score:",
         options=["Choose an option", 0, 1, 2],
         format_func=lambda x: f"{x} . {'I am not aware about the country at all' if x==0 else 'I have some knowledge about the visuals present in the country' if x==1 else 'I am quite confident about the visuals present in the country' if x==2 else ''}",
-        # index=1
+        key='q4'
     )
     if st.button("Submit and Next"):
         print(st.session_state.responses)
