@@ -103,6 +103,8 @@ if not st.session_state.prolific_id:
         if submitted:
             if pid.strip() and birth.strip() and res.strip():
                 st.session_state.prolific_id = pid.strip()
+                st.session_state.birth_country = birth.strip()
+                st.session_state.residence = res.strip()
                 st.success("Thank you! You may now begin the survey.")
                 st.rerun()
             else:
@@ -177,6 +179,8 @@ if st.session_state.index < len(image_files):
         # Save response
             st.session_state.responses.append({
                 "name": st.session_state.prolific_id,
+                "birth_country": st.session_state.birth_country,
+                "residence": st.session_state.residence,
                 "image": image_name,
                 "rating": rating,
                 "clues": clue_text,
