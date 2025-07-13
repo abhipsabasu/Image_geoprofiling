@@ -141,7 +141,7 @@ if st.session_state.index < len(image_files):
         print(st.session_state.responses)
         if awareness == 'Choose an option':
             st.error('Answer the questions')
-        elif ((rating == 'Choose an option') or (rating in [0, 1] and net_rating == 'Choose an option') or (rating in [-1, 1, 2] and clue_text in [None, ''])):
+        elif ((rating == 'Choose an option') or (rating in [0, 1, 2] and net_rating == 'Choose an option') or (rating in [-1, 2, 3] and clue_text in [None, ''])):
             st.error('Answer the questions')
         else:
         # Save response
