@@ -163,6 +163,7 @@ if st.session_state.index < len(image_files):
                 "net_rating": net_rating,
                 "awareness": awareness
             })
+            reset_selections()
             rating = 'Choose an option'
             awareness = 'Choose an option'
             # if os.path.exists(CSV_PATH):
