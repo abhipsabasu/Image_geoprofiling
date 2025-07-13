@@ -73,6 +73,7 @@ Please help us evaluate how well visual cues in each image indicate the mentione
 For each image:
 - Rate how strongly the image supports the stated country.
 - Mention any clues you used to make your judgment.
+After answering the questions corresponding to an image, click on *Submit and Next* once, and wait till the next image is loaded.
 """)
 if "prolific_id" not in st.session_state:
     st.session_state.prolific_id = None
@@ -153,7 +154,8 @@ if st.session_state.index < len(image_files):
                 "net_rating": net_rating,
                 "awareness": awareness
             })
-
+            rating = 'Choose an option'
+            awareness = 'Choose an option'
             # if os.path.exists(CSV_PATH):
             #     df.to_csv(CSV_PATH, mode="a", header=False, index=False)
             # else:
