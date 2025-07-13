@@ -115,20 +115,20 @@ if st.session_state.index < len(image_files):
     st.markdown(f"Given that this image is from {country}, how much visual evidence (e.g., specific architecture, writing, landmarks, vegetations, etc), do you see that supports this?")
     rating = st.radio(
         "Select a score:",
-        options=["Choose an option", -1, 0, 1, 2],
-        format_func=lambda x: f"{x} . {'Enough evidence, but wrong country mentioned' if x==-1 else 'No evidence at all' if x==0 else 'A few evidence that might indicate the continent, but not the country' if x==1 else 'Enough features to indicate the country' if x==2 else ''}",
+        options=["Choose an option", -1, 0, 1, 2, 3],
+        format_func=lambda x: f"{x} . {'Enough evidence, but wrong country mentioned' if x==-1 else 'No evidence at all' if x==0 else 'A few evidence that may indicate the continent of the mentioned country, but not the country itself' if x==2 else 'Enough evidence to indicate the country' if x==3 else 'There are visual indications like architectural style, vegetations, etc, but I do not know if they indicate the mentioned country' if x==1 else ''}",
         # index=1
     )
     net_rating = None
     clue_text = None
-    if rating in [0, 1]:
+    if rating in [0, 1, 2]:
         st.markdown(f"If you are not confident, you can search about the image on the internet (using textual descriptions, reverse image search, etc), and respond accordingly")
         net_rating = st.radio(
             "Select a score:",
             options=["Choose an option", -1, 0, 1, 2],
             format_func=lambda x: f"{x} . {'No I could not find out even from the internet' if x==0 else 'I could only determine the continent' if x==1 else 'The mentioned country matches with the true country as per the internet' if x==2 else 'The mentioned country does not match the true country as per the internet' if x==-1 else ''}"
         )
-    if rating in [-1, 1, 2]:
+    if rating in [-1, 2, 3]:
         clue_text = st.text_area("What visual clues or indicators helped you make this judgment?", height=100)
     st.markdown(f"To what extent are you aware of the country {country}?")
     awareness = st.radio(
@@ -138,6 +138,7 @@ if st.session_state.index < len(image_files):
         # index=1
     )
     if st.button("Submit and Next"):
+        print(st.session_state.responses)
         if awareness == 'Choose an option':
             st.error('Answer the questions')
         elif ((rating == 'Choose an option') or (rating in [0, 1] and net_rating == 'Choose an option') or (rating in [-1, 1, 2] and clue_text in [None, ''])):
