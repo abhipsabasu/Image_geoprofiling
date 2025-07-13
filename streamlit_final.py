@@ -118,7 +118,7 @@ if st.session_state.index < len(image_files):
         "Select a score:",
         options=["Choose an option", -1, 0, 1, 2, 3],
         format_func=lambda x: f"{x} . {'Enough evidence, but wrong country mentioned' if x==-1 else 'No evidence at all' if x==0 else 'A few evidence that may indicate the continent of the mentioned country, but not the country itself' if x==2 else 'Enough evidence to indicate the country' if x==3 else 'There are visual indications like architectural style, vegetations, etc, but I do not know if they indicate the mentioned country' if x==1 else ''}",
-        # index=1
+        index=0
     )
     net_rating = None
     clue_text = None
