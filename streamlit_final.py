@@ -85,18 +85,28 @@ After answering the questions corresponding to an image, click on *Submit and Ne
 if "prolific_id" not in st.session_state:
     st.session_state.prolific_id = None
 
+if "birth_country" not in st.session_state:
+    st.session_state.birth_country = None
+
+if "residence" not in st.session_state:
+    st.session_state.residence = None
+
 if not st.session_state.prolific_id:
     with st.form("prolific_form"):
         st.write("## Please enter your Prolific ID to begin:")
         pid = st.text_input("Prolific ID", max_chars=24)
+        st.write("## Please enter your country of birth")
+        birth = st.text_input("Birth country", max_chars=24)
+        st.write("## Please enter your country of residence")
+        res = st.text_input("Residence country", max_chars=24)
         submitted = st.form_submit_button("Submit")
         if submitted:
-            if pid.strip():
+            if pid.strip() and birth.strip() and res.strip():
                 st.session_state.prolific_id = pid.strip()
                 st.success("Thank you! You may now begin the survey.")
                 st.rerun()
             else:
-                st.error("Please enter a valid Prolific ID.")
+                st.error("Please enter a valid Prolific ID, birth country or residence country.")
     st.stop()  # Stop further execution until ID is entered
 
 # --- SESSION STATE ---
