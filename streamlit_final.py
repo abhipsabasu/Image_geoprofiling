@@ -103,6 +103,14 @@ if not st.session_state.prolific_id:
 
 if "responses" not in st.session_state:
     st.session_state.responses = []
+
+if 'q1_index' not in st.session_state:
+    st.session_state.q1_index = 0
+if 'q2_index' not in st.session_state:
+    st.session_state.q2_index = 0
+if 'q4_index' not in st.session_state:
+    st.session_state.q3_index = 0
+
 # Current image
 if st.session_state.index < len(image_files):
     
@@ -125,7 +133,7 @@ if st.session_state.index < len(image_files):
         "Select a score:",
         options=["Choose an option", -1, 0, 1, 2, 3],
         format_func=lambda x: f"{x} . {'Enough evidence, but wrong country mentioned' if x==-1 else 'No evidence at all' if x==0 else 'A few evidence that may indicate the continent of the mentioned country, but not the country itself' if x==2 else 'Enough evidence to indicate the country' if x==3 else 'There are visual indications like architectural style, vegetations, etc, but I do not know if they indicate the mentioned country' if x==1 else ''}",
-        index=0,
+        index=st.session_state.q1_index,
         key='q1'
     )
     net_rating = None
@@ -136,7 +144,8 @@ if st.session_state.index < len(image_files):
             "Select a score:",
             options=["Choose an option", -1, 0, 1, 2],
             format_func=lambda x: f"{x} . {'No I could not find out even from the internet' if x==0 else 'I could only determine the continent' if x==1 else 'The mentioned country matches with the true country as per the internet' if x==2 else 'The mentioned country does not match the true country as per the internet' if x==-1 else ''}",
-            key='q2'
+            key='q2',
+            index=st.session_state.q2_index
         )
     if rating in [-1, 2, 3]:
         clue_text = st.text_area("What visual clues or indicators helped you make this judgment?", height=100, key='q3')
@@ -145,7 +154,8 @@ if st.session_state.index < len(image_files):
         "Select a score:",
         options=["Choose an option", 0, 1, 2],
         format_func=lambda x: f"{x} . {'I am not aware about the country at all' if x==0 else 'I have some knowledge about the visuals present in the country' if x==1 else 'I am quite confident about the visuals present in the country' if x==2 else ''}",
-        key='q4'
+        key='q4',
+        index=st.session_state.q4_index
     )
     if st.button("Submit and Next"):
         print(st.session_state.responses)
