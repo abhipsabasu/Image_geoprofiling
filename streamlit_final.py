@@ -184,6 +184,9 @@ if st.session_state.index < len(image_files):
             # st.success("Response saved.")
             st.session_state.index += 1
             print(st.session_state.index)
+            st.session_state.q1_index = 0
+            st.session_state.q2_index = 0
+            st.session_state.q4_index = 0
             st.rerun()
 else:
     doc_ref = db.collection("Image_geolocalization").document(st.session_state.prolific_id)
