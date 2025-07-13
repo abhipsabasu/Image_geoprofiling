@@ -135,7 +135,7 @@ if st.session_state.index < len(image_files):
         net_rating = st.radio(
             "Select a score:",
             options=["Choose an option", -1, 0, 1, 2],
-            format_func=lambda x: f"{x} . {'No I could not find out even from the internet' if x==0 else 'I could only determine the continent' if x==1 else 'The mentioned country matches with the true country as per the internet' if x==2 else 'The mentioned country does not match the true country as per the internet' if x==-1 else ''}"
+            format_func=lambda x: f"{x} . {'No I could not find out even from the internet' if x==0 else 'I could only determine the continent' if x==1 else 'The mentioned country matches with the true country as per the internet' if x==2 else 'The mentioned country does not match the true country as per the internet' if x==-1 else ''}",
             key='q2'
         )
     if rating in [-1, 2, 3]:
