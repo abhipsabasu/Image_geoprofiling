@@ -109,7 +109,7 @@ if 'q1_index' not in st.session_state:
 if 'q2_index' not in st.session_state:
     st.session_state.q2_index = 0
 if 'q4_index' not in st.session_state:
-    st.session_state.q3_index = 0
+    st.session_state.q4_index = 0
 
 # Current image
 if st.session_state.index < len(image_files):
