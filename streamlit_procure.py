@@ -160,8 +160,8 @@ if st.session_state.index < 30:
                     branch="main"
                 )
                 st.success("Image uploaded successfully")
-            except:
-                st.error("Image upload failed.")
+            except Exception as e:
+                st.error(f"Image upload failed.{str(e)}")
             st.session_state.responses.append({
                 "name": st.session_state.prolific_id,
                 "birth_country": st.session_state.birth_country,
