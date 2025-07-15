@@ -4,6 +4,7 @@ import json
 import pandas as pd
 from PIL import Image
 import io
+import base64
 from io import BytesIO
 from io import StringIO
 from github import Github
