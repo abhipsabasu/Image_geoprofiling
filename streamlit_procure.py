@@ -148,7 +148,7 @@ if st.session_state.index < 30:
 
             # Convert image to base64
             img_bytes = uploaded_file.read()
-            img_str = base64.b64encode(img_bytes).decode("utf-8")
+            encoded_content = base64.b64encode(img_bytes).decode("utf-8")
 
             file_path = f"Indian_images/{st.session_state.prolific_id}_{uploaded_file.name}"
 
@@ -156,7 +156,7 @@ if st.session_state.index < 30:
                 repo.create_file(
                     path=file_path,
                     message=f"Upload {uploaded_file.name}",
-                    content=img_str,
+                    content=encoded_content,
                     branch="main"
                 )
                 st.success("Image uploaded successfully")
