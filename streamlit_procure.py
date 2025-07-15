@@ -1,18 +1,20 @@
 import streamlit as st
 import os
 import json
-import tempfile
 import pandas as pd
 from PIL import Image
 from io import BytesIO
 from io import StringIO
+from github import Github
 import firebase_admin
 from firebase_admin import credentials
-from firebase_admin import firestore, storage
+from firebase_admin import firestore
 import requests
 import uuid
 
 firebase_secrets = st.secrets["firebase"]
+token = firebase_secrets["github_token"]
+repo_name = firebase_secrets["github_repo"]
 
 # Convert secrets to dict
 cred_dict = {
@@ -35,8 +37,8 @@ if not firebase_admin._apps:
 
 # Get Firestore client
 db = firestore.client()
-bucket = storage.bucket()
-
+g = Github(token)
+repo = g.get_repo(repo_name)
 
 # ---- SESSION STATE ----
 if "index" not in st.session_state:
@@ -137,22 +139,31 @@ if st.session_state.index < 30:
             st.error('Answer the questions')
         else:
         # Save response
-            temp_file = tempfile.NamedTemporaryFile(delete=False)
-            temp_file.write(uploaded_file.read())
-            temp_file.flush()
-
-            # Upload image to Firebase
             image_id = str(uuid.uuid4())
-            blob = bucket.blob(f"procured_images_India/{st.session_state.prolific_id}/{image_id}_{uploaded_file.name}")
-            blob.upload_from_filename(temp_file.name)
-            blob.make_public()
-            image_url = blob.public_url
+            file_name = f"{name}_{image_id}.png"
+            file_path = f"Indian_images/{file_name}"
+
+            # Convert image to base64
+            img_bytes = io.BytesIO()
+            image.save(img_bytes, format="PNG")
+            img_str = base64.b64encode(img_bytes.getvalue()).decode("utf-8")
+
+            try:
+                repo.create_file(
+                    path=file_path,
+                    message=f"Upload {file_name}",
+                    content=img_str,
+                    branch="main"
+                )
+                st.success("Image saved successfully")
+            except:
+                st.error("Image upload failed.")
             st.session_state.responses.append({
                 "name": st.session_state.prolific_id,
                 "birth_country": st.session_state.birth_country,
                 "residence": st.session_state.residence,
                 "privacy": st.session_state.privacy,
-                "image_url": image_url,
+                "image_url": file_path,
                 "rating": rating,
                 "clues": clue_text,
                 "description": about,
