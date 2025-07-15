@@ -147,7 +147,7 @@ if st.session_state.index < 30:
             file_path = f"Indian_images/{file_name}"
 
             # Convert image to base64
-            img_bytes = uploaded_file.read()
+            img_bytes = uploaded_file.getvalue()
             encoded_content = base64.b64encode(img_bytes).decode("utf-8")
 
             file_path = f"Indian_images/{st.session_state.prolific_id}_{uploaded_file.name}"
