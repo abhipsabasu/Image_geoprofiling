@@ -50,11 +50,16 @@ def reset_selections():
 # ---- UI ----
 st.title("Image Collection from India")
 st.markdown("""
-We are collecting a dataset of images from India to analyze the knowledge modern-day AI technologies about Indian surroundings. With your consent, we request you to upload images that you have clicked, yet the images are *not posted online*.
+We are collecting a dataset of images from **India** to assess the knowledge of modern-day AI technologies about Indian surroundings. With your consent, we request you to upload images that you have clicked, but *not posted online*.
+
 The images can depict historical sites, common buildings and houses, roads, highways, post offices, shopping malls, courthouses, markets, shops, etc.
+
 Thus, they can depict any scene (preferrably outdoor), which is clear, properly lighted.
+
 In case of privacy concerns, kindly refrain from uploading images with recognizable faces.
+
 You are requested to upload **30** images one by one, and answer a few questions regarding the same.
+
 NOTE: The images should only be from **India**, and not uploaded on any social media.
 
 For each image:
@@ -115,7 +120,7 @@ if st.session_state.index < 30:
         st.image(uploaded_file, use_container_width=True)
     
     about = st.text_area("What does the image primarily depict? (e.g., building, monument, market, etc)", height=100, key='q1')
-    st.markdown(f"Given that this image is from **{country}**, how much visual evidence (e.g., specific architecture, writing, landmarks, vegetations, etc) is present in the image to indicate the same?")
+    st.markdown(f"Given that this image is from **India**, how much visual evidence (e.g., specific architecture, writing, landmarks, vegetations, etc) is present in the image to indicate the same?")
     
     rating = st.radio(
         "Select a score:",
