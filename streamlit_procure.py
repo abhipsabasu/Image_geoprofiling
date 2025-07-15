@@ -140,7 +140,7 @@ if st.session_state.index < 30:
         else:
         # Save response
             image_id = str(uuid.uuid4())
-            file_name = f"{name}_{image_id}.png"
+            file_name = f"{st.session_state.prolific_id}_{image_id}.png"
             file_path = f"Indian_images/{file_name}"
 
             # Convert image to base64
