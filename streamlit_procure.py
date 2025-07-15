@@ -147,19 +147,19 @@ if st.session_state.index < 30:
             file_path = f"Indian_images/{file_name}"
 
             # Convert image to base64
-            img_bytes = io.BytesIO()
-            image.save(img_bytes, format="PNG")
-            img_bytes.seek(0)
-            img_str = base64.b64encode(img_bytes.getvalue()).decode("utf-8")
+            img_bytes = uploaded_file.read()
+            img_str = base64.b64encode(img_bytes).decode("utf-8")
+
+            file_path = f"Indian_images/{st.session_state.prolific_id}_{uploaded_file.name}"
 
             try:
                 repo.create_file(
                     path=file_path,
-                    message=f"Upload {file_name}",
+                    message=f"Upload {uploaded_file.name}",
                     content=img_str,
                     branch="main"
                 )
-                st.success("Image saved successfully")
+                st.success("Image uploaded successfully")
             except:
                 st.error("Image upload failed.")
             st.session_state.responses.append({
