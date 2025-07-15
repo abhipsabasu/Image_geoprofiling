@@ -121,7 +121,8 @@ if 'q1_index' not in st.session_state:
 if st.session_state.index < 30:
     uploaded_file = st.file_uploader(f"Upload image {st.session_state.index + 1}", type=["jpg", "jpeg", "png"], key=st.session_state.index)
     if uploaded_file:
-        st.image(uploaded_file, use_container_width=True)
+        image = Image.open(uploaded_file)
+        st.image(image, use_container_width=True)
     
     about = st.text_area("What does the image primarily depict? (e.g., building, monument, market, etc)", height=100, key='q1')
     st.markdown(f"Given that this image is from **India**, how much visual evidence (e.g., specific architecture, writing, landmarks, vegetations, etc) is present in the image to indicate the same?")
@@ -146,7 +147,7 @@ if st.session_state.index < 30:
 
             # Convert image to base64
             img_bytes = io.BytesIO()
-            uploaded_file.save(img_bytes, format="PNG")
+            image.save(img_bytes, format="PNG")
             img_str = base64.b64encode(img_bytes.getvalue()).decode("utf-8")
 
             try:
