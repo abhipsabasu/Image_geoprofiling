@@ -41,8 +41,8 @@ if not firebase_admin._apps:
 
 # Get Firestore client
 db = firestore.client()
-# g = Github(token)
-# repo = g.get_repo(repo_name)
+g = Github(token)
+repo = g.get_repo(repo_name)
 
 # ---- SESSION STATE ----
 if "index" not in st.session_state:
@@ -144,39 +144,35 @@ if st.session_state.index < 30:
             st.error('Answer the questions')
         else:
         # Save response
-            file_bytes = uploaded_file.read()
             file_name = f"{st.session_state.prolific_id}_{st.session_state.index}.png"
             file_path = f"Indian_images/{file_name}"
 
-            api_url = f"https://api.github.com/repos/{owner}/{repo_name}/contents/{file_path}"
+            # Convert image to base64
+            img_bytes = uploaded_file.read()
+            encoded_content = base64.b64encode(img_bytes).decode("utf-8")
 
-            headers = {
-                "Authorization": f"Bearer {token}",
-                "Accept": "application/vnd.github.v3+json"
-            }
+            file_path = f"Indian_images/{st.session_state.prolific_id}_{uploaded_file.name}"
 
-            payload = {
-                "message": f"Upload {file_name}",
-                "content": base64.b64encode(file_bytes).decode("utf-8"),
-                "branch": "main"
-            }
-
-            response = requests.put(api_url, headers=headers, json=payload)
-
-            if response.status_code in [200, 201]:
-                st.success("✅ Image uploaded successfully.")
-            else:
-                st.error(f"❌ Upload failed: {response.json()}")
-                st.session_state.responses.append({
-                    "name": st.session_state.prolific_id,
-                    "birth_country": st.session_state.birth_country,
-                    "residence": st.session_state.residence,
-                    "privacy": st.session_state.privacy,
-                    "image_url": file_path,
-                    "rating": rating,
-                    "clues": clue_text,
-                    "description": about,
-                })
+            try:
+                repo.create_file(
+                    path=file_path,
+                    message=f"Upload {uploaded_file.name}",
+                    content=img_bytes,
+                    branch="main"
+                )
+                st.success("Image uploaded successfully")
+            except:
+                st.error("Image upload failed.")
+            st.session_state.responses.append({
+                "name": st.session_state.prolific_id,
+                "birth_country": st.session_state.birth_country,
+                "residence": st.session_state.residence,
+                "privacy": st.session_state.privacy,
+                "image_url": file_path,
+                "rating": rating,
+                "clues": clue_text,
+                "description": about,
+            })
             reset_selections()
             
             st.session_state.index += 1
