@@ -3,6 +3,7 @@ import os
 import json
 import pandas as pd
 from PIL import Image
+import io
 from io import BytesIO
 from io import StringIO
 from github import Github
