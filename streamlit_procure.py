@@ -17,7 +17,7 @@ import uuid
 firebase_secrets = st.secrets["firebase"]
 token = firebase_secrets["github_token"]
 repo_name = firebase_secrets["github_repo"]
-
+owner, repo_name = repo_name.split('/')
 # Convert secrets to dict
 cred_dict = {
     "type": firebase_secrets["type"],
@@ -39,8 +39,8 @@ if not firebase_admin._apps:
 
 # Get Firestore client
 db = firestore.client()
-g = Github(token)
-repo = g.get_repo(repo_name)
+# g = Github(token)
+# repo = g.get_repo(repo_name)
 
 # ---- SESSION STATE ----
 if "index" not in st.session_state:
@@ -127,6 +127,7 @@ if st.session_state.index < 30:
 
         if len(file_bytes) < 100:
             st.error("⚠️ File seems too small. Possible read error.")
+        encoded_content = base64.b64encode(file_bytes).decode("utf-8")
         image = Image.open(uploaded_file)
         st.image(image, use_container_width=True)
     
@@ -150,24 +151,43 @@ if st.session_state.index < 30:
             image_id = str(uuid.uuid4())
             file_name = f"{st.session_state.prolific_id}_{st.session_state.index}.png"
             file_path = f"Indian_images/{file_name}"
+            api_url = f"https://api.github.com/repos/{owner}/{repo_name}/contents/{file_path}"
 
+            headers = {
+                "Authorization": f"Bearer {token}",
+                "Accept": "application/vnd.github.v3+json"
+            }
+
+            payload = {
+                "message": f"Upload {file_path}",
+                "content": encoded_content,
+                "branch": "main"
+            }
+
+            # Send to GitHub
+            response = requests.put(api_url, headers=headers, json=payload)
+            if response.status_code in [200, 201]:
+                st.success("✅ Image uploaded to GitHub successfully.")
+            else:
+                st.error(f"❌ Upload failed: {response.status_code}")
+                st.text(response.json())
             # Convert image to base64
-            img_bytes = uploaded_file.getvalue()
-            encoded_content = base64.b64encode(img_bytes).decode("utf-8")
+            # img_bytes = uploaded_file.getvalue()
+            # encoded_content = base64.b64encode(img_bytes).decode("utf-8")
 
-            file_path = f"Indian_images/{st.session_state.prolific_id}_{uploaded_file.name}"
+            # file_path = f"Indian_images/{st.session_state.prolific_id}_{uploaded_file.name}"
 
-            try:
-                repo.create_file(
-                    path=file_path,
-                    message=f"Upload {uploaded_file.name}",
-                    content=img_bytes,
-                    branch="main"
-                )
-                st.success("Image uploaded successfully")
-            except Exception as e:
-                st.error(f"Image upload failed.{str(e)}")
-                st.write(f"Image upload failed.{str(e)}")
+            # try:
+            #     repo.create_file(
+            #         path=file_path,
+            #         message=f"Upload {uploaded_file.name}",
+            #         content=img_bytes,
+            #         branch="main"
+            #     )
+            #     st.success("Image uploaded successfully")
+            # except Exception as e:
+            #     st.error(f"Image upload failed.{str(e)}")
+            #     st.write(f"Image upload failed.{str(e)}")
             st.session_state.responses.append({
                 "name": st.session_state.prolific_id,
                 "birth_country": st.session_state.birth_country,
