@@ -145,7 +145,7 @@ if st.session_state.index < 30:
                 "name": st.session_state.prolific_id,
                 "birth_country": st.session_state.birth_country,
                 "residence": st.session_state.residence,
-                "privacy": st.session_state.privacy
+                "privacy": st.session_state.privacy,
                 "image_url": image_url,
                 "rating": rating,
                 "clues": clue_text,
