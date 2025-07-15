@@ -122,6 +122,11 @@ if 'q1_index' not in st.session_state:
 if st.session_state.index < 30:
     uploaded_file = st.file_uploader(f"Upload image {st.session_state.index + 1}", type=["jpg", "jpeg", "png"], key=st.session_state.index)
     if uploaded_file:
+        file_bytes = uploaded_file.read() 
+        st.write(f"Read {len(file_bytes)} bytes")
+
+        if len(file_bytes) < 100:
+            st.error("⚠️ File seems too small. Possible read error.")
         image = Image.open(uploaded_file)
         st.image(image, use_container_width=True)
     
