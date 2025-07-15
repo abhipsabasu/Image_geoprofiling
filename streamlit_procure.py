@@ -41,8 +41,8 @@ if not firebase_admin._apps:
 
 # Get Firestore client
 db = firestore.client()
-g = Github(token)
-repo = g.get_repo(repo_name)
+# g = Github(token)
+# repo = g.get_repo(repo_name)
 
 # ---- SESSION STATE ----
 if "index" not in st.session_state:
