@@ -127,7 +127,7 @@ if st.session_state.index < 30:
     if rating in [2, 3]:
         clue_text = st.text_area("What visual clues or indicators helped you make this judgment?", height=100, key='q3')
     if st.button("Submit and Next"):
-        elif ((rating == 'Choose an option') or (rating in [2, 3] and clue_text in [None, ''])):
+        if ((rating == 'Choose an option') or (rating in [2, 3] and clue_text in [None, ''])):
             st.error('Answer the questions')
         else:
         # Save response
