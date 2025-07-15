@@ -127,7 +127,7 @@ if st.session_state.index < 30:
     
     about = st.text_area("What does the image primarily depict? (e.g., building, monument, market, etc)", height=100, key='q1')
     st.markdown(f"Given that this image is from **India**, how much visual evidence (e.g., specific architecture, writing, landmarks, vegetations, etc) is present in the image to indicate the same?")
-    
+    clue_text = None
     rating = st.radio(
         "Select a score:",
         options=["Choose an option", 0, 1, 2, 3],
@@ -138,17 +138,18 @@ if st.session_state.index < 30:
     if rating in [2, 3]:
         clue_text = st.text_area("What visual clues or indicators helped you make this judgment?", height=100, key='q3')
     if st.button("Submit and Next"):
-        if ((rating == 'Choose an option') or (rating in [2, 3] and clue_text in [None, ''])):
+        if about in ['', None] or ((rating == 'Choose an option') or (rating in [2, 3] and clue_text in [None, ''])):
             st.error('Answer the questions')
         else:
         # Save response
             image_id = str(uuid.uuid4())
-            file_name = f"{st.session_state.prolific_id}_{image_id}.png"
+            file_name = f"{st.session_state.prolific_id}_{st.session_state.index}.png"
             file_path = f"Indian_images/{file_name}"
 
             # Convert image to base64
             img_bytes = io.BytesIO()
             image.save(img_bytes, format="PNG")
+            img_bytes.seek(0)
             img_str = base64.b64encode(img_bytes.getvalue()).decode("utf-8")
 
             try:
