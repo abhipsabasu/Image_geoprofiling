@@ -167,16 +167,16 @@ if st.session_state.index < 30:
                 st.success("✅ Image uploaded successfully.")
             else:
                 st.error(f"❌ Upload failed: {response.json()}")
-                    st.session_state.responses.append({
-                        "name": st.session_state.prolific_id,
-                        "birth_country": st.session_state.birth_country,
-                        "residence": st.session_state.residence,
-                        "privacy": st.session_state.privacy,
-                        "image_url": file_path,
-                        "rating": rating,
-                        "clues": clue_text,
-                        "description": about,
-                    })
+                st.session_state.responses.append({
+                    "name": st.session_state.prolific_id,
+                    "birth_country": st.session_state.birth_country,
+                    "residence": st.session_state.residence,
+                    "privacy": st.session_state.privacy,
+                    "image_url": file_path,
+                    "rating": rating,
+                    "clues": clue_text,
+                    "description": about,
+                })
             reset_selections()
             
             st.session_state.index += 1
