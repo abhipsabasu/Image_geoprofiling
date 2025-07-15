@@ -18,8 +18,6 @@ firebase_secrets = st.secrets["firebase"]
 token = firebase_secrets["github_token"]
 repo_name = firebase_secrets["github_repo"]
 
-owner, repo_name = repo_name.split("/")
-
 # Convert secrets to dict
 cred_dict = {
     "type": firebase_secrets["type"],
@@ -144,6 +142,7 @@ if st.session_state.index < 30:
             st.error('Answer the questions')
         else:
         # Save response
+            image_id = str(uuid.uuid4())
             file_name = f"{st.session_state.prolific_id}_{st.session_state.index}.png"
             file_path = f"Indian_images/{file_name}"
 
