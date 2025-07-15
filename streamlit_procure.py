@@ -146,7 +146,7 @@ if st.session_state.index < 30:
 
             # Convert image to base64
             img_bytes = io.BytesIO()
-            image.save(img_bytes, format="PNG")
+            uploaded_file.save(img_bytes, format="PNG")
             img_str = base64.b64encode(img_bytes.getvalue()).decode("utf-8")
 
             try:
