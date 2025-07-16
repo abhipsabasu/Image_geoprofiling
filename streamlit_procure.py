@@ -14,6 +14,9 @@ from firebase_admin import firestore
 import requests
 import uuid
 
+country = 'India'
+continent = 'Asia'
+
 firebase_secrets = st.secrets["firebase"]
 token = firebase_secrets["github_token"]
 repo_name = firebase_secrets["github_repo"]
@@ -53,9 +56,9 @@ def reset_selections():
     st.session_state.pop("q1", None)
 
 # ---- UI ----
-st.title("Image Collection from India")
-st.markdown("""
-We are collecting a dataset of images from **India** to assess the knowledge of modern-day AI technologies about Indian surroundings. With your consent, we request you to upload images that you have clicked, but *not posted online*.
+st.title(f"Image Collection from {country}")
+st.markdown(f"""
+We are collecting a dataset of images from **{country}** to assess the knowledge of modern-day AI technologies about surroundings within the country. With your consent, we request you to upload images that you have clicked, but *not posted online*.
 
 The images can depict historical sites, common buildings and houses, roads, highways, post offices, shopping malls, courthouses, markets, shops, etc.
 
@@ -65,10 +68,10 @@ In case of privacy concerns, kindly refrain from uploading images with recogniza
 
 You are requested to upload **30** images one by one, and answer a few questions regarding the same.
 
-NOTE: The images should only be from **India**, and not uploaded on any social media.
+NOTE: The images should only be from **{country}**, and not uploaded on any social media.
 
 For each image:
-- Rate how strongly the image supports the stated country.
+- Rate how much visual evidence is present in the image indicating that it belongs to {country}.
 - Mention any clues you used to make your judgment.
 
 After uploading and answering the questions corresponding to an image, click on *Submit and Next* for the next image upload.
@@ -87,15 +90,15 @@ if "privacy" not in st.session_state:
 
 if not st.session_state.prolific_id:
     with st.form("prolific_form"):
-        st.write("## Please enter your Prolific ID to begin:")
-        pid = st.text_input("Prolific ID", max_chars=24)
-        st.write("## Please enter your country of birth")
-        birth = st.text_input("Birth country", max_chars=24)
-        st.write("## Please enter your country of residence")
-        res = st.text_input("Residence country", max_chars=24)
+        # st.write("## Please enter your Prolific ID to begin:")
+        pid = st.text_input("Please enter your Prolific ID to begin:", max_chars=24)
+        # st.write("## Please enter your country of birth")
+        birth = st.text_input("Please enter your country of birth", max_chars=24)
+        # st.write("## Please enter your country of residence")
+        res = st.text_input("Please enter your country of residence", max_chars=24)
         privacy = st.radio(
             "Do you permit us to release your images publically as a dataset, or strictly use them for our research purpose?",
-            options=["Make them public", "Only use them for your research"],
+            options=["You can make them public", "Only use them for your research"],
         )
         submitted = st.form_submit_button("Submit")
         if submitted:
@@ -131,13 +134,13 @@ if st.session_state.index < 30:
         image = Image.open(uploaded_file)
         st.image(image, use_container_width=True)
     
-    about = st.text_area("What does the image primarily depict? (e.g., building, monument, market, etc)", height=100, key='q1')
-    st.markdown(f"Given that this image is from **India**, how much visual evidence (e.g., specific architecture, writing, landmarks, vegetations, etc) is present in the image to indicate the same?")
+    about = st.text_area("What does the image primarily depict? (E.g., building, monument, market, etc)", height=100, key='q1')
+    st.markdown(f"Given that this image is from **{country}**, how much visual evidence (e.g., specific architecture, writing, landmarks, vegetations, etc) is present in the image specific to the same?")
     clue_text = None
     rating = st.radio(
         "Select a score:",
         options=["Choose an option", 0, 1, 2, 3],
-        format_func=lambda x: f"{x} . {'No evidence at all' if x==0 else 'A few evidence that may indicate the continent of the mentioned country, but not the country itself' if x==2 else 'Enough evidence to indicate the country' if x==3 else 'There are visual indications like architectural style, vegetations, etc, but I do not know if they indicate the mentioned country' if x==1 else ''}",
+        format_func=lambda x: f"{x} . {'No evidence at all' if x==0 else f'A few features that are shared by multiple countries within {continent}, but fully specific to {country}' if x==2 else f'Enough evidence specific to {country}' if x==3 else f'There are visual indications like architectural style, vegetations, etc, but I do not know if they are specific to {country}' if x==1 else ''}",
         index=st.session_state.q1_index,
         key='q2'
     )
@@ -150,7 +153,7 @@ if st.session_state.index < 30:
         # Save response
             image_id = str(uuid.uuid4())
             file_name = f"{st.session_state.prolific_id}_{st.session_state.index}.png"
-            file_path = f"Indian_images/{file_name}"
+            file_path = f"{country}_images/{file_name}"
             api_url = f"https://api.github.com/repos/{owner}/{repo_name}/contents/{file_path}"
 
             headers = {
