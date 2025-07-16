@@ -147,7 +147,7 @@ if st.session_state.index < 30:
     if rating in [2, 3]:
         clue_text = st.text_area("What visual clues or indicators helped you make this judgment?", height=100, key='q3')
     if st.button("Submit and Next"):
-        if about in ['', None] or ((rating == 'Choose an option') or (rating in [2, 3] and clue_text in [None, ''])):
+        if not uploaded_file or about in ['', None] or ((rating == 'Choose an option') or (rating in [2, 3] and clue_text in [None, ''])):
             st.error('Answer the questions')
         else:
         # Save response
