@@ -140,7 +140,7 @@ if st.session_state.index < 30:
     rating = st.radio(
         "Select a score:",
         options=["Choose an option", 0, 1, 2, 3],
-        format_func=lambda x: f"{x} . {'No evidence at all' if x==0 else f'A few features that are shared by multiple countries within {continent}, but fully specific to {country}' if x==2 else f'Enough evidence specific to {country}' if x==3 else f'There are visual indications like architectural style, vegetations, etc, but I do not know if they are specific to {country}' if x==1 else ''}",
+        format_func=lambda x: f"{x} . {'No evidence at all' if x==0 else f'A few features that are shared by multiple countries within {continent}, but not fully specific to {country}' if x==2 else f'Enough evidence specific to {country}' if x==3 else f'There are visual indications like architectural style, vegetations, etc, but I do not know if they are specific to {country} or {continent}' if x==1 else ''}",
         index=st.session_state.q1_index,
         key='q2'
     )
