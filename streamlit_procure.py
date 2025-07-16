@@ -134,13 +134,13 @@ if st.session_state.index < 30:
         image = Image.open(uploaded_file)
         st.image(image, use_container_width=True)
     
-    about = st.text_area("What does the image primarily depict? (E.g., building, monument, market, etc)", height=100, key='q1')
+    about = st.text_area("What does the image primarily depict (e.g., building, monument, market, etc)? In case there are multiple descriptors, write them in a comma-separated manner", height=100, key='q1')
     st.markdown(f"Given that this image is from **{country}**, how much visual evidence (e.g., specific architecture, writing, landmarks, vegetations, etc) is present in the image specific to the same?")
     clue_text = None
     rating = st.radio(
         "Select a score:",
         options=["Choose an option", 0, 1, 2, 3],
-        format_func=lambda x: f"{x} . {'No evidence at all' if x==0 else f'A few features that are shared by multiple countries within {continent}, but not fully specific to {country}' if x==2 else f'Enough evidence specific to {country}' if x==3 else f'There are visual indications like architectural style, vegetations, etc, but I do not know if they are specific to {country} or {continent}' if x==1 else ''}",
+        format_func=lambda x: f"{'No evidence at all' if x==0 else f'A few features that are shared by multiple countries within {continent}, but not fully specific to {country}' if x==2 else f'Enough evidence specific to {country}' if x==3 else f'There are visual indications like architectural style, vegetations, etc, but I do not know if they are specific to {country} or {continent}' if x==1 else ''}",
         index=st.session_state.q1_index,
         key='q2'
     )
