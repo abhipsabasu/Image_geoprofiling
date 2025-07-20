@@ -68,7 +68,7 @@ In case of privacy concerns, kindly refrain from uploading images with recogniza
 
 You are requested to upload **30** images one by one, and answer a few questions regarding the same.
 
-NOTE: The images should only be from **{country}**, and not uploaded on any social media.
+NOTE: The images should only be from **{country}**, and not uploaded on any social media. **Try to make sure that the images you upload depict as diverse scenarios as possible.**
 
 For each image:
 - Rate how much visual evidence is present in the image indicating that it belongs to {country}.
