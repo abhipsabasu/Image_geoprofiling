@@ -49,7 +49,9 @@ branch = "main"
 file_content = repo.get_contents(file_path, ref=branch)
 
 GITHUB = "https://raw.githubusercontent.com/abhipsabasu/Image_geoprofiling/main/"
-seed = random.randint(1, 200000)
+
+if "seed" not in st.session_state:
+    st.session_state.seed = random.randint(1, 200000)
 # ---- CONFIG ----
 @st.cache_data
 def load_data(seed):
@@ -74,7 +76,7 @@ def load_data(seed):
 def get_responses(num):
     return [None] * num
 
-image_files, df = load_data(seed)
+image_files, df = load_data(st.session_state.seed)
 responses = get_responses(len(image_files))
 
 # st.session_state.df = df
