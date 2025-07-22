@@ -62,6 +62,8 @@ def load_data():
     df.loc[selected_indices, 'frequency'] -= 1
     
     image_files = list(df.loc[selected_indices, 'file_path']) # sorted([f for f in os.listdir(IMAGE_FOLDER) if f.lower().endswith((".png", ".jpg", ".jpeg"))])
+    st.session_state.df = df
+    st.write('df updated')
     return image_files + ['wikimedia_images/Taj_Mahal.png'], df
 
 @st.cache_data
@@ -70,7 +72,8 @@ def get_responses(num):
 
 image_files, df = load_data()
 responses = get_responses(len(image_files))
-st.session_state.df = df
+
+# st.session_state.df = df
 # CSV_PATH = "responses.csv"  # File to save responses
 
 # ---- LOAD IMAGES ----
