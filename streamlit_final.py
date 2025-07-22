@@ -211,7 +211,7 @@ else:
     st.session_state.df.to_csv(csv_buffer, index=False)
     new_csv_str = csv_buffer.getvalue()
     repo.update_file(
-        path='https://raw.githubusercontent.com/abhipsabasu/Image_geoprofiling/refs/heads/main/' + f'{country}_hs.csv',
+        path='Image_geoprofiling/' + f'{country}_hs.csv',
         message="Updated CSV via Streamlit app",
         content=new_csv_str,
         sha=file_content.sha,
