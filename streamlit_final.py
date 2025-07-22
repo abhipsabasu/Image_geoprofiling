@@ -56,8 +56,8 @@ def load_data():
     # Step 3: Subtract 1 from 'count' for selected rows
     df.loc[selected_indices, 'frequency'] -= 1
     
-    image_files = list(df.loc[seleted_indices, 'file_path']) # sorted([f for f in os.listdir(IMAGE_FOLDER) if f.lower().endswith((".png", ".jpg", ".jpeg"))])
-    return image_files, df
+    image_files = list(df.loc[selected_indices, 'file_path']) # sorted([f for f in os.listdir(IMAGE_FOLDER) if f.lower().endswith((".png", ".jpg", ".jpeg"))])
+    return image_files + ['wikimedia_images/Taj_Mahal.png'], df
 
 @st.cache_data
 def get_responses(num):
@@ -141,7 +141,6 @@ if st.session_state.index < len(image_files):
     image_name = GITHUB + image_path
     # print(st.session_state.index, 'hello', image_name)
     # image_path = os.path.join(IMAGE_FOLDER, image_name)
-    country = countries[st.session_state.index]
 
     # st.image(Image.open(image_path), caption=f"Image: {image_name}", use_container_width=True)
     try:
