@@ -73,7 +73,7 @@ def get_responses(num):
 image_files, df = load_data()
 responses = get_responses(len(image_files))
 
-st.session_state.df = df
+# st.session_state.df = df
 # CSV_PATH = "responses.csv"  # File to save responses
 
 # ---- LOAD IMAGES ----
@@ -211,7 +211,7 @@ if st.session_state.index < len(image_files):
             st.rerun()
 else:
     csv_buffer = io.StringIO()
-    st.session_state.df.to_csv(csv_buffer, index=False)
+    df.to_csv(csv_buffer, index=False)
     new_csv_str = csv_buffer.getvalue()
     repo.update_file(
         path=f'{country}_hs.csv',
