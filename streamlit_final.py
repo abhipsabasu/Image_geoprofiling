@@ -11,6 +11,9 @@ import firebase_admin
 from firebase_admin import credentials
 from firebase_admin import firestore
 import requests
+import random
+
+
 
 firebase_secrets = st.secrets["firebase"]
 token = firebase_secrets["github_token"]
@@ -50,13 +53,14 @@ GITHUB = "https://raw.githubusercontent.com/abhipsabasu/Image_geoprofiling/main/
 # ---- CONFIG ----
 @st.cache_data
 def load_data():
+    seed = random.randint(1, 100)
     response_wiki = requests.get(GITHUB + f'{country}_hs.csv')
     df = pd.read_csv(StringIO(response_wiki.text))
     eligible_rows = df[df['frequency'] > 0]
 
     # Step 2: Randomly sample 30 rows from the eligible ones
     n = min(30, len(eligible_rows))
-    selected_indices = eligible_rows.sample(n=n).index
+    selected_indices = eligible_rows.sample(n=n,random_state=seed).index
 
     # Step 3: Subtract 1 from 'count' for selected rows
     df.loc[selected_indices, 'frequency'] -= 1
