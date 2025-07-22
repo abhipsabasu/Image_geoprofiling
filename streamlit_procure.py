@@ -214,6 +214,7 @@ if st.session_state.index < 30:
                 "rating": rating,
                 "clues": clue_text,
                 "description": about,
+                "location": location
             })
             reset_selections()
             
