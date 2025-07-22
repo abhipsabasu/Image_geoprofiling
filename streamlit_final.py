@@ -49,11 +49,11 @@ branch = "main"
 file_content = repo.get_contents(file_path, ref=branch)
 
 GITHUB = "https://raw.githubusercontent.com/abhipsabasu/Image_geoprofiling/main/"
-
+seed = random.randint(1, 200000)
 # ---- CONFIG ----
 @st.cache_data
-def load_data():
-    seed = random.randint(1, 200000)
+def load_data(seed):
+    
     response_wiki = requests.get(GITHUB + f'{country}_hs.csv')
     df = pd.read_csv(StringIO(response_wiki.text))
     eligible_rows = df[df['frequency'] > 0]
@@ -74,7 +74,7 @@ def load_data():
 def get_responses(num):
     return [None] * num
 
-image_files, df = load_data()
+image_files, df = load_data(seed)
 responses = get_responses(len(image_files))
 
 # st.session_state.df = df
