@@ -3,6 +3,7 @@ import os
 import json
 import pandas as pd
 from PIL import Image
+import io
 from io import BytesIO
 from io import StringIO
 import firebase_admin
@@ -11,7 +12,10 @@ from firebase_admin import firestore
 import requests
 
 firebase_secrets = st.secrets["firebase"]
+token = firebase_secrets["github_token"]
+repo_name = firebase_secrets["github_repo"]
 
+country = 'India'
 # Convert secrets to dict
 cred_dict = {
     "type": firebase_secrets["type"],
@@ -33,27 +37,35 @@ if not firebase_admin._apps:
 
 # Get Firestore client
 db = firestore.client()
+g = Github(token)
+repo = g.get_repo(repo_name)
 
 GITHUB = "https://raw.githubusercontent.com/abhipsabasu/Image_geoprofiling/main/"
 
 # ---- CONFIG ----
 @st.cache_data
 def load_data():
-    response_wiki = requests.get(GITHUB + 'wikimedia_geo_images_hs.csv')
+    response_wiki = requests.get(GITHUB + f'{country}_HS.csv')
     df = pd.read_csv(StringIO(response_wiki.text))
-    df = df.sample(frac=1, replace=False)
-    # IMAGE_FOLDER = "images"  # Folder with images
-    image_files = list(df['file_path']) # sorted([f for f in os.listdir(IMAGE_FOLDER) if f.lower().endswith((".png", ".jpg", ".jpeg"))])
-    countries = list(df['country'])
-    return image_files, countries
+    eligible_rows = df[df['frequency'] > 0]
+
+    # Step 2: Randomly sample 30 rows from the eligible ones
+    n = min(30, len(eligible_rows))
+    selected_indices = eligible_rows.sample(n=n, random_state=42).index
+
+    # Step 3: Subtract 1 from 'count' for selected rows
+    df.loc[selected_indices, 'frequency'] -= 1
+    
+    image_files = list(df.loc[seleted_indices, 'file_path']) # sorted([f for f in os.listdir(IMAGE_FOLDER) if f.lower().endswith((".png", ".jpg", ".jpeg"))])
+    return image_files, df
 
 @st.cache_data
 def get_responses(num):
     return [None] * num
 
-image_files, countries = load_data()
+image_files, df = load_data()
 responses = get_responses(len(image_files))
-
+st.session_state.df = df
 # CSV_PATH = "responses.csv"  # File to save responses
 
 # ---- LOAD IMAGES ----
@@ -73,7 +85,7 @@ def reset_selections():
     st.session_state.pop("q4", None)
 
 # ---- UI ----
-st.title("Image Origin Survey")
+st.title("Guess the Image Origin")
 st.markdown("""
 Please help us evaluate how well visual cues in each image indicate the mentioned country of origin.
 For each image:
@@ -93,12 +105,11 @@ if "residence" not in st.session_state:
 
 if not st.session_state.prolific_id:
     with st.form("prolific_form"):
-        st.write("## Please enter your Prolific ID to begin:")
-        pid = st.text_input("Prolific ID", max_chars=24)
-        st.write("## Please enter your country of birth")
-        birth = st.text_input("Birth country", max_chars=24)
-        st.write("## Please enter your country of residence")
-        res = st.text_input("Residence country", max_chars=24)
+        pid = st.text_input("Please enter your Prolific ID to begin:", max_chars=24)
+        # st.write("## Please enter your country of birth")
+        birth = st.text_input("Please enter your country of birth", max_chars=24)
+        # st.write("## Please enter your country of residence")
+        res = st.text_input("Please enter your country of residence", max_chars=24)
         submitted = st.form_submit_button("Submit")
         if submitted:
             if pid.strip() and birth.strip() and res.strip():
@@ -140,7 +151,7 @@ if st.session_state.index < len(image_files):
     except:
         st.error("Could not load image.")
     
-    st.markdown(f"Given that this image is from **{country}**, how much visual evidence (e.g., specific architecture, writing, landmarks, vegetations, etc), do you see that supports this?")
+    st.markdown(f"To what extent does this image contain visual cues (e.g., local architecture, language, or scenery) that identify it as being from {country}?")
     rating = st.radio(
         "Select a score:",
         options=["Choose an option", -1, 0, 1, 2, 3],
@@ -203,6 +214,16 @@ if st.session_state.index < len(image_files):
             st.session_state.q4_index = 0
             st.rerun()
 else:
+    csv_buffer = io.StringIO()
+    st.session_state.df.to_csv(csv_buffer, index=False)
+    new_csv_str = csv_buffer.getvalue()
+    repo.update_file(
+        path=GITHUB + f'{country}_HS.csv',
+        message="Updated CSV via Streamlit app",
+        content=new_csv_str,
+        sha=file_content.sha,
+        branch=branch
+    )
     doc_ref = db.collection("Image_geolocalization").document(st.session_state.prolific_id)
     doc_ref.set({
         "prolific_id": st.session_state.prolific_id,
