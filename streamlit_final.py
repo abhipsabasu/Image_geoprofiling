@@ -73,7 +73,7 @@ def get_responses(num):
 image_files, df = load_data()
 responses = get_responses(len(image_files))
 
-# st.session_state.df = df
+st.session_state.df = df
 # CSV_PATH = "responses.csv"  # File to save responses
 
 # ---- LOAD IMAGES ----
