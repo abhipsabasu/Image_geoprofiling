@@ -67,7 +67,7 @@ def load_data():
     
     image_files = list(df.loc[selected_indices, 'file_path']) # sorted([f for f in os.listdir(IMAGE_FOLDER) if f.lower().endswith((".png", ".jpg", ".jpeg"))])
     st.session_state.df = df
-    st.write('df updated')
+    st.write('df updated' + str(seed))
     return image_files + ['wikimedia_images/Taj_Mahal.png'], df
 
 @st.cache_data
