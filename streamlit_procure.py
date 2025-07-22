@@ -54,6 +54,7 @@ if "prolific_id" not in st.session_state:
 
 def reset_selections():
     st.session_state.pop("q1", None)
+    st.session_state.pop("q4", None)
 
 # ---- UI ----
 st.title(f"Image Collection from {country}")
@@ -86,7 +87,7 @@ Following are the instructions for the same.
     -   **List the clues** that helped you make that judgment.
     -   **Click** "Submit and Next" to move to the next image.
 
-You have *30* minutes to upload the photos and answer the questions surrounding them.
+You have *30* minutes to upload the photos and answer the questions surrounding them. After you upload the photo, wait for the photo to be visible on screen, then answer the questions.
 """)
 if "prolific_id" not in st.session_state:
     st.session_state.prolific_id = None
@@ -146,7 +147,8 @@ if st.session_state.index < 30:
         image = Image.open(uploaded_file)
         st.image(image, use_container_width=True)
     
-    about = st.text_area("What does the image primarily depict (e.g., building, monument, market, etc)? In case there are multiple descriptors, write them in a comma-separated manner", height=100, key='q1')
+    about = st.text_area("What does the photo primarily depict (e.g., building, monument, market, etc)? In case there are multiple descriptors, write them in a comma-separated manner", height=100, key='q1')
+    location = st.text_area(f"Where in {country} was the photo taken?", height=100, key='q4')
     st.markdown(f"To what extent does this image contain visual cues (e.g., local architecture, language, or scenery) that identify it as being from {country}?")
     clue_text = None
     rating = st.radio(
