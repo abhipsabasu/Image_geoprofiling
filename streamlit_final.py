@@ -159,17 +159,8 @@ if st.session_state.index < len(image_files):
         index=st.session_state.q1_index,
         key='q1'
     )
-    net_rating = None
+    # net_rating = None
     clue_text = None
-    if rating in [0, 1, 2]:
-        st.markdown(f"If you are not confident, you can search about the image on the internet (using textual descriptions, reverse image search, etc), and respond accordingly")
-        net_rating = st.radio(
-            "Select a score:",
-            options=["Choose an option", -1, 0, 1, 2],
-            format_func=lambda x: f"{x} . {'No I could not find out even from the internet' if x==0 else 'I could only determine the continent' if x==1 else 'The mentioned country matches with the true country as per the internet' if x==2 else 'The mentioned country does not match the true country as per the internet' if x==-1 else ''}",
-            key='q2',
-            index=st.session_state.q2_index
-        )
     if rating in [-1, 2, 3]:
         clue_text = st.text_area("What visual clues or indicators helped you make this judgment?", height=100, key='q3')
     st.markdown(f"To what extent are you aware of the country {country}?")
@@ -184,7 +175,7 @@ if st.session_state.index < len(image_files):
         print(st.session_state.responses)
         if awareness == 'Choose an option':
             st.error('Answer the questions')
-        elif ((rating == 'Choose an option') or (rating in [0, 1, 2] and net_rating == 'Choose an option') or (rating in [-1, 2, 3] and clue_text in [None, ''])):
+        elif ((rating == 'Choose an option') or (rating in [-1, 2, 3] and clue_text in [None, ''])):
             st.error('Answer the questions')
         else:
         # Save response
@@ -195,8 +186,6 @@ if st.session_state.index < len(image_files):
                 "image": image_name,
                 "rating": rating,
                 "clues": clue_text,
-                "net_rating": net_rating,
-                "awareness": awareness
             })
             reset_selections()
             rating = 'Choose an option'
