@@ -58,23 +58,35 @@ def reset_selections():
 # ---- UI ----
 st.title(f"Image Collection from {country}")
 st.markdown(f"""
-We are collecting a dataset of images from **{country}** to assess the knowledge of modern-day AI technologies about surroundings within the country. With your consent, we request you to upload images that you have clicked, but *not posted online*.
+We are collecting a dataset of images from **{country}** to assess the knowledge of modern-day AI technologies about surroundings within the country. With your consent, we request you to upload photos that you have taken but have **not shared online**.
 
-The images can depict historical sites, common buildings and houses, roads, highways, post offices, shopping malls, courthouses, markets, shops, etc.
+Following are the instructions for the same.
 
-Thus, they can depict any scene (preferrably outdoor), which is clear, properly lighted.
+**What kind of images to upload**:
 
-In case of privacy concerns, kindly refrain from uploading images with recognizable faces.
+- The images can show a variety of environments such as:
+    - Historical Monuments
+    - Residential buildings or houses
+    - Roads, Streets, or highways
+    - Markets, shops, post offices, courthouses, malls, etc.
+- Ensure the images are clear and well-lit.
+- Outdoor scenes are preferred.
+- Avoid uploading images with identifiable faces to protect privacy.
 
-You are requested to upload **30** images one by one, and answer a few questions regarding the same.
+**Image Requirements**:
 
-NOTE: The images should only be from **{country}**, and not uploaded on any social media. **Try to make sure that the images you upload depict as diverse scenarios as possible.**
+-   All images must be from **within {country}**.
+-   Do **not** upload images already posted on social media.
+-   Try to upload images that represent diverse locations or settings.
 
-For each image:
-- Rate how much visual evidence is present in the image indicating that it belongs to {country}.
-- Mention any clues you used to make your judgment.
+**What to do:**
+1.  **Upload 30 images**, one at a time.
+2.  For each image:
+    -   **Rate** how clearly the image suggests it was taken in India.
+    -   **List the clues** that helped you make that judgment.
+    -   **Click** "Submit and Next" to move to the next image.
 
-After uploading and answering the questions corresponding to an image, click on *Submit and Next* for the next image upload.
+You have *30* minutes to upload the photos and answer the questions surrounding them.
 """)
 if "prolific_id" not in st.session_state:
     st.session_state.prolific_id = None
@@ -135,7 +147,7 @@ if st.session_state.index < 30:
         st.image(image, use_container_width=True)
     
     about = st.text_area("What does the image primarily depict (e.g., building, monument, market, etc)? In case there are multiple descriptors, write them in a comma-separated manner", height=100, key='q1')
-    st.markdown(f"Given that this image is from **{country}**, how much visual evidence (e.g., specific architecture, writing, landmarks, vegetations, etc) is present in the image specific to the same?")
+    st.markdown(f"To what extent does this image contain visual cues (e.g., local architecture, language, or scenery) that identify it as being from {country}?")
     clue_text = None
     rating = st.radio(
         "Select a score:",
