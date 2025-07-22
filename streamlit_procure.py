@@ -87,7 +87,7 @@ Following are the instructions for the same.
     -   **List the clues** that helped you make that judgment.
     -   **Click** "Submit and Next" to move to the next image.
 
-You have *30* minutes to upload the photos and answer the questions surrounding them. After you upload the photo, wait for the photo to be visible on screen, then answer the questions.
+You have *40* minutes to upload the photos and answer the questions surrounding them. After you upload the photo, wait for the photo to be visible on screen, then answer the questions.
 """)
 if "prolific_id" not in st.session_state:
     st.session_state.prolific_id = None
