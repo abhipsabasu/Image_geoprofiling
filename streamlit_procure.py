@@ -81,13 +81,13 @@ Following are the instructions for the same.
 -   Try to upload images that represent diverse locations or settings.
 
 **What to do:**
-1.  **Upload 30 images**, one at a time.
+1.  **Upload 10 images**, one at a time.
 2.  For each image:
     -   **Rate** how clearly the image suggests it was taken in India.
     -   **List the clues** that helped you make that judgment.
     -   **Click** "Submit and Next" to move to the next image.
 
-You have *40* minutes to upload the photos and answer the questions surrounding them. After you upload the photo, wait for the photo to be visible on screen, then answer the questions.
+You have *15* minutes to upload the photos and answer the questions surrounding them. After you upload the photo, wait for the photo to be visible on screen, then answer the questions.
 """)
 if "prolific_id" not in st.session_state:
     st.session_state.prolific_id = None
@@ -135,7 +135,7 @@ if 'q1_index' not in st.session_state:
     st.session_state.q1_index = 0
 
 # Current image
-if st.session_state.index < 30:
+if st.session_state.index < 10:
     uploaded_file = st.file_uploader(f"Upload image {st.session_state.index + 1}", type=["jpg", "jpeg", "png"], key=st.session_state.index)
     if uploaded_file:
         file_bytes = uploaded_file.read() 
