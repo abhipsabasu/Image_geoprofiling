@@ -57,7 +57,7 @@ def load_data():
     # Step 3: Subtract 1 from 'count' for selected rows
     df.loc[selected_indices, 'frequency'] -= 1
     
-    image_files = list(df.loc[seleted_indices, 'file_path']) + ['wikimedia_images/Taj_Mahal.png', 'wikimedia_images/eiffel tower.jpeg'] # sorted([f for f in os.listdir(IMAGE_FOLDER) if f.lower().endswith((".png", ".jpg", ".jpeg"))])
+    image_files = list(df.loc[selected_indices, 'file_path']) + ['wikimedia_images/Taj_Mahal.png', 'wikimedia_images/eiffel tower.jpeg'] # sorted([f for f in os.listdir(IMAGE_FOLDER) if f.lower().endswith((".png", ".jpg", ".jpeg"))])
     return image_files, df
 
 @st.cache_data
