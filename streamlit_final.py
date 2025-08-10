@@ -46,7 +46,7 @@ GITHUB = "https://raw.githubusercontent.com/abhipsabasu/Image_geoprofiling/main/
 # ---- CONFIG ----
 @st.cache_data
 def load_data():
-    response_wiki = requests.get(GITHUB + f'{country}_HS.csv')
+    response_wiki = requests.get(GITHUB + f'{country}_hs.csv')
     df = pd.read_csv(StringIO(response_wiki.text))
     print(df.columns)
     eligible_rows = df[df['frequency'] > 0]
