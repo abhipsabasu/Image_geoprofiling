@@ -187,7 +187,7 @@ if st.session_state.index < len(image_files):
     
     if st.button("Submit and Next"):
         print(st.session_state.responses)
-        elif ((rating == 'Choose an option') or (rating in [-1, 2, 3] and clue_text in [None, ''])):
+        if ((rating == 'Choose an option') or (rating in [-1, 2, 3] and clue_text in [None, ''])):
             st.error('Answer the questions')
         else:
         # Save response
