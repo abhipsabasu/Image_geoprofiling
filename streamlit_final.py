@@ -127,7 +127,7 @@ if not st.session_state.prolific_id:
                 st.session_state.prolific_id = pid.strip()
                 st.session_state.birth_country = birth.strip()
                 st.session_state.residence = res.strip()
-                st.session_state.awareness = awareness.strip()
+                st.session_state.awareness = awareness
                 st.success("Thank you! You may now begin the survey.")
                 st.rerun()
             else:
