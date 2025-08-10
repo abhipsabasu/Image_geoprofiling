@@ -142,7 +142,7 @@ if st.session_state.index < len(image_files):
     image_name = GITHUB + image_path
     # print(st.session_state.index, 'hello', image_name)
     # image_path = os.path.join(IMAGE_FOLDER, image_name)
-    country = countries[st.session_state.index]
+    # country = countries[st.session_state.index]
 
     # st.image(Image.open(image_path), caption=f"Image: {image_name}", use_container_width=True)
     try:
