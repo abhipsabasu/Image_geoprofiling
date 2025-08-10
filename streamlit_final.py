@@ -48,6 +48,7 @@ GITHUB = "https://raw.githubusercontent.com/abhipsabasu/Image_geoprofiling/main/
 def load_data():
     response_wiki = requests.get(GITHUB + f'{country}_HS.csv')
     df = pd.read_csv(StringIO(response_wiki.text))
+    print(df.columns)
     eligible_rows = df[df['frequency'] > 0]
 
     # Step 2: Randomly sample 30 rows from the eligible ones
