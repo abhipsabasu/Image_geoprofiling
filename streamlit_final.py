@@ -119,7 +119,7 @@ if not st.session_state.prolific_id:
             options=["Choose an option", 0, 1, 2],
             format_func=lambda x: f"{x} . {'I am not aware about the country at all' if x==0 else 'I have some knowledge about the visuals present in the country' if x==1 else 'I am quite confident about the visuals present in the country' if x==2 else ''}",
             key='q4',
-            index=st.session_state.q4_index
+            # index=st.session_state.q4_index
         )
         submitted = st.form_submit_button("Submit")
         if submitted:
