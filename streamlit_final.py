@@ -2,6 +2,7 @@ import streamlit as st
 import os
 import json
 import time
+import random
 import pandas as pd
 from PIL import Image
 import io
@@ -44,9 +45,12 @@ repo = g.get_repo(repo_name)
 
 GITHUB = "https://raw.githubusercontent.com/abhipsabasu/Image_geoprofiling/main/"
 
+if "seed" not in st.session_state:
+    st.session_state.seed = random.randint(1, 200000)
+
 # ---- CONFIG ----
 @st.cache_data
-def load_data():
+def load_data(seed):
     response_wiki = requests.get(GITHUB + f'{country}_hs.csv')
     df = pd.read_csv(StringIO(response_wiki.text))
     print(df.columns)
@@ -54,7 +58,7 @@ def load_data():
 
     # Step 2: Randomly sample 30 rows from the eligible ones
     n = min(30, len(eligible_rows))
-    selected_indices = eligible_rows.sample(n=n, random_state=int(time.time())).index
+    selected_indices = eligible_rows.sample(n=n, random_state=seed).index
     # Step 3: Subtract 1 from 'count' for selected rows
     df.loc[selected_indices, 'frequency'] -= 1
     
@@ -65,7 +69,7 @@ def load_data():
 def get_responses(num):
     return [None] * num
 
-image_files, df = load_data()
+image_files, df = load_data(st.session_state.seed)
 responses = get_responses(len(image_files))
 st.session_state.df = df
 # CSV_PATH = "responses.csv"  # File to save responses
