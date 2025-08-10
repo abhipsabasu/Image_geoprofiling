@@ -43,6 +43,7 @@ db = firestore.client()
 g = Github(token)
 repo = g.get_repo(repo_name)
 branch = "main"
+file_path = f"{country}_hs.csv"
 file_content = repo.get_contents(file_path, ref=branch)
 
 GITHUB = "https://raw.githubusercontent.com/abhipsabasu/Image_geoprofiling/main/"
