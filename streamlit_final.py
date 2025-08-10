@@ -6,14 +6,10 @@ from PIL import Image
 import io
 from io import BytesIO
 from io import StringIO
-from github import Github
 import firebase_admin
 from firebase_admin import credentials
 from firebase_admin import firestore
 import requests
-import random
-
-
 
 firebase_secrets = st.secrets["firebase"]
 token = firebase_secrets["github_token"]
@@ -44,42 +40,31 @@ db = firestore.client()
 g = Github(token)
 repo = g.get_repo(repo_name)
 
-file_path = f"{country}_hs.csv"
-branch = "main"
-file_content = repo.get_contents(file_path, ref=branch)
-
 GITHUB = "https://raw.githubusercontent.com/abhipsabasu/Image_geoprofiling/main/"
 
-if "seed" not in st.session_state:
-    st.session_state.seed = random.randint(1, 200000)
 # ---- CONFIG ----
 @st.cache_data
-def load_data(seed):
-    
-    response_wiki = requests.get(GITHUB + f'{country}_hs.csv')
+def load_data():
+    response_wiki = requests.get(GITHUB + f'{country}_HS.csv')
     df = pd.read_csv(StringIO(response_wiki.text))
     eligible_rows = df[df['frequency'] > 0]
 
     # Step 2: Randomly sample 30 rows from the eligible ones
     n = min(30, len(eligible_rows))
-    selected_indices = eligible_rows.sample(n=n,random_state=seed).index
-
+    selected_indices = eligible_rows.sample(n=n, random_state=42).index
     # Step 3: Subtract 1 from 'count' for selected rows
     df.loc[selected_indices, 'frequency'] -= 1
     
-    image_files = list(df.loc[selected_indices, 'file_path']) # sorted([f for f in os.listdir(IMAGE_FOLDER) if f.lower().endswith((".png", ".jpg", ".jpeg"))])
-    st.session_state.df = df
-    st.write('df updated' + str(seed))
-    return image_files + ['wikimedia_images/Taj_Mahal.png'], df
+    image_files = list(df.loc[seleted_indices, 'file_path']) + ['wikimedia_images/Taj_Mahal.png', 'wikimedia_images/eiffel tower.jpeg'] # sorted([f for f in os.listdir(IMAGE_FOLDER) if f.lower().endswith((".png", ".jpg", ".jpeg"))])
+    return image_files, df
 
 @st.cache_data
 def get_responses(num):
     return [None] * num
 
-image_files, df = load_data(st.session_state.seed)
+image_files, df = load_data()
 responses = get_responses(len(image_files))
-
-# st.session_state.df = df
+st.session_state.df = df
 # CSV_PATH = "responses.csv"  # File to save responses
 
 # ---- LOAD IMAGES ----
@@ -155,6 +140,7 @@ if st.session_state.index < len(image_files):
     image_name = GITHUB + image_path
     # print(st.session_state.index, 'hello', image_name)
     # image_path = os.path.join(IMAGE_FOLDER, image_name)
+    country = countries[st.session_state.index]
 
     # st.image(Image.open(image_path), caption=f"Image: {image_name}", use_container_width=True)
     try:
@@ -172,8 +158,17 @@ if st.session_state.index < len(image_files):
         index=st.session_state.q1_index,
         key='q1'
     )
-    # net_rating = None
+    net_rating = None
     clue_text = None
+    if rating in [0, 1, 2]:
+        st.markdown(f"If you are not confident, you can search about the image on the internet (using textual descriptions, reverse image search, etc), and respond accordingly")
+        net_rating = st.radio(
+            "Select a score:",
+            options=["Choose an option", -1, 0, 1, 2],
+            format_func=lambda x: f"{x} . {'No I could not find out even from the internet' if x==0 else 'I could only determine the continent' if x==1 else 'The mentioned country matches with the true country as per the internet' if x==2 else 'The mentioned country does not match the true country as per the internet' if x==-1 else ''}",
+            key='q2',
+            index=st.session_state.q2_index
+        )
     if rating in [-1, 2, 3]:
         clue_text = st.text_area("What visual clues or indicators helped you make this judgment?", height=100, key='q3')
     st.markdown(f"To what extent are you aware of the country {country}?")
@@ -188,7 +183,7 @@ if st.session_state.index < len(image_files):
         print(st.session_state.responses)
         if awareness == 'Choose an option':
             st.error('Answer the questions')
-        elif ((rating == 'Choose an option') or (rating in [-1, 2, 3] and clue_text in [None, ''])):
+        elif ((rating == 'Choose an option') or (rating in [0, 1, 2] and net_rating == 'Choose an option') or (rating in [-1, 2, 3] and clue_text in [None, ''])):
             st.error('Answer the questions')
         else:
         # Save response
@@ -199,6 +194,8 @@ if st.session_state.index < len(image_files):
                 "image": image_name,
                 "rating": rating,
                 "clues": clue_text,
+                "net_rating": net_rating,
+                "awareness": awareness
             })
             reset_selections()
             rating = 'Choose an option'
@@ -217,10 +214,10 @@ if st.session_state.index < len(image_files):
             st.rerun()
 else:
     csv_buffer = io.StringIO()
-    df.to_csv(csv_buffer, index=False)
+    st.session_state.df.to_csv(csv_buffer, index=False)
     new_csv_str = csv_buffer.getvalue()
     repo.update_file(
-        path=f'{country}_hs.csv',
+        path=GITHUB + f'{country}_HS.csv',
         message="Updated CSV via Streamlit app",
         content=new_csv_str,
         sha=file_content.sha,
