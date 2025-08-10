@@ -53,7 +53,7 @@ def load_data():
 
     # Step 2: Randomly sample 30 rows from the eligible ones
     n = min(30, len(eligible_rows))
-    selected_indices = eligible_rows.sample(n=n, random_state=42).index
+    selected_indices = eligible_rows.sample(n=n).index
     # Step 3: Subtract 1 from 'count' for selected rows
     df.loc[selected_indices, 'frequency'] -= 1
     
