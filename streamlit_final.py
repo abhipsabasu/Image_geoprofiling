@@ -104,6 +104,9 @@ if "birth_country" not in st.session_state:
 if "residence" not in st.session_state:
     st.session_state.residence = None
 
+if "awareness" not in st.session_state:
+    st.session_state.awareness = None
+
 if not st.session_state.prolific_id:
     with st.form("prolific_form"):
         pid = st.text_input("Please enter your Prolific ID to begin:", max_chars=24)
@@ -111,12 +114,20 @@ if not st.session_state.prolific_id:
         birth = st.text_input("Please enter your country of birth", max_chars=24)
         # st.write("## Please enter your country of residence")
         res = st.text_input("Please enter your country of residence", max_chars=24)
+        awareness = st.radio(
+            f"To what extent are you aware of the country {country}?",
+            options=["Choose an option", 0, 1, 2],
+            format_func=lambda x: f"{x} . {'I am not aware about the country at all' if x==0 else 'I have some knowledge about the visuals present in the country' if x==1 else 'I am quite confident about the visuals present in the country' if x==2 else ''}",
+            key='q4',
+            index=st.session_state.q4_index
+        )
         submitted = st.form_submit_button("Submit")
         if submitted:
             if pid.strip() and birth.strip() and res.strip():
                 st.session_state.prolific_id = pid.strip()
                 st.session_state.birth_country = birth.strip()
                 st.session_state.residence = res.strip()
+                st.session_state.awareness = awareness.strip()
                 st.success("Thank you! You may now begin the survey.")
                 st.rerun()
             else:
@@ -173,19 +184,10 @@ if st.session_state.index < len(image_files):
     #     )
     if rating in [-1, 2, 3]:
         clue_text = st.text_area("What visual clues or indicators helped you make this judgment?", height=100, key='q3')
-    st.markdown(f"To what extent are you aware of the country {country}?")
-    awareness = st.radio(
-        "Select a score:",
-        options=["Choose an option", 0, 1, 2],
-        format_func=lambda x: f"{x} . {'I am not aware about the country at all' if x==0 else 'I have some knowledge about the visuals present in the country' if x==1 else 'I am quite confident about the visuals present in the country' if x==2 else ''}",
-        key='q4',
-        index=st.session_state.q4_index
-    )
+    
     if st.button("Submit and Next"):
         print(st.session_state.responses)
-        if awareness == 'Choose an option':
-            st.error('Answer the questions')
-        elif ((rating == 'Choose an option') or (rating in [0, 1, 2] and net_rating == 'Choose an option') or (rating in [-1, 2, 3] and clue_text in [None, ''])):
+        elif ((rating == 'Choose an option') or (rating in [-1, 2, 3] and clue_text in [None, ''])):
             st.error('Answer the questions')
         else:
         # Save response
@@ -197,7 +199,7 @@ if st.session_state.index < len(image_files):
                 "rating": rating,
                 "clues": clue_text,
                 # "net_rating": net_rating,
-                "awareness": awareness
+                "awareness": st.session_state.awareness
             })
             reset_selections()
             rating = 'Choose an option'
