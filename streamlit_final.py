@@ -1,6 +1,7 @@
 import streamlit as st
 import os
 import json
+import time
 import pandas as pd
 from PIL import Image
 import io
@@ -53,7 +54,7 @@ def load_data():
 
     # Step 2: Randomly sample 30 rows from the eligible ones
     n = min(30, len(eligible_rows))
-    selected_indices = eligible_rows.sample(n=n).index
+    selected_indices = eligible_rows.sample(n=n, random_state=int(time.time())).index
     # Step 3: Subtract 1 from 'count' for selected rows
     df.loc[selected_indices, 'frequency'] -= 1
     
