@@ -24,7 +24,7 @@ firebase_secrets = st.secrets["firebase"]
 token = firebase_secrets["github_token"]
 repo_name = firebase_secrets["github_repo"]
 owner, repo_name = repo_name.split('/')
-Maps_API_KEY = firebase_secrets["Maps_API_KEY"]
+Maps_API_KEY = firebase_secrets["GOOGLE_MAPS_API_KEY"]
 # Convert secrets to dict
 cred_dict = {
     "type": firebase_secrets["type"],
