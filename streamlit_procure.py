@@ -16,6 +16,7 @@ from firebase_admin import credentials
 from firebase_admin import firestore
 import requests
 import uuid
+import re
 
 country = 'India'
 continent = 'Asia'
@@ -47,84 +48,6 @@ if not firebase_admin._apps:
 # Get Firestore client
 db = firestore.client()
 
-# ---- HTML for the Google Maps Component ----
-# This HTML saves coordinates to localStorage on user interaction.
-html_code = f"""
-<!DOCTYPE html>
-<html>
-  <head>
-    <title>Pick a Location</title>
-    <script src="https://maps.googleapis.com/maps/api/js?key={Maps_API_KEY}&libraries=places"></script>
-    <script>
-      let map;
-      let marker;
-      
-      function initMap() {{
-        localStorage.removeItem('coords');
-        const defaultLoc = {{ lat: 20.5937, lng: 78.9629 }};
-        map = new google.maps.Map(document.getElementById("map"), {{
-          zoom: 4,
-          center: defaultLoc,
-        }});
-
-        marker = new google.maps.Marker({{
-          position: defaultLoc,
-          map: map,
-          draggable: true
-        }});
-
-        const input = document.getElementById("pac-input");
-        const searchBox = new google.maps.places.SearchBox(input);
-        map.controls[google.maps.ControlPosition.TOP_LEFT].push(input);
-
-        searchBox.addListener("places_changed", () => {{
-          const places = searchBox.getPlaces();
-          if (places.length === 0) return;
-          const place = places[0];
-          if (!place.geometry) return;
-
-          marker.setPosition(place.geometry.location);
-          map.panTo(place.geometry.location);
-          map.setZoom(12);
-
-          localStorage.setItem('coords', JSON.stringify({{
-            lat: place.geometry.location.lat(),
-            lng: place.geometry.location.lng()
-          }}));
-        }});
-
-        map.addListener("click", (event) => {{
-          marker.setPosition(event.latLng);
-          localStorage.setItem('coords', JSON.stringify({{
-            lat: event.latLng.lat(),
-            lng: event.latLng.lng()
-          }}));
-        }});
-        
-        marker.addListener('dragend', (event) => {{
-          localStorage.setItem('coords', JSON.stringify({{
-            lat: event.latLng.lat(),
-            lng: event.latLng.lng()
-          }}));
-        }});
-      }}
-    </script>
-    <style>
-      #pac-input {{
-        margin: 10px;
-        padding: 5px;
-        width: 250px;
-        z-index: 5;
-      }}
-    </style>
-  </head>
-  <body onload="initMap()">
-    <input id="pac-input" type="text" placeholder="Search for a location" />
-    <div id="map" style="height: 500px; width: 100%;"></div>
-  </body>
-</html>
-"""
-
 # ---- SESSION STATE ----
 if "index" not in st.session_state:
     st.session_state.index = 0
@@ -133,11 +56,9 @@ if "index" not in st.session_state:
 if "prolific_id" not in st.session_state:
     st.session_state.prolific_id = None
 
-# Correctly initialize the session state variable for coordinates
 if 'coords' not in st.session_state:
     st.session_state.coords = None
 
-# Initialize q1_index to avoid the StreamlitAPIException
 if 'q1_index' not in st.session_state:
     st.session_state.q1_index = 0
 
@@ -225,23 +146,38 @@ else:
         about = st.text_area("What does the photo primarily depict (e.g., building, monument, market, etc)? In case there are multiple descriptors, write them in a comma-separated manner", height=100, key='q1')
         st.markdown(f"Where in {country} was the photo taken?")
         
-        # Render the map component
-        components.html(html_code, height=600, width=1200)
+        # New approach: Provide a direct Google Maps link and a text box.
+        st.markdown(
+            "1. Go to [Google Maps](https://www.google.com/maps). \n"
+            "2. Find the location where the photo was taken. \n"
+            "3. Copy the URL from your browser's address bar. \n"
+            "4. Paste it in the box below."
+        )
 
-        # A button to trigger the coordinate retrieval.
-        if st.button("Read Coordinates from Map"):
-            # This expression reads the stored data.
-            coords_str = streamlit_js_eval(js_expressions="localStorage.getItem('coords')", key="coords_eval")
-            
-            if coords_str:
-                try:
-                    coords_dict = json.loads(coords_str)
-                    st.session_state.coords = coords_dict
-                    st.success(f"✅ Coordinates captured: Latitude: {coords_dict['lat']:.6f}, Longitude: {coords_dict['lng']:.6f}")
-                except json.JSONDecodeError:
-                    st.warning("⚠️ Invalid coordinate data received.")
+        maps_url = st.text_input("Paste the Google Maps URL here:", key='maps_url')
+        
+        # Function to extract coordinates from a Google Maps URL
+        def get_coords_from_url(url):
+            try:
+                # Regex to find the coordinates (e.g., @22.572646,88.363895) in the URL
+                match = re.search(r'@(-?\d+\.\d+),(-?\d+\.\d+)', url)
+                if match:
+                    lat = float(match.group(1))
+                    lng = float(match.group(2))
+                    return {"lat": lat, "lng": lng}
+            except (ValueError, IndexError):
+                pass
+            return None
+
+        # Process the URL when the user pastes it
+        if maps_url:
+            coords = get_coords_from_url(maps_url)
+            if coords:
+                st.session_state.coords = coords
+                st.success(f"✅ Coordinates captured: Latitude: {coords['lat']:.6f}, Longitude: {coords['lng']:.6f}")
             else:
-                st.warning("⚠️ No coordinates found. Please click or search on the map first to save them.")
+                st.session_state.coords = None
+                st.warning("⚠️ Invalid Google Maps URL. Please ensure the URL contains coordinates.")
         
         # Display the stored coordinates if they exist
         if st.session_state.coords:
@@ -270,7 +206,7 @@ else:
             if not uploaded_file or about in ['', None] or ((rating == 'Choose an option') or (rating in [2, 3] and clue_text in [None, ''])):
                 st.error('Please answer all the questions and upload a file.')
             elif not st.session_state.coords:
-                st.error('Please select a location on the map and click "Read Coordinates from Map" first.')
+                st.error('Please provide a Google Maps URL with coordinates first.')
             else:
                 # Submission logic...
                 image_id = str(uuid.uuid4())
