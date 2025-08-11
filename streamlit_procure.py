@@ -1,7 +1,9 @@
 import streamlit as st
+import streamlit.components.v1 as components
 import os
 import json
 import pandas as pd
+from streamlit_js_eval import streamlit_js_eval
 from PIL import Image
 import io
 import base64
@@ -34,6 +36,7 @@ cred_dict = {
     "auth_provider_x509_cert_url": firebase_secrets["auth_provider_x509_cert_url"],
     "client_x509_cert_url": firebase_secrets["client_x509_cert_url"],
     "universe_domain": firebase_secrets["universe_domain"],
+    "api_key" = firebase_secrets["GOOGLE_MAPS_API_KEY"]
 }
 cred = credentials.Certificate(json.loads(json.dumps(cred_dict)))
 # Initialize Firebase (only if not already initialized)
@@ -44,6 +47,42 @@ if not firebase_admin._apps:
 db = firestore.client()
 # g = Github(token)
 # repo = g.get_repo(repo_name)
+
+html_code = f"""
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Pick a Location</title>
+    <script src="https://maps.googleapis.com/maps/api/js?key={GOOGLE_MAPS_API_KEY}"></script>
+    <script>
+      let map;
+      function initMap() {{
+        const defaultLoc = {{ lat: 20.5937, lng: 78.9629 }};  // Centered on India
+        map = new google.maps.Map(document.getElementById("map"), {{
+          zoom: 4,
+          center: defaultLoc,
+        }});
+
+        let marker = new google.maps.Marker({{
+          position: defaultLoc,
+          map: map,
+          draggable: true
+        }});
+
+        map.addListener("click", (event) => {{
+          marker.setPosition(event.latLng);
+          const lat = event.latLng.lat();
+          const lng = event.latLng.lng();
+          window.parent.postMessage({{ lat: lat, lng: lng }}, "*");
+        }});
+      }}
+    </script>
+  </head>
+  <body onload="initMap()">
+    <div id="map" style="height: 500px; width: 100%;"></div>
+  </body>
+</html>
+"""
 
 # ---- SESSION STATE ----
 if "index" not in st.session_state:
@@ -81,13 +120,13 @@ Following are the instructions for the same.
 -   Try to upload images that represent diverse locations or settings.
 
 **What to do:**
-1.  **Upload 10 images**, one at a time.
+1.  **Upload 30 images**, one at a time.
 2.  For each image:
     -   **Rate** how clearly the image suggests it was taken in India.
     -   **List the clues** that helped you make that judgment.
     -   **Click** "Submit and Next" to move to the next image.
 
-You have *15* minutes to upload the photos and answer the questions surrounding them. After you upload the photo, wait for the photo to be visible on screen, then answer the questions.
+You have *30* minutes to upload the photos and answer the questions surrounding them. After you upload the photo, wait for the photo to be visible on screen, then answer the questions.
 """)
 if "prolific_id" not in st.session_state:
     st.session_state.prolific_id = None
@@ -135,7 +174,7 @@ if 'q1_index' not in st.session_state:
     st.session_state.q1_index = 0
 
 # Current image
-if st.session_state.index < 10:
+if st.session_state.index < 30:
     uploaded_file = st.file_uploader(f"Upload image {st.session_state.index + 1}", type=["jpg", "jpeg", "png"], key=st.session_state.index)
     if uploaded_file:
         file_bytes = uploaded_file.read() 
@@ -148,7 +187,12 @@ if st.session_state.index < 10:
         st.image(image, use_container_width=True)
     
     about = st.text_area("What does the photo primarily depict (e.g., building, monument, market, etc)? In case there are multiple descriptors, write them in a comma-separated manner", height=100, key='q1')
-    location = st.text_area(f"Where in {country} was the photo taken?", height=100, key='q4')
+    st.markdown(f"Where in {country} was the photo taken?")
+    components.html(html_code, height=500)
+    coords = streamlit_js_eval(js_expressions="await new Promise(resolve => {window.addEventListener('message', e => resolve(e.data), { once: true });})", key="map_listener")
+
+    if coords:
+        st.success(f"Selected location: {result}")
     st.markdown(f"To what extent does this image contain visual cues (e.g., local architecture, language, or scenery) that identify it as being from {country}?")
     clue_text = None
     rating = st.radio(
@@ -160,6 +204,13 @@ if st.session_state.index < 10:
     )
     if rating in [2, 3]:
         clue_text = st.text_area("What visual clues or indicators helped you make this judgment?", height=100, key='q3')
+    popularity = st.radio(
+        "How would you rate the popularity of the location depicted in the photo you uploaded?",
+        options=["Choose an option", 0, 1, 2],
+        format_func=lambda x: f"{'The location depicts only a regular scene' if x==0 else f'The location may be locally popular, but not country-wide' if x==1 else f'The location is popular country-wide' if x==2 else ''}",
+        index=st.session_state.q1_index,
+        key='q2'
+    )
     if st.button("Submit and Next"):
         if not uploaded_file or about in ['', None] or ((rating == 'Choose an option') or (rating in [2, 3] and clue_text in [None, ''])):
             st.error('Answer the questions')
@@ -212,6 +263,8 @@ if st.session_state.index < 10:
                 "privacy": st.session_state.privacy,
                 "image_url": file_path,
                 "rating": rating,
+                "coords": coords,
+                "popularity": popularity,
                 "clues": clue_text,
                 "description": about,
                 "location": location
@@ -232,6 +285,7 @@ else:
         "privacy": st.session_state.privacy,
         "timestamp": firestore.SERVER_TIMESTAMP,
         "responses": st.session_state.responses
+        "gps": 
     })
     st.session_state.submitted_all = True
     st.success("Survey complete. Thank you!")
