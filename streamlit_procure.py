@@ -48,6 +48,7 @@ if not firebase_admin._apps:
 db = firestore.client()
 
 # ---- HTML for the Google Maps Component ----
+# This HTML stores coordinates in localStorage on user interaction.
 html_code = f"""
 <!DOCTYPE html>
 <html>
@@ -135,7 +136,7 @@ if "index" not in st.session_state:
 if "prolific_id" not in st.session_state:
     st.session_state.prolific_id = None
 
-# Correctly initialize the session state variable
+# Correctly initialize the session state variable for coordinates
 if 'coords' not in st.session_state:
     st.session_state.coords = None
 
@@ -187,15 +188,6 @@ You have *30* minutes to upload the photos and answer the questions surrounding 
 </div>
 """, unsafe_allow_html=True)
 
-if "prolific_id" not in st.session_state:
-    st.session_state.prolific_id = None
-if "birth_country" not in st.session_state:
-    st.session_state.birth_country = None
-if "residence" not in st.session_state:
-    st.session_state.residence = None
-if "privacy" not in st.session_state:
-    st.session_state.privacy = None
-
 if not st.session_state.prolific_id:
     with st.form("prolific_form"):
         pid = st.text_input("Please enter your Prolific ID to begin:", max_chars=24)
@@ -216,128 +208,65 @@ if not st.session_state.prolific_id:
                 st.rerun()
             else:
                 st.error("Please enter a valid Prolific ID, birth country or residence country.")
-    st.stop()
-
-# --- MAIN APP LOGIC ---
-if st.session_state.index < 30:
-    uploaded_file = st.file_uploader(f"Upload image {st.session_state.index + 1}", type=["jpg", "jpeg", "png"], key=st.session_state.index)
-    if uploaded_file:
-        file_bytes = uploaded_file.read() 
-        if len(file_bytes) < 100:
-            st.error("⚠️ File seems too small. Possible read error.")
-        encoded_content = base64.b64encode(file_bytes).decode("utf-8")
-        image = Image.open(uploaded_file)
-        st.image(image, use_container_width=True)
-    
-    about = st.text_area("What does the photo primarily depict (e.g., building, monument, market, etc)? In case there are multiple descriptors, write them in a comma-separated manner", height=100, key='q1')
-    st.markdown(f"Where in {country} was the photo taken?")
-    
-    # Render the map component
-    components.html(html_code, height=600, width=1200)
-
-    coords_display_placeholder = st.empty()
-
-# The button to capture coordinates and update the display
-if st.button("Confirm Selected Location"):
-    # This action triggers a Streamlit rerun
-    coords_str = streamlit_js_eval(
-        js_expressions="localStorage.getItem('coords')",
-        key=f"coords_reader_{st.session_state.index}"
-    )
-
-    if coords_str:
-        coords_dict = json.loads(coords_str)
-        # Store the coordinates in session_state
-        st.session_state.coords = coords_dict
-        coords_display_placeholder.success(f"✅ Coordinates captured: Lat: {coords_dict['lat']:.6f}, Lng: {coords_dict['lng']:.6f}")
-    else:
-        coords_display_placeholder.warning("⚠️ No coordinates found. Please click on the map or search for a location first.")
-
-    # Display the coordinates from session state if available
-    if st.session_state.coords:
-        coords_display_placeholder.write(f"**Current Selected Location:** Latitude: {st.session_state.coords['lat']:.6f}, Longitude: {st.session_state.coords['lng']:.6f}")
-    else:
-        coords_display_placeholder.info("Please select a location on the map and click 'Confirm Selected Location'.")
-
-    st.markdown(f"To what extent does this image contain visual cues (e.g., local architecture, language, or scenery) that identify it as being from {country}?")
-    clue_text = None
-    rating = st.radio(
-        "Select a score:",
-        options=["Choose an option", 0, 1, 2, 3],
-        format_func=lambda x: f"{'No evidence at all' if x==0 else f'A few features that are shared by multiple countries within {continent}, but not fully specific to {country}' if x==2 else f'Enough evidence specific to {country}' if x==3 else f'There are visual indications like architectural style, vegetations, etc, but I do not know if they are specific to {country} or {continent}' if x==1 else ''}",
-        index=st.session_state.q1_index,
-        key='q2'
-    )
-    if rating in [2, 3]:
-        clue_text = st.text_area("What visual clues or indicators helped you make this judgment?", height=100, key='q3')
-    popularity = st.radio(
-        "How would you rate the popularity of the location depicted in the photo you uploaded?",
-        options=["Choose an option", 0, 1, 2],
-        format_func=lambda x: f"{'The location depicts only a regular scene' if x==0 else f'The location may be locally popular, but not country-wide' if x==1 else f'The location is popular country-wide' if x==2 else 'Choose an option'}",
-        index=st.session_state.q1_index,
-        key='q5'
-    )
-
-    if st.button("Submit and Next"):
-        if not uploaded_file or about in ['', None] or ((rating == 'Choose an option') or (rating in [2, 3] and clue_text in [None, ''])):
-            st.error('Please answer all the questions and upload a file.')
-        elif not st.session_state.coords:
-            st.error('Please select a location on the map and click "Read Coordinates" first.')
-        else:
-            # Submission logic...
-            image_id = str(uuid.uuid4())
-            file_name = f"{st.session_state.prolific_id}_{st.session_state.index}.png"
-            file_path = f"{country}_images/{file_name}"
-            api_url = f"https://api.github.com/repos/{owner}/{repo_name}/contents/{file_path}"
-
-            headers = {
-                "Authorization": f"Bearer {token}",
-                "Accept": "application/vnd.github.v3+json"
-            }
-
-            payload = {
-                "message": f"Upload {file_path}",
-                "content": encoded_content,
-                "branch": "main"
-            }
-
-            response = requests.put(api_url, headers=headers, json=payload)
-            if response.status_code in [200, 201]:
-                st.success("✅ Image uploaded to GitHub successfully.")
-            else:
-                st.error(f"❌ Upload failed: {response.status_code}")
-                st.text(response.json())
-            
-            st.session_state.responses.append({
-                "name": st.session_state.prolific_id,
-                "birth_country": st.session_state.birth_country,
-                "residence": st.session_state.residence,
-                "privacy": st.session_state.privacy,
-                "image_url": file_path,
-                "rating": rating,
-                "coords": st.session_state.coords,
-                "popularity": popularity,
-                "clues": clue_text,
-                "description": about,
-            })
-            reset_selections()
-            
-            st.session_state.index += 1
-            st.session_state.q2_index = 0
-            
-            # Reset coords for the next image
-            st.session_state.coords = None
-            st.rerun()
 else:
-    doc_ref = db.collection("Image_procurement").document(st.session_state.prolific_id)
-    doc_ref.set({
-        "prolific_id": st.session_state.prolific_id,
-        "birth_country": st.session_state.birth_country,
-        "country_of_residence": st.session_state.residence,
-        "privacy": st.session_state.privacy,
-        "timestamp": firestore.SERVER_TIMESTAMP,
-        "responses": st.session_state.responses
-    })
-    st.session_state.submitted_all = True
-    st.success("Survey complete. Thank you!")
-    st.write("✅ Survey complete! Thank you.")
+    # --- MAIN APP LOGIC (This section runs only after Prolific ID is submitted) ---
+    if st.session_state.index < 30:
+        uploaded_file = st.file_uploader(f"Upload image {st.session_state.index + 1}", type=["jpg", "jpeg", "png"], key=st.session_state.index)
+        if uploaded_file:
+            file_bytes = uploaded_file.read() 
+            if len(file_bytes) < 100:
+                st.error("⚠️ File seems too small. Possible read error.")
+            encoded_content = base64.b64encode(file_bytes).decode("utf-8")
+            image = Image.open(uploaded_file)
+            st.image(image, use_container_width=True)
+        
+        about = st.text_area("What does the photo primarily depict (e.g., building, monument, market, etc)? In case there are multiple descriptors, write them in a comma-separated manner", height=100, key='q1')
+        st.markdown(f"Where in {country} was the photo taken?")
+        
+        # Render the map component
+        components.html(html_code, height=600, width=1200)
+
+        # A button to trigger the coordinate retrieval. This is the most reliable way.
+        if st.button("Read Coordinates from Map"):
+            coords_str = streamlit_js_eval(
+                js_expressions="localStorage.getItem('coords')",
+                key=f"coords_read_button_{st.session_state.index}" # Use a unique key
+            )
+            if coords_str:
+                coords_dict = json.loads(coords_str)
+                st.session_state.coords = coords_dict
+                st.success(f"✅ Coordinates captured: Latitude: {coords_dict['lat']:.6f}, Longitude: {coords_dict['lng']:.6f}")
+            else:
+                st.warning("⚠️ No coordinates found. Please click or search on the map first.")
+
+        # Display the stored coordinates if they exist
+        if st.session_state.coords:
+            st.write(f"**Current Selected Location:** Latitude: {st.session_state.coords['lat']:.6f}, Longitude: {st.session_state.coords['lng']:.6f}")
+        
+        st.markdown(f"To what extent does this image contain visual cues (e.g., local architecture, language, or scenery) that identify it as being from {country}?")
+        clue_text = None
+        rating = st.radio(
+            "Select a score:",
+            options=["Choose an option", 0, 1, 2, 3],
+            format_func=lambda x: f"{'No evidence at all' if x==0 else f'A few features that are shared by multiple countries within {continent}, but not fully specific to {country}' if x==2 else f'Enough evidence specific to {country}' if x==3 else f'There are visual indications like architectural style, vegetations, etc, but I do not know if they are specific to {country} or {continent}' if x==1 else ''}",
+            index=st.session_state.q1_index,
+            key='q2'
+        )
+        if rating in [2, 3]:
+            clue_text = st.text_area("What visual clues or indicators helped you make this judgment?", height=100, key='q3')
+        popularity = st.radio(
+            "How would you rate the popularity of the location depicted in the photo you uploaded?",
+            options=["Choose an option", 0, 1, 2],
+            format_func=lambda x: f"{'The location depicts only a regular scene' if x==0 else f'The location may be locally popular, but not country-wide' if x==1 else f'The location is popular country-wide' if x==2 else 'Choose an option'}",
+            index=st.session_state.q1_index,
+            key='q5'
+        )
+
+        if st.button("Submit and Next"):
+            if not uploaded_file or about in ['', None] or ((rating == 'Choose an option') or (rating in [2, 3] and clue_text in [None, ''])):
+                st.error('Please answer all the questions and upload a file.')
+            elif not st.session_state.coords:
+                st.error('Please select a location on the map and click "Read Coordinates from Map" first.')
+            else:
+                # Submission logic...
+                image_id = str(uuid.
