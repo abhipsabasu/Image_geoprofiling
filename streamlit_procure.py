@@ -60,7 +60,7 @@ if 'coords' not in st.session_state:
     st.session_state.coords = None
 
 if 'maps_url' not in st.session_state:
-    st.session_state.maps_url = ''
+    st.session_state.maps_url = None
 
 if 'q1_index' not in st.session_state:
     st.session_state.q1_index = 0
@@ -247,7 +247,7 @@ else:
                 st.session_state.q1_index = 0
                 
                 st.session_state.coords = None
-                st.session_state.maps_url = ''
+                st.session_state.maps_url = None
                 st.rerun()
     else:
         doc_ref = db.collection("Image_procurement").document(st.session_state.prolific_id)
