@@ -71,7 +71,7 @@ def reset_selections():
 
 # ---- UI ----
 st.title(f"Image Collection from {country}")
-st.markdown("""
+st.markdown(f"""
 We are collecting a dataset of images from **{country}** to assess the knowledge of modern-day AI technologies about surroundings within the country. With your consent, we request you to upload photos that you have taken but have **not shared online**.
 
 Following are the instructions for the same.
@@ -94,13 +94,15 @@ Following are the instructions for the same.
 -   Try to upload images that represent diverse locations or settings.
 
 **What to do:**
-1.  **Upload 30 images**, one at a time.
+1.  **Upload 10 images**, one at a time.
 2.  For each image:
-    -   **Rate** how clearly the image suggests it was taken in India.
+    -   **Rate** how clearly the photo suggests it was taken in India.
+    -   **Enter the google maps link** for the photo.
     -   **List the clues** that helped you make that judgment.
+    -   **Rate the photo on the popularity of the location captured.
     -   **Click** "Submit and Next" to move to the next image.
 
-You have *30* minutes to upload the photos and answer the questions surrounding them. After you upload the photo, wait for the photo to be visible on screen, then answer the questions.
+You have *20* minutes to upload the photos and answer the questions surrounding them. After you upload the photo, wait for the photo to be visible on screen, then answer the questions.
 """, unsafe_allow_html=True)
 
 if not st.session_state.prolific_id:
