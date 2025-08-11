@@ -57,18 +57,18 @@ html_code = f"""
     <script src="https://maps.googleapis.com/maps/api/js?key={GOOGLE_MAPS_API_KEY}&libraries=places"></script>
     <script>
       let map;
-      function initMap() {
-        const defaultLoc = { lat: 20.5937, lng: 78.9629 }; // Center on India
-        map = new google.maps.Map(document.getElementById("map"), {
+      function initMap() {{
+        const defaultLoc = {{ lat: 20.5937, lng: 78.9629 }}; // Center on India
+        map = new google.maps.Map(document.getElementById("map"), {{
           zoom: 4,
           center: defaultLoc,
-        });
+        }});
 
-        let marker = new google.maps.Marker({
+        let marker = new google.maps.Marker({{
           position: defaultLoc,
           map: map,
           draggable: true
-        });
+        }});
 
         // Create the search box and link it to the UI element
         const input = document.getElementById("pac-input");
@@ -76,11 +76,11 @@ html_code = f"""
         map.controls[google.maps.ControlPosition.TOP_LEFT].push(input);
 
         // Bias the SearchBox results towards current map's viewport
-        map.addListener("bounds_changed", () => {
+        map.addListener("bounds_changed", () => {{
           searchBox.setBounds(map.getBounds());
-        });
+        }});
 
-        searchBox.addListener("places_changed", () => {
+        searchBox.addListener("places_changed", () => {{
           const places = searchBox.getPlaces();
           if (places.length === 0) return;
 
@@ -93,29 +93,29 @@ html_code = f"""
           map.setZoom(12);
 
           // Send coordinates to parent
-          window.parent.postMessage({
+          window.parent.postMessage({{
             lat: place.geometry.location.lat(),
             lng: place.geometry.location.lng()
-          }, "*");
-        });
+          }}, "*");
+        }});
 
         // Map click listener
-        map.addListener("click", (event) => {
+        map.addListener("click", (event) => {{
           marker.setPosition(event.latLng);
-          window.parent.postMessage({
+          window.parent.postMessage({{
             lat: event.latLng.lat(),
             lng: event.latLng.lng()
-          }, "*");
-        });
-      }
+          }}, "*");
+        }});
+      }}
     </script>
     <style>
-      #pac-input {
+      #pac-input {{
         margin: 10px;
         padding: 5px;
         width: 250px;
         z-index: 5;
-      }
+      }}
     </style>
   </head>
   <body onload="initMap()">
@@ -124,6 +124,7 @@ html_code = f"""
   </body>
 </html>
 """
+
 
 # ---- SESSION STATE ----
 if "index" not in st.session_state:
