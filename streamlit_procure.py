@@ -221,10 +221,17 @@ if st.session_state.index < 30:
     about = st.text_area("What does the photo primarily depict (e.g., building, monument, market, etc)? In case there are multiple descriptors, write them in a comma-separated manner", height=100, key='q1')
     st.markdown(f"Where in {country} was the photo taken?")
     components.html(html_code, height=600, width=1200)
-    coords = streamlit_js_eval(js_expressions="await new Promise(resolve => {window.addEventListener('message', e => resolve(e.data), { once: true });})", key="map_listener")
-    print(coords)
+    coords = streamlit_js_eval(
+    js_expressions="""
+        await new Promise(resolve => {
+            window.addEventListener('message', e => resolve(e.data));
+        })
+        """,
+        key="map_listener"
+    )
+
     if coords:
-        st.success(f"Selected location: {result}")
+        st.success(f"Coordinates: **Lat:** {coords['lat']}, **Lng:** {coords['lng']}")
     st.markdown(f"To what extent does this image contain visual cues (e.g., local architecture, language, or scenery) that identify it as being from {country}?")
     clue_text = None
     rating = st.radio(
