@@ -166,11 +166,12 @@ else:
             return None
         st.write(st.session_state.maps_url, maps_url)
         if maps_url and maps_url != st.session_state.maps_url:
-            st.session_state.maps_url = maps_url
+            
             coords = get_coords_from_url(st.session_state.maps_url)
             st.write(coords)
             if coords:
                 st.session_state.coords = coords
+                st.session_state.maps_url = maps_url
                 st.success(f"✅ Coordinates captured: Latitude: {coords['lat']:.6f}, Longitude: {coords['lng']:.6f}")
             else:
                 st.session_state.coords = None
