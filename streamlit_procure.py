@@ -120,7 +120,7 @@ html_code = f"""
   </head>
   <body onload="initMap()">
     <input id="pac-input" type="text" placeholder="Search for a location" />
-    <div id="map" style="height: 500px; width: 100%;"></div>
+    <div id="map" style="height: 500px; width: 100vw;"></div>
   </body>
 </html>
 """
@@ -249,7 +249,7 @@ if st.session_state.index < 30:
     popularity = st.radio(
         "How would you rate the popularity of the location depicted in the photo you uploaded?",
         options=["Choose an option", 0, 1, 2],
-        format_func=lambda x: f"{'The location depicts only a regular scene' if x==0 else f'The location may be locally popular, but not country-wide' if x==1 else f'The location is popular country-wide' if x==2 else ''}",
+        format_func=lambda x: f"{'The location depicts only a regular scene' if x==0 else f'The location may be locally popular, but not country-wide' if x==1 else f'The location is popular country-wide' if x==2 else 'Choose an option'}",
         index=st.session_state.q1_index,
         key='q5'
     )
