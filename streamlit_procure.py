@@ -56,7 +56,9 @@ html_code = f"""
     <title>Pick a Location</title>
     <script src="https://maps.googleapis.com/maps/api/js?key={GOOGLE_MAPS_API_KEY}&libraries=places"></script>
     <script>
-      let map, marker;
+      let map;
+      let marker;
+
       function initMap() {{
         const defaultLoc = {{ lat: 20.5937, lng: 78.9629 }};
         map = new google.maps.Map(document.getElementById("map"), {{
@@ -78,25 +80,35 @@ html_code = f"""
           searchBox.setBounds(map.getBounds());
         }});
 
-        function sendCoords(lat, lng) {{
-          localStorage.setItem("coords", JSON.stringify({{lat: lat, lng: lng}}));
-          window.parent.postMessage({{lat: lat, lng: lng}}, "*");
-        }}
-
+        // On search selection
         searchBox.addListener("places_changed", () => {{
           const places = searchBox.getPlaces();
-          if (!places.length || !places[0].geometry) return;
-          const loc = places[0].geometry.location;
-          marker.setPosition(loc);
-          map.panTo(loc);
+          if (!places || places.length === 0) return;
+
+          const place = places[0];
+          if (!place.geometry) return;
+
+          marker.setPosition(place.geometry.location);
+          map.panTo(place.geometry.location);
           map.setZoom(12);
-          sendCoords(loc.lat(), loc.lng());
+
+          sendCoords(place.geometry.location.lat(), place.geometry.location.lng());
         }});
 
+        // On map click
         map.addListener("click", (event) => {{
           marker.setPosition(event.latLng);
           sendCoords(event.latLng.lat(), event.latLng.lng());
         }});
+
+        // On marker drag
+        marker.addListener("dragend", (event) => {{
+          sendCoords(event.latLng.lat(), event.latLng.lng());
+        }});
+      }}
+
+      function sendCoords(lat, lng) {{
+        window.parent.postMessage({{ lat: lat, lng: lng }}, "*");
       }}
     </script>
     <style>
@@ -106,14 +118,19 @@ html_code = f"""
         width: 250px;
         z-index: 5;
       }}
+      #map {{
+        height: 500px;
+        width: 100%;
+      }}
     </style>
   </head>
   <body onload="initMap()">
     <input id="pac-input" type="text" placeholder="Search for a location" />
-    <div id="map" style="height: 500px; width: 100%;"></div>
+    <div id="map"></div>
   </body>
 </html>
 """
+
 
 # ---- SESSION STATE ----
 if "index" not in st.session_state:
