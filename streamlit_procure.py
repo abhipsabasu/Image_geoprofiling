@@ -99,7 +99,7 @@ Following are the instructions for the same.
     -   **Rate** how clearly the photo suggests it was taken in India.
     -   **Enter the google maps link** for the photo.
     -   **List the clues** that helped you make that judgment.
-    -   **Rate the photo on the popularity of the location captured.
+    -   **Rate the photo** on the popularity of the location captured.
     -   **Click** "Submit and Next" to move to the next image.
 
 You have *20* minutes to upload the photos and answer the questions surrounding them. After you upload the photo, wait for the photo to be visible on screen, then answer the questions.
