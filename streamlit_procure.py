@@ -269,4 +269,59 @@ else:
                 st.error('Please select a location on the map and click "Read Coordinates from Map" first.')
             else:
                 # Submission logic...
-                image_id = str(uuid.
+                image_id = str(uuid.uuid4())
+                file_name = f"{st.session_state.prolific_id}_{st.session_state.index}.png"
+                file_path = f"{country}_images/{file_name}"
+                api_url = f"https://api.github.com/repos/{owner}/{repo_name}/contents/{file_path}"
+
+                headers = {
+                    "Authorization": f"Bearer {token}",
+                    "Accept": "application/vnd.github.v3+json"
+                }
+
+                payload = {
+                    "message": f"Upload {file_path}",
+                    "content": encoded_content,
+                    "branch": "main"
+                }
+
+                response = requests.put(api_url, headers=headers, json=payload)
+                if response.status_code in [200, 201]:
+                    st.success("✅ Image uploaded to GitHub successfully.")
+                else:
+                    st.error(f"❌ Upload failed: {response.status_code}")
+                    st.text(response.json())
+                
+                st.session_state.responses.append({
+                    "name": st.session_state.prolific_id,
+                    "birth_country": st.session_state.birth_country,
+                    "residence": st.session_state.residence,
+                    "privacy": st.session_state.privacy,
+                    "image_url": file_path,
+                    "rating": rating,
+                    "coords": st.session_state.coords,
+                    "popularity": popularity,
+                    "clues": clue_text,
+                    "description": about,
+                })
+                reset_selections()
+                
+                st.session_state.index += 1
+                st.session_state.q2_index = 0
+                
+                # Reset coords for the next image
+                st.session_state.coords = None
+                st.rerun()
+    else:
+        doc_ref = db.collection("Image_procurement").document(st.session_state.prolific_id)
+        doc_ref.set({
+            "prolific_id": st.session_state.prolific_id,
+            "birth_country": st.session_state.birth_country,
+            "country_of_residence": st.session_state.residence,
+            "privacy": st.session_state.privacy,
+            "timestamp": firestore.SERVER_TIMESTAMP,
+            "responses": st.session_state.responses
+        })
+        st.session_state.submitted_all = True
+        st.success("Survey complete. Thank you!")
+        st.write("✅ Survey complete! Thank you.")
