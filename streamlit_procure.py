@@ -54,32 +54,72 @@ html_code = f"""
 <html>
   <head>
     <title>Pick a Location</title>
-    <script src="https://maps.googleapis.com/maps/api/js?key={GOOGLE_MAPS_API_KEY}"></script>
+    <script src="https://maps.googleapis.com/maps/api/js?key={GOOGLE_MAPS_API_KEY}&libraries=places"></script>
     <script>
       let map;
-      function initMap() {{
-        const defaultLoc = {{ lat: 20.5937, lng: 78.9629 }};  // Centered on India
-        map = new google.maps.Map(document.getElementById("map"), {{
+      function initMap() {
+        const defaultLoc = { lat: 20.5937, lng: 78.9629 }; // Center on India
+        map = new google.maps.Map(document.getElementById("map"), {
           zoom: 4,
           center: defaultLoc,
-        }});
+        });
 
-        let marker = new google.maps.Marker({{
+        let marker = new google.maps.Marker({
           position: defaultLoc,
           map: map,
           draggable: true
-        }});
+        });
 
-        map.addListener("click", (event) => {{
+        // Create the search box and link it to the UI element
+        const input = document.getElementById("pac-input");
+        const searchBox = new google.maps.places.SearchBox(input);
+        map.controls[google.maps.ControlPosition.TOP_LEFT].push(input);
+
+        // Bias the SearchBox results towards current map's viewport
+        map.addListener("bounds_changed", () => {
+          searchBox.setBounds(map.getBounds());
+        });
+
+        searchBox.addListener("places_changed", () => {
+          const places = searchBox.getPlaces();
+          if (places.length === 0) return;
+
+          const place = places[0];
+          if (!place.geometry) return;
+
+          // Move marker to searched place
+          marker.setPosition(place.geometry.location);
+          map.panTo(place.geometry.location);
+          map.setZoom(12);
+
+          // Send coordinates to parent
+          window.parent.postMessage({
+            lat: place.geometry.location.lat(),
+            lng: place.geometry.location.lng()
+          }, "*");
+        });
+
+        // Map click listener
+        map.addListener("click", (event) => {
           marker.setPosition(event.latLng);
-          const lat = event.latLng.lat();
-          const lng = event.latLng.lng();
-          window.parent.postMessage({{ lat: lat, lng: lng }}, "*");
-        }});
-      }}
+          window.parent.postMessage({
+            lat: event.latLng.lat(),
+            lng: event.latLng.lng()
+          }, "*");
+        });
+      }
     </script>
+    <style>
+      #pac-input {
+        margin: 10px;
+        padding: 5px;
+        width: 250px;
+        z-index: 5;
+      }
+    </style>
   </head>
   <body onload="initMap()">
+    <input id="pac-input" type="text" placeholder="Search for a location" />
     <div id="map" style="height: 500px; width: 100%;"></div>
   </body>
 </html>
@@ -210,7 +250,7 @@ if st.session_state.index < 30:
         options=["Choose an option", 0, 1, 2],
         format_func=lambda x: f"{'The location depicts only a regular scene' if x==0 else f'The location may be locally popular, but not country-wide' if x==1 else f'The location is popular country-wide' if x==2 else ''}",
         index=st.session_state.q1_index,
-        key='q2'
+        key='q5'
     )
     if st.button("Submit and Next"):
         if not uploaded_file or about in ['', None] or ((rating == 'Choose an option') or (rating in [2, 3] and clue_text in [None, ''])):
