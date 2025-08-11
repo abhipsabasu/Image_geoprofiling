@@ -234,7 +234,7 @@ if st.session_state.index < 30:
     coords = streamlit_js_eval(js_expressions="await new Promise(resolve => {window.addEventListener('message', e => resolve(e.data), { once: true });})", key="map_listener")
 
     if coords:
-        st.success(f"Selected location: {result}")
+        st.markdown(f"Selected location: {result}")
     st.markdown(f"To what extent does this image contain visual cues (e.g., local architecture, language, or scenery) that identify it as being from {country}?")
     clue_text = None
     rating = st.radio(
