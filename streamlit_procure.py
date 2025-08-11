@@ -23,6 +23,7 @@ firebase_secrets = st.secrets["firebase"]
 token = firebase_secrets["github_token"]
 repo_name = firebase_secrets["github_repo"]
 owner, repo_name = repo_name.split('/')
+GOOGLE_MAPS_API_KEY = firebase_secrets["GOOGLE_MAPS_API_KEY"]
 # Convert secrets to dict
 cred_dict = {
     "type": firebase_secrets["type"],
@@ -35,8 +36,8 @@ cred_dict = {
     "token_uri": firebase_secrets["token_uri"],
     "auth_provider_x509_cert_url": firebase_secrets["auth_provider_x509_cert_url"],
     "client_x509_cert_url": firebase_secrets["client_x509_cert_url"],
-    "universe_domain": firebase_secrets["universe_domain"],
-    "api_key": firebase_secrets["GOOGLE_MAPS_API_KEY"]
+    "universe_domain": firebase_secrets["universe_domain"]
+    # "api_key": firebase_secrets["GOOGLE_MAPS_API_KEY"]
 }
 cred = credentials.Certificate(json.loads(json.dumps(cred_dict)))
 # Initialize Firebase (only if not already initialized)
