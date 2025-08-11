@@ -59,6 +59,9 @@ if "prolific_id" not in st.session_state:
 if 'coords' not in st.session_state:
     st.session_state.coords = None
 
+if 'maps_url' not in st.session_state:
+    st.session_state.maps_url = ''
+
 if 'q1_index' not in st.session_state:
     st.session_state.q1_index = 0
 
@@ -162,15 +165,16 @@ else:
                 pass
             return None
 
-        if maps_url:
-            coords = get_coords_from_url(maps_url)
+        if maps_url and maps_url != st.session_state.maps_url:
+            st.session_state.maps_url = maps_url
+            coords = get_coords_from_url(st.session_state.maps_url)
             if coords:
                 st.session_state.coords = coords
                 st.success(f"✅ Coordinates captured: Latitude: {coords['lat']:.6f}, Longitude: {coords['lng']:.6f}")
             else:
                 st.session_state.coords = None
                 st.warning("⚠️ Invalid Google Maps URL. Please ensure the URL contains coordinates.")
-        
+
         if st.session_state.coords:
             st.write(f"**Current Selected Location:** Latitude: {st.session_state.coords['lat']:.6f}, Longitude: {st.session_state.coords['lng']:.6f}")
         
@@ -241,6 +245,7 @@ else:
                 st.session_state.q1_index = 0
                 
                 st.session_state.coords = None
+                st.session_state.maps_url = ''
                 st.rerun()
     else:
         doc_ref = db.collection("Image_procurement").document(st.session_state.prolific_id)
