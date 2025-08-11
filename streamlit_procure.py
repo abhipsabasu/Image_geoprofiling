@@ -70,21 +70,17 @@ html_code = f"""
           draggable: true
         }});
 
-        // Create the search box and link it to the UI element
         const input = document.getElementById("pac-input");
         const searchBox = new google.maps.places.SearchBox(input);
         map.controls[google.maps.ControlPosition.TOP_LEFT].push(input);
 
-        // Bias results towards current map's viewport
         map.addListener("bounds_changed", () => {{
           searchBox.setBounds(map.getBounds());
         }});
 
-        // When a place is selected from the search box
         searchBox.addListener("places_changed", () => {{
           const places = searchBox.getPlaces();
           if (places.length === 0) return;
-
           const place = places[0];
           if (!place.geometry) return;
 
@@ -92,20 +88,19 @@ html_code = f"""
           map.panTo(place.geometry.location);
           map.setZoom(12);
 
-          // Send coords to parent
-          window.parent.postMessage({{
+          // Save coords to localStorage
+          localStorage.setItem('coords', JSON.stringify({{
             lat: place.geometry.location.lat(),
             lng: place.geometry.location.lng()
-          }}, "*");
+          }}));
         }});
 
-        // When the map is clicked
         map.addListener("click", (event) => {{
           marker.setPosition(event.latLng);
-          window.parent.postMessage({{
+          localStorage.setItem('coords', JSON.stringify({{
             lat: event.latLng.lat(),
             lng: event.latLng.lng()
-          }}, "*");
+          }}));
         }});
       }}
     </script>
@@ -124,7 +119,6 @@ html_code = f"""
   </body>
 </html>
 """
-
 
 
 # ---- SESSION STATE ----
