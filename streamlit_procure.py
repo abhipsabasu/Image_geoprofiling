@@ -309,7 +309,6 @@ if st.session_state.index < 30:
                 "popularity": popularity,
                 "clues": clue_text,
                 "description": about,
-                "location": location
             })
             reset_selections()
             
