@@ -36,7 +36,7 @@ cred_dict = {
     "auth_provider_x509_cert_url": firebase_secrets["auth_provider_x509_cert_url"],
     "client_x509_cert_url": firebase_secrets["client_x509_cert_url"],
     "universe_domain": firebase_secrets["universe_domain"],
-    "api_key" = firebase_secrets["GOOGLE_MAPS_API_KEY"]
+    "api_key": firebase_secrets["GOOGLE_MAPS_API_KEY"]
 }
 cred = credentials.Certificate(json.loads(json.dumps(cred_dict)))
 # Initialize Firebase (only if not already initialized)
