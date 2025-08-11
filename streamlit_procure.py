@@ -130,7 +130,7 @@ if not st.session_state.prolific_id:
                 st.error("Please enter a valid Prolific ID, birth country or residence country.")
 else:
     # --- MAIN APP LOGIC (This section runs only after Prolific ID is submitted) ---
-    if st.session_state.index < 30:
+    if st.session_state.index < 10:
         uploaded_file = st.file_uploader(f"Upload image {st.session_state.index + 1}", type=["jpg", "jpeg", "png"], key=st.session_state.index)
         if uploaded_file:
             file_bytes = uploaded_file.read() 
