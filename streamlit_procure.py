@@ -48,7 +48,7 @@ if not firebase_admin._apps:
 db = firestore.client()
 
 # ---- HTML for the Google Maps Component ----
-# This HTML sends coordinates to Streamlit directly via postMessage.
+# This HTML saves coordinates to localStorage on user interaction.
 html_code = f"""
 <!DOCTYPE html>
 <html>
@@ -60,6 +60,7 @@ html_code = f"""
       let marker;
       
       function initMap() {{
+        localStorage.removeItem('coords');
         const defaultLoc = {{ lat: 20.5937, lng: 78.9629 }};
         map = new google.maps.Map(document.getElementById("map"), {{
           zoom: 4,
@@ -85,27 +86,27 @@ html_code = f"""
           marker.setPosition(place.geometry.location);
           map.panTo(place.geometry.location);
           map.setZoom(12);
+
+          localStorage.setItem('coords', JSON.stringify({{
+            lat: place.geometry.location.lat(),
+            lng: place.geometry.location.lng()
+          }}));
         }});
 
         map.addListener("click", (event) => {{
           marker.setPosition(event.latLng);
+          localStorage.setItem('coords', JSON.stringify({{
+            lat: event.latLng.lat(),
+            lng: event.latLng.lng()
+          }}));
         }});
         
         marker.addListener('dragend', (event) => {{
-          // No action needed here, the 'Store' button handles this
+          localStorage.setItem('coords', JSON.stringify({{
+            lat: event.latLng.lat(),
+            lng: event.latLng.lng()
+          }}));
         }});
-
-        // Function to be called by the "Store Coordinates" button
-        window.storeCoordinates = function() {{
-          const position = marker.getPosition();
-          const coords = {{
-            lat: position.lat(),
-            lng: position.lng()
-          }};
-          // Send the coordinates directly to the parent Streamlit window
-          window.parent.postMessage(JSON.stringify(coords), "*");
-          alert('Coordinates have been sent to the Streamlit app.');
-        }};
       }}
     </script>
     <style>
@@ -120,7 +121,6 @@ html_code = f"""
   <body onload="initMap()">
     <input id="pac-input" type="text" placeholder="Search for a location" />
     <div id="map" style="height: 500px; width: 100%;"></div>
-    <button onclick="window.storeCoordinates()">Store Coordinates</button>
   </body>
 </html>
 """
@@ -128,13 +128,16 @@ html_code = f"""
 # ---- SESSION STATE ----
 if "index" not in st.session_state:
     st.session_state.index = 0
+    st.session_state.responses = []
     
 if "prolific_id" not in st.session_state:
     st.session_state.prolific_id = None
 
+# Correctly initialize the session state variable for coordinates
 if 'coords' not in st.session_state:
     st.session_state.coords = None
 
+# Initialize q1_index to avoid the StreamlitAPIException
 if 'q1_index' not in st.session_state:
     st.session_state.q1_index = 0
 
@@ -222,18 +225,24 @@ else:
         about = st.text_area("What does the photo primarily depict (e.g., building, monument, market, etc)? In case there are multiple descriptors, write them in a comma-separated manner", height=100, key='q1')
         st.markdown(f"Where in {country} was the photo taken?")
         
-        # This is the key change. The components.html call returns a value directly.
-        coords_from_js = components.html(html_code, height=600, width=1200)
+        # Render the map component
+        components.html(html_code, height=600, width=1200)
 
-        # Check if a value was returned from the JS component
-        if coords_from_js:
-            try:
-                coords_dict = json.loads(coords_from_js)
-                st.session_state.coords = coords_dict
-                st.success(f"✅ Coordinates captured: Latitude: {coords_dict['lat']:.6f}, Longitude: {coords_dict['lng']:.6f}")
-            except json.JSONDecodeError:
-                st.warning("⚠️ Invalid coordinate data received from map.")
-
+        # A button to trigger the coordinate retrieval.
+        if st.button("Read Coordinates from Map"):
+            # This expression reads the stored data.
+            coords_str = streamlit_js_eval(js_expressions="localStorage.getItem('coords')", key="coords_eval")
+            
+            if coords_str:
+                try:
+                    coords_dict = json.loads(coords_str)
+                    st.session_state.coords = coords_dict
+                    st.success(f"✅ Coordinates captured: Latitude: {coords_dict['lat']:.6f}, Longitude: {coords_dict['lng']:.6f}")
+                except json.JSONDecodeError:
+                    st.warning("⚠️ Invalid coordinate data received.")
+            else:
+                st.warning("⚠️ No coordinates found. Please click or search on the map first to save them.")
+        
         # Display the stored coordinates if they exist
         if st.session_state.coords:
             st.write(f"**Current Selected Location:** Latitude: {st.session_state.coords['lat']:.6f}, Longitude: {st.session_state.coords['lng']:.6f}")
@@ -261,7 +270,7 @@ else:
             if not uploaded_file or about in ['', None] or ((rating == 'Choose an option') or (rating in [2, 3] and clue_text in [None, ''])):
                 st.error('Please answer all the questions and upload a file.')
             elif not st.session_state.coords:
-                st.error('Please select a location on the map and click "Store Coordinates" first.')
+                st.error('Please select a location on the map and click "Read Coordinates from Map" first.')
             else:
                 # Submission logic...
                 image_id = str(uuid.uuid4())
