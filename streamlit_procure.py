@@ -222,9 +222,9 @@ if st.session_state.index < 30:
     st.markdown(f"Where in {country} was the photo taken?")
     components.html(html_code, height=600, width=1200)
     coords = streamlit_js_eval(js_expressions="await new Promise(resolve => {window.addEventListener('message', e => resolve(e.data), { once: true });})", key="map_listener")
-
+    print(coords)
     if coords:
-        st.markdown(f"Selected location: {result}")
+        st.success(f"Selected location: {result}")
     st.markdown(f"To what extent does this image contain visual cues (e.g., local architecture, language, or scenery) that identify it as being from {country}?")
     clue_text = None
     rating = st.radio(
