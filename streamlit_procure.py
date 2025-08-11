@@ -56,57 +56,46 @@ html_code = f"""
     <title>Pick a Location</title>
     <script src="https://maps.googleapis.com/maps/api/js?key={GOOGLE_MAPS_API_KEY}&libraries=places"></script>
     <script>
-      let map;
+      let map, marker;
       function initMap() {{
-        const defaultLoc = {{ lat: 20.5937, lng: 78.9629 }}; // Center on India
+        const defaultLoc = {{ lat: 20.5937, lng: 78.9629 }};
         map = new google.maps.Map(document.getElementById("map"), {{
           zoom: 4,
           center: defaultLoc,
         }});
 
-        let marker = new google.maps.Marker({{
+        marker = new google.maps.Marker({{
           position: defaultLoc,
           map: map,
           draggable: true
         }});
 
-        // Create the search box and link it to the UI element
         const input = document.getElementById("pac-input");
         const searchBox = new google.maps.places.SearchBox(input);
         map.controls[google.maps.ControlPosition.TOP_LEFT].push(input);
 
-        // Bias the SearchBox results towards current map's viewport
         map.addListener("bounds_changed", () => {{
           searchBox.setBounds(map.getBounds());
         }});
 
         searchBox.addListener("places_changed", () => {{
           const places = searchBox.getPlaces();
-          if (places.length === 0) return;
-
-          const place = places[0];
-          if (!place.geometry) return;
-
-          // Move marker to searched place
-          marker.setPosition(place.geometry.location);
-          map.panTo(place.geometry.location);
+          if (!places.length || !places[0].geometry) return;
+          const loc = places[0].geometry.location;
+          marker.setPosition(loc);
+          map.panTo(loc);
           map.setZoom(12);
-
-          // Send coordinates to parent
-          window.parent.postMessage({{
-            lat: place.geometry.location.lat(),
-            lng: place.geometry.location.lng()
-          }}, "*");
+          sendCoords(loc.lat(), loc.lng());
         }});
 
-        // Map click listener
         map.addListener("click", (event) => {{
           marker.setPosition(event.latLng);
-          window.parent.postMessage({{
-            lat: event.latLng.lat(),
-            lng: event.latLng.lng()
-          }}, "*");
+          sendCoords(event.latLng.lat(), event.latLng.lng());
         }});
+      }}
+
+      function sendCoords(lat, lng) {{
+        window.parent.postMessage({{ lat: lat, lng: lng }}, "*");
       }}
     </script>
     <style>
@@ -120,10 +109,11 @@ html_code = f"""
   </head>
   <body onload="initMap()">
     <input id="pac-input" type="text" placeholder="Search for a location" />
-    <div id="map" style="height: 500px; width: 100vw;"></div>
+    <div id="map" style="height: 500px; width: 100%;"></div>
   </body>
 </html>
 """
+
 
 
 # ---- SESSION STATE ----
