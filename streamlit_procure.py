@@ -285,7 +285,6 @@ else:
         "privacy": st.session_state.privacy,
         "timestamp": firestore.SERVER_TIMESTAMP,
         "responses": st.session_state.responses
-        "gps": 
     })
     st.session_state.submitted_all = True
     st.success("Survey complete. Thank you!")
