@@ -78,6 +78,11 @@ html_code = f"""
           searchBox.setBounds(map.getBounds());
         }});
 
+        function sendCoords(lat, lng) {{
+          localStorage.setItem("coords", JSON.stringify({{lat: lat, lng: lng}}));
+          window.parent.postMessage({{lat: lat, lng: lng}}, "*");
+        }}
+
         searchBox.addListener("places_changed", () => {{
           const places = searchBox.getPlaces();
           if (!places.length || !places[0].geometry) return;
@@ -92,10 +97,6 @@ html_code = f"""
           marker.setPosition(event.latLng);
           sendCoords(event.latLng.lat(), event.latLng.lng());
         }});
-      }}
-
-      function sendCoords(lat, lng) {{
-        window.parent.postMessage({{ lat: lat, lng: lng }}, "*");
       }}
     </script>
     <style>
@@ -113,8 +114,6 @@ html_code = f"""
   </body>
 </html>
 """
-
-
 
 # ---- SESSION STATE ----
 if "index" not in st.session_state:
@@ -222,15 +221,12 @@ if st.session_state.index < 30:
     st.markdown(f"Where in {country} was the photo taken?")
     components.html(html_code, height=600, width=1200)
     coords = streamlit_js_eval(
-    js_expressions="""
-        await new Promise(resolve => {
-            window.addEventListener('message', e => resolve(e.data));
-        })
-        """,
-        key="map_listener"
+        js_expressions="localStorage.getItem('coords')",
+        key="coords_listener"
     )
 
     if coords:
+        coords = eval(coords)  # convert string to dict
         st.success(f"Coordinates: **Lat:** {coords['lat']}, **Lng:** {coords['lng']}")
     st.markdown(f"To what extent does this image contain visual cues (e.g., local architecture, language, or scenery) that identify it as being from {country}?")
     clue_text = None
