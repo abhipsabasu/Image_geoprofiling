@@ -72,44 +72,35 @@ def reset_selections():
 # ---- UI ----
 st.title(f"Image Collection from {country}")
 st.markdown("""
-<div style='text-align: justify;'>
-We are collecting a dataset of images from **India** to assess the knowledge of modern-day AI technologies about surroundings within the country. With your consent, we request you to upload photos that you have taken but have **not shared online**.
-<br><br>
+We are collecting a dataset of images from **{country}** to assess the knowledge of modern-day AI technologies about surroundings within the country. With your consent, we request you to upload photos that you have taken but have **not shared online**.
+
+Following are the instructions for the same.
+
 **What kind of images to upload**:
-<ul>
-<li>The images can show a variety of environments such as:
-    <ul>
-        <li>Historical Monuments</li>
-        <li>Residential buildings or houses</li>
-        <li>Roads, Streets, or highways</li>
-        <li>Markets, shops, post offices, courthouses, malls, etc.</li>
-    </ul>
-</li>
-<li>Ensure the images are clear and well-lit.</li>
-<li>Outdoor scenes are preferred.</li>
-<li>Avoid uploading images with identifiable faces to protect privacy.</li>
-</ul>
-<br>
+
+- The images can show a variety of environments such as:
+    - Historical Monuments
+    - Residential buildings or houses
+    - Roads, Streets, or highways
+    - Markets, shops, post offices, courthouses, malls, etc.
+- Ensure the images are clear and well-lit.
+- Outdoor scenes are preferred.
+- Avoid uploading images with identifiable faces to protect privacy.
+
 **Image Requirements**:
-<ul>
-<li>All images must be from **within India**.</li>
-<li>Do **not** upload images already posted on social media.</li>
-<li>Try to upload images that represent diverse locations or settings.</li>
-</ul>
-<br>
+
+-   All images must be from **within {country}**.
+-   Do **not** upload images already posted on social media.
+-   Try to upload images that represent diverse locations or settings.
+
 **What to do:**
-<ol>
-<li>**Upload 30 images**, one at a time.</li>
-<li>For each image:
-    <ul>
-        <li>**Rate** how clearly the image suggests it was taken in India.</li>
-        <li>**List the clues** that helped you make that judgment.</li>
-        <li>**Click** "Submit and Next" to move to the next image.</li>
-    </ul>
-</li>
-</ol>
+1.  **Upload 30 images**, one at a time.
+2.  For each image:
+    -   **Rate** how clearly the image suggests it was taken in India.
+    -   **List the clues** that helped you make that judgment.
+    -   **Click** "Submit and Next" to move to the next image.
+
 You have *30* minutes to upload the photos and answer the questions surrounding them. After you upload the photo, wait for the photo to be visible on screen, then answer the questions.
-</div>
 """, unsafe_allow_html=True)
 
 if not st.session_state.prolific_id:
@@ -151,7 +142,8 @@ else:
             "1. Go to [Google Maps](https://www.google.com/maps). \n"
             "2. Find the location where the photo was taken. \n"
             "3. Copy the URL from your browser's address bar. \n"
-            "4. Paste it in the box below."
+            "4. Paste it in the box below. \n"
+            "5. Press ENTER."
         )
 
         maps_url = st.text_input("Paste the Google Maps URL here:", key='maps_url')
@@ -180,10 +172,10 @@ else:
         if st.session_state.coords:
             st.write(f"**Current Selected Location:** Latitude: {st.session_state.coords['lat']:.6f}, Longitude: {st.session_state.coords['lng']:.6f}")
         
-        st.markdown(f"To what extent does this image contain visual cues (e.g., local architecture, language, or scenery) that identify it as being from {country}?")
+        # st.markdown(f"To what extent does this image contain visual cues (e.g., local architecture, language, or scenery) that identify it as being from {country}?")
         clue_text = None
         rating = st.radio(
-            "Select a score:",
+            f"**To what extent does this image contain visual cues (e.g., local architecture, language, or scenery) that identify it as being from {country}?**",
             options=["Choose an option", 0, 1, 2, 3],
             format_func=lambda x: f"{'No evidence at all' if x==0 else f'A few features that are shared by multiple countries within {continent}, but not fully specific to {country}' if x==2 else f'Enough evidence specific to {country}' if x==3 else f'There are visual indications like architectural style, vegetations, etc, but I do not know if they are specific to {country} or {continent}' if x==1 else ''}",
             index=st.session_state.q1_index,
@@ -192,7 +184,7 @@ else:
         if rating in [2, 3]:
             clue_text = st.text_area("What visual clues or indicators helped you make this judgment?", height=100, key='q3')
         popularity = st.radio(
-            "How would you rate the popularity of the location depicted in the photo you uploaded?",
+            "**How would you rate the popularity of the location depicted in the photo you uploaded?**",
             options=["Choose an option", 0, 1, 2],
             format_func=lambda x: f"{'The location depicts only a regular scene' if x==0 else f'The location may be locally popular, but not country-wide' if x==1 else f'The location is popular country-wide' if x==2 else 'Choose an option'}",
             index=st.session_state.q1_index,
