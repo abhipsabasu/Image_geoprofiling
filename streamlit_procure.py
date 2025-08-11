@@ -58,6 +58,7 @@ html_code = f"""
     <script>
       let map;
       function initMap() {{
+        localStorage.removeItem('coords');
         const defaultLoc = {{ lat: 20.5937, lng: 78.9629 }}; // Center on India
         map = new google.maps.Map(document.getElementById("map"), {{
           zoom: 4,
