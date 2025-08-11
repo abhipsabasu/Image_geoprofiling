@@ -164,7 +164,7 @@ else:
             except (ValueError, IndexError):
                 pass
             return None
-        st.write(st.session_state.maps_url, maps_url)
+        st.write(st.session_state.maps_url)
         if maps_url:
             
             coords = get_coords_from_url(maps_url)
