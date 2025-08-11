@@ -24,13 +24,13 @@ firebase_secrets = st.secrets["firebase"]
 token = firebase_secrets["github_token"]
 repo_name = firebase_secrets["github_repo"]
 owner, repo_name = repo_name.split('/')
-GOOGLE_MAPS_API_KEY = firebase_secrets["GOOGLE_MAPS_API_KEY"]
+Maps_API_KEY = firebase_secrets["Maps_API_KEY"]
 # Convert secrets to dict
 cred_dict = {
     "type": firebase_secrets["type"],
     "project_id": firebase_secrets["project_id"],
     "private_key_id": firebase_secrets["private_key_id"],
-    "private_key": firebase_secrets["private_key"].replace("\\n", "\n"),  # Fix multi-line key
+    "private_key": firebase_secrets["private_key"].replace("\\n", "\n"),
     "client_email": firebase_secrets["client_email"],
     "client_id": firebase_secrets["client_id"],
     "auth_uri": firebase_secrets["auth_uri"],
@@ -38,7 +38,6 @@ cred_dict = {
     "auth_provider_x509_cert_url": firebase_secrets["auth_provider_x509_cert_url"],
     "client_x509_cert_url": firebase_secrets["client_x509_cert_url"],
     "universe_domain": firebase_secrets["universe_domain"]
-    # "api_key": firebase_secrets["GOOGLE_MAPS_API_KEY"]
 }
 cred = credentials.Certificate(json.loads(json.dumps(cred_dict)))
 # Initialize Firebase (only if not already initialized)
@@ -47,26 +46,27 @@ if not firebase_admin._apps:
 
 # Get Firestore client
 db = firestore.client()
-# g = Github(token)
-# repo = g.get_repo(repo_name)
 
+# ---- HTML for the Google Maps Component ----
 html_code = f"""
 <!DOCTYPE html>
 <html>
   <head>
     <title>Pick a Location</title>
-    <script src="https://maps.googleapis.com/maps/api/js?key={GOOGLE_MAPS_API_KEY}&libraries=places"></script>
+    <script src="https://maps.googleapis.com/maps/api/js?key={Maps_API_KEY}&libraries=places"></script>
     <script>
       let map;
+      let marker;
+      
       function initMap() {{
         localStorage.removeItem('coords');
-        const defaultLoc = {{ lat: 20.5937, lng: 78.9629 }}; // Center on India
+        const defaultLoc = {{ lat: 20.5937, lng: 78.9629 }};
         map = new google.maps.Map(document.getElementById("map"), {{
           zoom: 4,
           center: defaultLoc,
         }});
 
-        let marker = new google.maps.Marker({{
+        marker = new google.maps.Marker({{
           position: defaultLoc,
           map: map,
           draggable: true
@@ -90,7 +90,6 @@ html_code = f"""
           map.panTo(place.geometry.location);
           map.setZoom(12);
 
-          // Save coords to localStorage
           localStorage.setItem('coords', JSON.stringify({{
             lat: place.geometry.location.lat(),
             lng: place.geometry.location.lng()
@@ -99,6 +98,13 @@ html_code = f"""
 
         map.addListener("click", (event) => {{
           marker.setPosition(event.latLng);
+          localStorage.setItem('coords', JSON.stringify({{
+            lat: event.latLng.lat(),
+            lng: event.latLng.lng()
+          }}));
+        }});
+        
+        marker.addListener('dragend', (event) => {{
           localStorage.setItem('coords', JSON.stringify({{
             lat: event.latLng.lat(),
             lng: event.latLng.lng()
@@ -122,7 +128,6 @@ html_code = f"""
 </html>
 """
 
-
 # ---- SESSION STATE ----
 if "index" not in st.session_state:
     st.session_state.index = 0
@@ -130,62 +135,71 @@ if "index" not in st.session_state:
 if "prolific_id" not in st.session_state:
     st.session_state.prolific_id = None
 
+# Correctly initialize the session state variable
+if 'coords' not in st.session_state:
+    st.session_state.coords = None
+
 def reset_selections():
     st.session_state.pop("q1", None)
     st.session_state.pop("q4", None)
+    st.session_state.pop("coords", None)
 
 # ---- UI ----
 st.title(f"Image Collection from {country}")
-st.markdown(f"""
-We are collecting a dataset of images from **{country}** to assess the knowledge of modern-day AI technologies about surroundings within the country. With your consent, we request you to upload photos that you have taken but have **not shared online**.
-
-Following are the instructions for the same.
-
+st.markdown("""
+<div style='text-align: justify;'>
+We are collecting a dataset of images from **India** to assess the knowledge of modern-day AI technologies about surroundings within the country. With your consent, we request you to upload photos that you have taken but have **not shared online**.
+<br><br>
 **What kind of images to upload**:
-
-- The images can show a variety of environments such as:
-    - Historical Monuments
-    - Residential buildings or houses
-    - Roads, Streets, or highways
-    - Markets, shops, post offices, courthouses, malls, etc.
-- Ensure the images are clear and well-lit.
-- Outdoor scenes are preferred.
-- Avoid uploading images with identifiable faces to protect privacy.
-
+<ul>
+<li>The images can show a variety of environments such as:
+    <ul>
+        <li>Historical Monuments</li>
+        <li>Residential buildings or houses</li>
+        <li>Roads, Streets, or highways</li>
+        <li>Markets, shops, post offices, courthouses, malls, etc.</li>
+    </ul>
+</li>
+<li>Ensure the images are clear and well-lit.</li>
+<li>Outdoor scenes are preferred.</li>
+<li>Avoid uploading images with identifiable faces to protect privacy.</li>
+</ul>
+<br>
 **Image Requirements**:
-
--   All images must be from **within {country}**.
--   Do **not** upload images already posted on social media.
--   Try to upload images that represent diverse locations or settings.
-
+<ul>
+<li>All images must be from **within India**.</li>
+<li>Do **not** upload images already posted on social media.</li>
+<li>Try to upload images that represent diverse locations or settings.</li>
+</ul>
+<br>
 **What to do:**
-1.  **Upload 30 images**, one at a time.
-2.  For each image:
-    -   **Rate** how clearly the image suggests it was taken in India.
-    -   **List the clues** that helped you make that judgment.
-    -   **Click** "Submit and Next" to move to the next image.
-
+<ol>
+<li>**Upload 30 images**, one at a time.</li>
+<li>For each image:
+    <ul>
+        <li>**Rate** how clearly the image suggests it was taken in India.</li>
+        <li>**List the clues** that helped you make that judgment.</li>
+        <li>**Click** "Submit and Next" to move to the next image.</li>
+    </ul>
+</li>
+</ol>
 You have *30* minutes to upload the photos and answer the questions surrounding them. After you upload the photo, wait for the photo to be visible on screen, then answer the questions.
-""")
+</div>
+""", unsafe_allow_html=True)
+
 if "prolific_id" not in st.session_state:
     st.session_state.prolific_id = None
-
 if "birth_country" not in st.session_state:
     st.session_state.birth_country = None
-
 if "residence" not in st.session_state:
     st.session_state.residence = None
-
 if "privacy" not in st.session_state:
     st.session_state.privacy = None
 
 if not st.session_state.prolific_id:
     with st.form("prolific_form"):
-        # st.write("## Please enter your Prolific ID to begin:")
         pid = st.text_input("Please enter your Prolific ID to begin:", max_chars=24)
-        # st.write("## Please enter your country of birth")
         birth = st.text_input("Please enter your country of birth", max_chars=24)
-        # st.write("## Please enter your country of residence")
         res = st.text_input("Please enter your country of residence", max_chars=24)
         privacy = st.radio(
             "Do you permit us to release your images publically as a dataset, or strictly use them for our research purpose?",
@@ -202,23 +216,13 @@ if not st.session_state.prolific_id:
                 st.rerun()
             else:
                 st.error("Please enter a valid Prolific ID, birth country or residence country.")
-    st.stop()  # Stop further execution until ID is entered
+    st.stop()
 
-# --- SESSION STATE ---
-
-if "responses" not in st.session_state:
-    st.session_state.responses = []
-
-if 'q1_index' not in st.session_state:
-    st.session_state.q1_index = 0
-
-# Current image
+# --- MAIN APP LOGIC ---
 if st.session_state.index < 30:
     uploaded_file = st.file_uploader(f"Upload image {st.session_state.index + 1}", type=["jpg", "jpeg", "png"], key=st.session_state.index)
     if uploaded_file:
         file_bytes = uploaded_file.read() 
-        st.write(f"Read {len(file_bytes)} bytes")
-
         if len(file_bytes) < 100:
             st.error("⚠️ File seems too small. Possible read error.")
         encoded_content = base64.b64encode(file_bytes).decode("utf-8")
@@ -227,27 +231,28 @@ if st.session_state.index < 30:
     
     about = st.text_area("What does the photo primarily depict (e.g., building, monument, market, etc)? In case there are multiple descriptors, write them in a comma-separated manner", height=100, key='q1')
     st.markdown(f"Where in {country} was the photo taken?")
+    
+    # Render the map component
     components.html(html_code, height=600, width=1200)
-    coords_str = streamlit_js_eval(
-        js_expressions="localStorage.getItem('coords')",
-        label="get_coords",
-        key="coords_listener_init",
-    )
-    coords = json.loads(coords_str) if coords_str else None
 
-    # Save the starting value so we can detect changes
-    start_coords = coords_str
+    # Use a button to trigger the coordinate retrieval.
+    # This is the most reliable way to get data from JS without a constant rerun loop.
+    if st.button("Read Coordinates"):
+        coords_str = streamlit_js_eval(
+            js_expressions="localStorage.getItem('coords')",
+            key="coords_read_button"
+        )
+        if coords_str:
+            coords_dict = json.loads(coords_str)
+            st.session_state.coords = coords_dict
+            st.success(f"Coordinates captured: Lat: {coords_dict['lat']:.6f}, Lng: {coords_dict['lng']:.6f}")
+        else:
+            st.warning("No coordinates found. Please click or search on the map.")
 
-    # Poll until coords change
-    for _ in range(60):  # Check for up to ~30 seconds (60 × 0.5s)
-        coords_str = streamlit_js_eval(js_expressions="localStorage.getItem('coords')", label="get_coords", key=f"coords_listener_{time.time()}")
-        if coords_str and coords_str != start_coords:
-            coords = json.loads(coords_str)
-            st.success(f"Selected coords: {coords}")
-            break
-        time.sleep(0.5)
-    else:
-        st.warning("No new coordinates selected yet.")
+    # Display the stored coordinates if they exist
+    if st.session_state.coords:
+        st.write(f"**Current Selected Location:** Latitude: {st.session_state.coords['lat']:.6f}, Longitude: {st.session_state.coords['lng']:.6f}")
+
     st.markdown(f"To what extent does this image contain visual cues (e.g., local architecture, language, or scenery) that identify it as being from {country}?")
     clue_text = None
     rating = st.radio(
@@ -266,11 +271,14 @@ if st.session_state.index < 30:
         index=st.session_state.q1_index,
         key='q5'
     )
+
     if st.button("Submit and Next"):
         if not uploaded_file or about in ['', None] or ((rating == 'Choose an option') or (rating in [2, 3] and clue_text in [None, ''])):
-            st.error('Answer the questions')
+            st.error('Please answer all the questions and upload a file.')
+        elif not st.session_state.coords:
+            st.error('Please select a location on the map and click "Read Coordinates" first.')
         else:
-        # Save response
+            # Submission logic...
             image_id = str(uuid.uuid4())
             file_name = f"{st.session_state.prolific_id}_{st.session_state.index}.png"
             file_path = f"{country}_images/{file_name}"
@@ -287,30 +295,13 @@ if st.session_state.index < 30:
                 "branch": "main"
             }
 
-            # Send to GitHub
             response = requests.put(api_url, headers=headers, json=payload)
             if response.status_code in [200, 201]:
                 st.success("✅ Image uploaded to GitHub successfully.")
             else:
                 st.error(f"❌ Upload failed: {response.status_code}")
                 st.text(response.json())
-            # Convert image to base64
-            # img_bytes = uploaded_file.getvalue()
-            # encoded_content = base64.b64encode(img_bytes).decode("utf-8")
-
-            # file_path = f"Indian_images/{st.session_state.prolific_id}_{uploaded_file.name}"
-
-            # try:
-            #     repo.create_file(
-            #         path=file_path,
-            #         message=f"Upload {uploaded_file.name}",
-            #         content=img_bytes,
-            #         branch="main"
-            #     )
-            #     st.success("Image uploaded successfully")
-            # except Exception as e:
-            #     st.error(f"Image upload failed.{str(e)}")
-            #     st.write(f"Image upload failed.{str(e)}")
+            
             st.session_state.responses.append({
                 "name": st.session_state.prolific_id,
                 "birth_country": st.session_state.birth_country,
@@ -318,7 +309,7 @@ if st.session_state.index < 30:
                 "privacy": st.session_state.privacy,
                 "image_url": file_path,
                 "rating": rating,
-                "coords": coords,
+                "coords": st.session_state.coords,
                 "popularity": popularity,
                 "clues": clue_text,
                 "description": about,
@@ -326,9 +317,10 @@ if st.session_state.index < 30:
             reset_selections()
             
             st.session_state.index += 1
-            print(st.session_state.index)
             st.session_state.q2_index = 0
             
+            # Reset coords for the next image
+            st.session_state.coords = None
             st.rerun()
 else:
     doc_ref = db.collection("Image_procurement").document(st.session_state.prolific_id)
