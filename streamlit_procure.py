@@ -227,7 +227,7 @@ if st.session_state.index < 30:
     about = st.text_area("What does the photo primarily depict (e.g., building, monument, market, etc)? In case there are multiple descriptors, write them in a comma-separated manner", height=100, key='q1')
     st.markdown(f"Where in {country} was the photo taken?")
     components.html(html_code, height=600, width=1200)
-    coords_str = streamlit_js_eval("localStorage.getItem('coords')", key="coords_listener_init")
+    coords_str = streamlit_js_eval("localStorage.getItem('coords')", key="coords_listener_init", label="get_coords")
     coords = json.loads(coords_str) if coords_str else None
 
     # Save the starting value so we can detect changes
@@ -235,7 +235,7 @@ if st.session_state.index < 30:
 
     # Poll until coords change
     for _ in range(60):  # Check for up to ~30 seconds (60 × 0.5s)
-        coords_str = streamlit_js_eval("localStorage.getItem('coords')", key=f"coords_listener_{time.time()}")
+        coords_str = streamlit_js_eval("localStorage.getItem('coords')", key=f"coords_listener_{time.time()}", label="get_coords")
         if coords_str and coords_str != start_coords:
             coords = json.loads(coords_str)
             st.success(f"Selected coords: {coords}")
