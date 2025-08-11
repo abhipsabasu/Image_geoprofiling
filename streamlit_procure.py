@@ -7,6 +7,7 @@ from streamlit_js_eval import streamlit_js_eval
 from PIL import Image
 import io
 import base64
+import time
 from io import BytesIO
 from io import StringIO
 from github import Github
