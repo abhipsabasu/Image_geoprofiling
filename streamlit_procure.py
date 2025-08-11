@@ -235,23 +235,29 @@ if st.session_state.index < 30:
     # Render the map component
     components.html(html_code, height=600, width=1200)
 
-    # Use a button to trigger the coordinate retrieval.
-    # This is the most reliable way to get data from JS without a constant rerun loop.
-    if st.button("Read Coordinates"):
-        coords_str = streamlit_js_eval(
-            js_expressions="localStorage.getItem('coords')",
-            key="coords_read_button"
-        )
-        if coords_str:
-            coords_dict = json.loads(coords_str)
-            st.session_state.coords = coords_dict
-            st.success(f"Coordinates captured: Lat: {coords_dict['lat']:.6f}, Lng: {coords_dict['lng']:.6f}")
-        else:
-            st.warning("No coordinates found. Please click or search on the map.")
+    coords_display_placeholder = st.empty()
 
-    # Display the stored coordinates if they exist
-    if st.session_state.coords:
-        st.write(f"**Current Selected Location:** Latitude: {st.session_state.coords['lat']:.6f}, Longitude: {st.session_state.coords['lng']:.6f}")
+# The button to capture coordinates and update the display
+if st.button("Confirm Selected Location"):
+    # This action triggers a Streamlit rerun
+    coords_str = streamlit_js_eval(
+        js_expressions="localStorage.getItem('coords')",
+        key=f"coords_reader_{st.session_state.index}"
+    )
+
+    if coords_str:
+        coords_dict = json.loads(coords_str)
+        # Store the coordinates in session_state
+        st.session_state.coords = coords_dict
+        coords_display_placeholder.success(f"✅ Coordinates captured: Lat: {coords_dict['lat']:.6f}, Lng: {coords_dict['lng']:.6f}")
+    else:
+        coords_display_placeholder.warning("⚠️ No coordinates found. Please click on the map or search for a location first.")
+
+# Display the coordinates from session state if available
+if st.session_state.coords:
+    coords_display_placeholder.write(f"**Current Selected Location:** Latitude: {st.session_state.coords['lat']:.6f}, Longitude: {st.session_state.coords['lng']:.6f}")
+else:
+    coords_display_placeholder.info("Please select a location on the map and click 'Confirm Selected Location'.")
 
     st.markdown(f"To what extent does this image contain visual cues (e.g., local architecture, language, or scenery) that identify it as being from {country}?")
     clue_text = None
