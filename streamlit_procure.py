@@ -253,11 +253,11 @@ if st.button("Confirm Selected Location"):
     else:
         coords_display_placeholder.warning("⚠️ No coordinates found. Please click on the map or search for a location first.")
 
-# Display the coordinates from session state if available
-if st.session_state.coords:
-    coords_display_placeholder.write(f"**Current Selected Location:** Latitude: {st.session_state.coords['lat']:.6f}, Longitude: {st.session_state.coords['lng']:.6f}")
-else:
-    coords_display_placeholder.info("Please select a location on the map and click 'Confirm Selected Location'.")
+    # Display the coordinates from session state if available
+    if st.session_state.coords:
+        coords_display_placeholder.write(f"**Current Selected Location:** Latitude: {st.session_state.coords['lat']:.6f}, Longitude: {st.session_state.coords['lng']:.6f}")
+    else:
+        coords_display_placeholder.info("Please select a location on the map and click 'Confirm Selected Location'.")
 
     st.markdown(f"To what extent does this image contain visual cues (e.g., local architecture, language, or scenery) that identify it as being from {country}?")
     clue_text = None
