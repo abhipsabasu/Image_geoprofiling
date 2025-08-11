@@ -70,45 +70,36 @@ def reset_selections():
 
 # ---- UI ----
 st.title(f"Image Collection from {country}")
-st.markdown("""
-<div style='text-align: justify;'>
-We are collecting a dataset of images from **India** to assess the knowledge of modern-day AI technologies about surroundings within the country. With your consent, we request you to upload photos that you have taken but have **not shared online**.
-<br><br>
+st.markdown(f"""
+We are collecting a dataset of images from **{country}** to assess the knowledge of modern-day AI technologies about surroundings within the country. With your consent, we request you to upload photos that you have taken but have **not shared online**.
+
+Following are the instructions for the same.
+
 **What kind of images to upload**:
-<ul>
-<li>The images can show a variety of environments such as:
-    <ul>
-        <li>Historical Monuments</li>
-        <li>Residential buildings or houses</li>
-        <li>Roads, Streets, or highways</li>
-        <li>Markets, shops, post offices, courthouses, malls, etc.</li>
-    </ul>
-</li>
-<li>Ensure the images are clear and well-lit.</li>
-<li>Outdoor scenes are preferred.</li>
-<li>Avoid uploading images with identifiable faces to protect privacy.</li>
-</ul>
-<br>
+
+- The images can show a variety of environments such as:
+    - Historical Monuments
+    - Residential buildings or houses
+    - Roads, Streets, or highways
+    - Markets, shops, post offices, courthouses, malls, etc.
+- Ensure the images are clear and well-lit.
+- Outdoor scenes are preferred.
+- Avoid uploading images with identifiable faces to protect privacy.
+
 **Image Requirements**:
-<ul>
-<li>All images must be from **within India**.</li>
-<li>Do **not** upload images already posted on social media.</li>
-<li>Try to upload images that represent diverse locations or settings.</li>
-</ul>
-<br>
+
+-   All images must be from **within {country}**.
+-   Do **not** upload images already posted on social media.
+-   Try to upload images that represent diverse locations or settings.
+
 **What to do:**
-<ol>
-<li>**Upload 30 images**, one at a time.</li>
-<li>For each image:
-    <ul>
-        <li>**Rate** how clearly the image suggests it was taken in India.</li>
-        <li>**List the clues** that helped you make that judgment.</li>
-        <li>**Click** "Submit and Next" to move to the next image.</li>
-    </ul>
-</li>
-</ol>
+1.  **Upload 30 images**, one at a time.
+2.  For each image:
+    -   **Rate** how clearly the image suggests it was taken in India.
+    -   **List the clues** that helped you make that judgment.
+    -   **Click** "Submit and Next" to move to the next image.
+
 You have *30* minutes to upload the photos and answer the questions surrounding them. After you upload the photo, wait for the photo to be visible on screen, then answer the questions.
-</div>
 """, unsafe_allow_html=True)
 
 if not st.session_state.prolific_id:
