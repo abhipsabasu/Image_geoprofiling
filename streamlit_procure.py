@@ -230,7 +230,7 @@ if st.session_state.index < 30:
     
     about = st.text_area("What does the photo primarily depict (e.g., building, monument, market, etc)? In case there are multiple descriptors, write them in a comma-separated manner", height=100, key='q1')
     st.markdown(f"Where in {country} was the photo taken?")
-    components.html(html_code, height=500)
+    components.html(html_code, height=600, width=1200)
     coords = streamlit_js_eval(js_expressions="await new Promise(resolve => {window.addEventListener('message', e => resolve(e.data), { once: true });})", key="map_listener")
 
     if coords:
