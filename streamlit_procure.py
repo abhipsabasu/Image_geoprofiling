@@ -224,7 +224,7 @@ if st.session_state.index < 30:
         js_expressions="localStorage.getItem('coords')",
         key="coords_listener"
     )
-
+    st.write("Raw coords value:", coords)
     if coords:
         coords = eval(coords)  # convert string to dict
         st.success(f"Coordinates: **Lat:** {coords['lat']}, **Lng:** {coords['lng']}")
