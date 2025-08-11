@@ -48,7 +48,7 @@ if not firebase_admin._apps:
 db = firestore.client()
 
 # ---- HTML for the Google Maps Component ----
-# The JavaScript now updates a hidden input field.
+# This HTML now has a button to explicitly store coordinates.
 html_code = f"""
 <!DOCTYPE html>
 <html>
@@ -58,15 +58,9 @@ html_code = f"""
     <script>
       let map;
       let marker;
-      let coordsInput;
-
-      function updateCoordsInput(lat, lng) {{
-        const coords = {{ lat: lat, lng: lng }};
-        coordsInput.value = JSON.stringify(coords);
-      }}
       
       function initMap() {{
-        coordsInput = document.getElementById('coords-input');
+        localStorage.removeItem('coords');
         const defaultLoc = {{ lat: 20.5937, lng: 78.9629 }};
         map = new google.maps.Map(document.getElementById("map"), {{
           zoom: 4,
@@ -96,18 +90,25 @@ html_code = f"""
           marker.setPosition(place.geometry.location);
           map.panTo(place.geometry.location);
           map.setZoom(12);
-
-          updateCoordsInput(place.geometry.location.lat(), place.geometry.location.lng());
         }});
 
         map.addListener("click", (event) => {{
           marker.setPosition(event.latLng);
-          updateCoordsInput(event.latLng.lat(), event.latLng.lng());
         }});
         
         marker.addListener('dragend', (event) => {{
-          updateCoordsInput(event.latLng.lat(), event.latLng.lng());
+          // No action needed here, the 'Store' button handles this
         }});
+
+        // Function to be called by the "Store Coordinates" button
+        window.storeCoordinates = function() {{
+          const position = marker.getPosition();
+          localStorage.setItem('coords', JSON.stringify({{
+            lat: position.lat(),
+            lng: position.lng()
+          }}));
+          alert('Coordinates have been stored! You can now click "Read Coordinates" above.');
+        }};
       }}
     </script>
     <style>
@@ -122,7 +123,7 @@ html_code = f"""
   <body onload="initMap()">
     <input id="pac-input" type="text" placeholder="Search for a location" />
     <div id="map" style="height: 500px; width: 100%;"></div>
-    <input type="hidden" id="coords-input" value="" />
+    <button onclick="window.storeCoordinates()">Store Coordinates</button>
   </body>
 </html>
 """
@@ -134,11 +135,9 @@ if "index" not in st.session_state:
 if "prolific_id" not in st.session_state:
     st.session_state.prolific_id = None
 
-# Correctly initialize the session state variable for coordinates
 if 'coords' not in st.session_state:
     st.session_state.coords = None
 
-# Initialize q1_index to avoid the StreamlitAPIException
 if 'q1_index' not in st.session_state:
     st.session_state.q1_index = 0
 
@@ -229,10 +228,10 @@ else:
         # Render the map component
         components.html(html_code, height=600, width=1200)
 
-        # A button to trigger the coordinate retrieval. This is the most reliable way.
+        # A button to trigger the coordinate retrieval.
         if st.button("Read Coordinates from Map"):
             coords_str = streamlit_js_eval(
-                js_expressions="document.getElementById('coords-input').value",
+                js_expressions="localStorage.getItem('coords')",
                 key=f"coords_read_button_{st.session_state.index}"
             )
             if coords_str:
@@ -240,7 +239,7 @@ else:
                 st.session_state.coords = coords_dict
                 st.success(f"✅ Coordinates captured: Latitude: {coords_dict['lat']:.6f}, Longitude: {coords_dict['lng']:.6f}")
             else:
-                st.warning("⚠️ No coordinates found. Please click or search on the map first.")
+                st.warning("⚠️ No coordinates found. Please click or search on the map and then press the 'Store Coordinates' button inside the map.")
 
         # Display the stored coordinates if they exist
         if st.session_state.coords:
@@ -269,7 +268,7 @@ else:
             if not uploaded_file or about in ['', None] or ((rating == 'Choose an option') or (rating in [2, 3] and clue_text in [None, ''])):
                 st.error('Please answer all the questions and upload a file.')
             elif not st.session_state.coords:
-                st.error('Please select a location on the map and click "Read Coordinates from Map" first.')
+                st.error('Please select a location on the map, click "Store Coordinates" and then click "Read Coordinates from Map" first.')
             else:
                 # Submission logic...
                 image_id = str(uuid.uuid4())
@@ -312,7 +311,6 @@ else:
                 st.session_state.index += 1
                 st.session_state.q1_index = 0
                 
-                # Reset coords for the next image
                 st.session_state.coords = None
                 st.rerun()
     else:
