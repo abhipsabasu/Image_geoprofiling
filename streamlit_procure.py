@@ -25,7 +25,7 @@ firebase_secrets = st.secrets["firebase"]
 token = firebase_secrets["github_token"]
 repo_name = firebase_secrets["github_repo"]
 owner, repo_name = repo_name.split('/')
-Maps_API_KEY = firebase_secrets["GOOGLE_MAPS_API_KEY"]
+# Maps_API_KEY = firebase_secrets["Maps_API_KEY"]
 # Convert secrets to dict
 cred_dict = {
     "type": firebase_secrets["type"],
@@ -66,40 +66,50 @@ def reset_selections():
     st.session_state.pop("q1", None)
     st.session_state.pop("q4", None)
     st.session_state.pop("coords", None)
+    st.session_state.pop("maps_url", None)
     st.session_state.q1_index = 0
 
 # ---- UI ----
 st.title(f"Image Collection from {country}")
-st.markdown(f"""
-We are collecting a dataset of images from **{country}** to assess the knowledge of modern-day AI technologies about surroundings within the country. With your consent, we request you to upload photos that you have taken but have **not shared online**.
-
-Following are the instructions for the same.
-
+st.markdown("""
+<div style='text-align: justify;'>
+We are collecting a dataset of images from **India** to assess the knowledge of modern-day AI technologies about surroundings within the country. With your consent, we request you to upload photos that you have taken but have **not shared online**.
+<br><br>
 **What kind of images to upload**:
-
-- The images can show a variety of environments such as:
-    - Historical Monuments
-    - Residential buildings or houses
-    - Roads, Streets, or highways
-    - Markets, shops, post offices, courthouses, malls, etc.
-- Ensure the images are clear and well-lit.
-- Outdoor scenes are preferred.
-- Avoid uploading images with identifiable faces to protect privacy.
-
+<ul>
+<li>The images can show a variety of environments such as:
+    <ul>
+        <li>Historical Monuments</li>
+        <li>Residential buildings or houses</li>
+        <li>Roads, Streets, or highways</li>
+        <li>Markets, shops, post offices, courthouses, malls, etc.</li>
+    </ul>
+</li>
+<li>Ensure the images are clear and well-lit.</li>
+<li>Outdoor scenes are preferred.</li>
+<li>Avoid uploading images with identifiable faces to protect privacy.</li>
+</ul>
+<br>
 **Image Requirements**:
-
--   All images must be from **within {country}**.
--   Do **not** upload images already posted on social media.
--   Try to upload images that represent diverse locations or settings.
-
+<ul>
+<li>All images must be from **within India**.</li>
+<li>Do **not** upload images already posted on social media.</li>
+<li>Try to upload images that represent diverse locations or settings.</li>
+</ul>
+<br>
 **What to do:**
-1.  **Upload 30 images**, one at a time.
-2.  For each image:
-    -   **Rate** how clearly the image suggests it was taken in India.
-    -   **List the clues** that helped you make that judgment.
-    -   **Click** "Submit and Next" to move to the next image.
-
+<ol>
+<li>**Upload 30 images**, one at a time.</li>
+<li>For each image:
+    <ul>
+        <li>**Rate** how clearly the image suggests it was taken in India.</li>
+        <li>**List the clues** that helped you make that judgment.</li>
+        <li>**Click** "Submit and Next" to move to the next image.</li>
+    </ul>
+</li>
+</ol>
 You have *30* minutes to upload the photos and answer the questions surrounding them. After you upload the photo, wait for the photo to be visible on screen, then answer the questions.
+</div>
 """, unsafe_allow_html=True)
 
 if not st.session_state.prolific_id:
@@ -137,7 +147,6 @@ else:
         about = st.text_area("What does the photo primarily depict (e.g., building, monument, market, etc)? In case there are multiple descriptors, write them in a comma-separated manner", height=100, key='q1')
         st.markdown(f"Where in {country} was the photo taken?")
         
-        # New approach: Provide a direct Google Maps link and a text box.
         st.markdown(
             "1. Go to [Google Maps](https://www.google.com/maps). \n"
             "2. Find the location where the photo was taken. \n"
@@ -147,7 +156,6 @@ else:
 
         maps_url = st.text_input("Paste the Google Maps URL here:", key='maps_url')
         
-        # Function to extract coordinates from a Google Maps URL
         def get_coords_from_url(url):
             try:
                 # Regex to find the coordinates (e.g., @22.572646,88.363895) in the URL
@@ -160,7 +168,6 @@ else:
                 pass
             return None
 
-        # Process the URL when the user pastes it
         if maps_url:
             coords = get_coords_from_url(maps_url)
             if coords:
@@ -170,7 +177,6 @@ else:
                 st.session_state.coords = None
                 st.warning("⚠️ Invalid Google Maps URL. Please ensure the URL contains coordinates.")
         
-        # Display the stored coordinates if they exist
         if st.session_state.coords:
             st.write(f"**Current Selected Location:** Latitude: {st.session_state.coords['lat']:.6f}, Longitude: {st.session_state.coords['lng']:.6f}")
         
