@@ -48,7 +48,7 @@ if not firebase_admin._apps:
 db = firestore.client()
 
 # ---- HTML for the Google Maps Component ----
-# This HTML stores coordinates in localStorage on user interaction.
+# The JavaScript now updates a hidden input field.
 html_code = f"""
 <!DOCTYPE html>
 <html>
@@ -58,9 +58,15 @@ html_code = f"""
     <script>
       let map;
       let marker;
+      let coordsInput;
+
+      function updateCoordsInput(lat, lng) {{
+        const coords = {{ lat: lat, lng: lng }};
+        coordsInput.value = JSON.stringify(coords);
+      }}
       
       function initMap() {{
-        localStorage.removeItem('coords');
+        coordsInput = document.getElementById('coords-input');
         const defaultLoc = {{ lat: 20.5937, lng: 78.9629 }};
         map = new google.maps.Map(document.getElementById("map"), {{
           zoom: 4,
@@ -91,25 +97,16 @@ html_code = f"""
           map.panTo(place.geometry.location);
           map.setZoom(12);
 
-          localStorage.setItem('coords', JSON.stringify({{
-            lat: place.geometry.location.lat(),
-            lng: place.geometry.location.lng()
-          }}));
+          updateCoordsInput(place.geometry.location.lat(), place.geometry.location.lng());
         }});
 
         map.addListener("click", (event) => {{
           marker.setPosition(event.latLng);
-          localStorage.setItem('coords', JSON.stringify({{
-            lat: event.latLng.lat(),
-            lng: event.latLng.lng()
-          }}));
+          updateCoordsInput(event.latLng.lat(), event.latLng.lng());
         }});
         
         marker.addListener('dragend', (event) => {{
-          localStorage.setItem('coords', JSON.stringify({{
-            lat: event.latLng.lat(),
-            lng: event.latLng.lng()
-          }}));
+          updateCoordsInput(event.latLng.lat(), event.latLng.lng());
         }});
       }}
     </script>
@@ -125,6 +122,7 @@ html_code = f"""
   <body onload="initMap()">
     <input id="pac-input" type="text" placeholder="Search for a location" />
     <div id="map" style="height: 500px; width: 100%;"></div>
+    <input type="hidden" id="coords-input" value="" />
   </body>
 </html>
 """
@@ -140,10 +138,15 @@ if "prolific_id" not in st.session_state:
 if 'coords' not in st.session_state:
     st.session_state.coords = None
 
+# Initialize q1_index to avoid the StreamlitAPIException
+if 'q1_index' not in st.session_state:
+    st.session_state.q1_index = 0
+
 def reset_selections():
     st.session_state.pop("q1", None)
     st.session_state.pop("q4", None)
     st.session_state.pop("coords", None)
+    st.session_state.q1_index = 0
 
 # ---- UI ----
 st.title(f"Image Collection from {country}")
@@ -229,8 +232,8 @@ else:
         # A button to trigger the coordinate retrieval. This is the most reliable way.
         if st.button("Read Coordinates from Map"):
             coords_str = streamlit_js_eval(
-                js_expressions="localStorage.getItem('coords')",
-                key=f"coords_read_button_{st.session_state.index}" # Use a unique key
+                js_expressions="document.getElementById('coords-input').value",
+                key=f"coords_read_button_{st.session_state.index}"
             )
             if coords_str:
                 coords_dict = json.loads(coords_str)
@@ -307,7 +310,7 @@ else:
                 reset_selections()
                 
                 st.session_state.index += 1
-                st.session_state.q2_index = 0
+                st.session_state.q1_index = 0
                 
                 # Reset coords for the next image
                 st.session_state.coords = None
