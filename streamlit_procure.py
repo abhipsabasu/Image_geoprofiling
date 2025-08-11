@@ -48,7 +48,7 @@ if not firebase_admin._apps:
 db = firestore.client()
 
 # ---- HTML for the Google Maps Component ----
-# This HTML now has a button to explicitly store coordinates.
+# This HTML sends coordinates to Streamlit directly via postMessage.
 html_code = f"""
 <!DOCTYPE html>
 <html>
@@ -60,7 +60,6 @@ html_code = f"""
       let marker;
       
       function initMap() {{
-        localStorage.removeItem('coords');
         const defaultLoc = {{ lat: 20.5937, lng: 78.9629 }};
         map = new google.maps.Map(document.getElementById("map"), {{
           zoom: 4,
@@ -76,10 +75,6 @@ html_code = f"""
         const input = document.getElementById("pac-input");
         const searchBox = new google.maps.places.SearchBox(input);
         map.controls[google.maps.ControlPosition.TOP_LEFT].push(input);
-
-        map.addListener("bounds_changed", () => {{
-          searchBox.setBounds(map.getBounds());
-        }});
 
         searchBox.addListener("places_changed", () => {{
           const places = searchBox.getPlaces();
@@ -103,11 +98,13 @@ html_code = f"""
         // Function to be called by the "Store Coordinates" button
         window.storeCoordinates = function() {{
           const position = marker.getPosition();
-          localStorage.setItem('coords', JSON.stringify({{
+          const coords = {{
             lat: position.lat(),
             lng: position.lng()
-          }}));
-          alert('Coordinates have been stored! You can now click "Read Coordinates" above.');
+          }};
+          // Send the coordinates directly to the parent Streamlit window
+          window.parent.postMessage(JSON.stringify(coords), "*");
+          alert('Coordinates have been sent to the Streamlit app.');
         }};
       }}
     </script>
@@ -225,21 +222,17 @@ else:
         about = st.text_area("What does the photo primarily depict (e.g., building, monument, market, etc)? In case there are multiple descriptors, write them in a comma-separated manner", height=100, key='q1')
         st.markdown(f"Where in {country} was the photo taken?")
         
-        # Render the map component
-        components.html(html_code, height=600, width=1200)
+        # This is the key change. The components.html call returns a value directly.
+        coords_from_js = components.html(html_code, height=600, width=1200)
 
-        # A button to trigger the coordinate retrieval.
-        if st.button("Read Coordinates from Map"):
-            coords_str = streamlit_js_eval(
-                js_expressions="localStorage.getItem('coords')",
-                key=f"coords_read_button_{st.session_state.index}"
-            )
-            if coords_str:
-                coords_dict = json.loads(coords_str)
+        # Check if a value was returned from the JS component
+        if coords_from_js:
+            try:
+                coords_dict = json.loads(coords_from_js)
                 st.session_state.coords = coords_dict
                 st.success(f"✅ Coordinates captured: Latitude: {coords_dict['lat']:.6f}, Longitude: {coords_dict['lng']:.6f}")
-            else:
-                st.warning("⚠️ No coordinates found. Please click or search on the map and then press the 'Store Coordinates' button inside the map.")
+            except json.JSONDecodeError:
+                st.warning("⚠️ Invalid coordinate data received from map.")
 
         # Display the stored coordinates if they exist
         if st.session_state.coords:
@@ -268,7 +261,7 @@ else:
             if not uploaded_file or about in ['', None] or ((rating == 'Choose an option') or (rating in [2, 3] and clue_text in [None, ''])):
                 st.error('Please answer all the questions and upload a file.')
             elif not st.session_state.coords:
-                st.error('Please select a location on the map, click "Store Coordinates" and then click "Read Coordinates from Map" first.')
+                st.error('Please select a location on the map and click "Store Coordinates" first.')
             else:
                 # Submission logic...
                 image_id = str(uuid.uuid4())
