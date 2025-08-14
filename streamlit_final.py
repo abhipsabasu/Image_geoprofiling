@@ -18,7 +18,7 @@ firebase_secrets = st.secrets["firebase"]
 token = firebase_secrets["github_token"]
 repo_name = firebase_secrets["github_repo"]
 
-country = 'France'
+country = 'Brazil'
 # Convert secrets to dict
 cred_dict = {
     "type": firebase_secrets["type"],
