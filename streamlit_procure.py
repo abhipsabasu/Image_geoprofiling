@@ -164,6 +164,97 @@ else:
                 st.session_state.coords = {"lat": 13.0827, "lng": 80.2707}
                 st.rerun()
         
+        # Location search functionality
+        st.markdown("**🔍 Search for a location:**")
+        search_col1, search_col2 = st.columns([3, 1])
+        
+        with search_col1:
+            location_search = st.text_input(
+                "Enter location name (e.g., 'Taj Mahal, Agra', 'Gateway of India, Mumbai')",
+                placeholder="Type location name here...",
+                help="Search for any location in India. Try: Taj Mahal, Red Fort, Golden Temple, Goa, etc."
+            )
+        
+        with search_col2:
+            search_button = st.button("🔍 Search", type="primary")
+        
+        # Show popular search suggestions
+        if not location_search:
+            st.markdown("**💡 Popular searches:** Taj Mahal, Red Fort, Golden Temple, Goa, Kerala, Darjeeling, Shimla")
+        
+        # Handle location search
+        if search_button and location_search:
+            # Common Indian locations with coordinates
+            location_database = {
+                "taj mahal": {"lat": 27.1751, "lng": 78.0421, "name": "Taj Mahal, Agra"},
+                "gateway of india": {"lat": 18.9217, "lng": 72.8347, "name": "Gateway of India, Mumbai"},
+                "red fort": {"lat": 28.6562, "lng": 77.2410, "name": "Red Fort, Delhi"},
+                "qutub minar": {"lat": 28.5245, "lng": 77.1855, "name": "Qutub Minar, Delhi"},
+                "hawa mahal": {"lat": 26.9239, "lng": 75.8267, "name": "Hawa Mahal, Jaipur"},
+                "golden temple": {"lat": 31.6200, "lng": 74.8765, "name": "Golden Temple, Amritsar"},
+                "ellora caves": {"lat": 20.0258, "lng": 75.1780, "name": "Ellora Caves, Maharashtra"},
+                "ajanta caves": {"lat": 20.5519, "lng": 75.7033, "name": "Ajanta Caves, Maharashtra"},
+                "khajuraho": {"lat": 24.8310, "lng": 79.9210, "name": "Khajuraho Temples, MP"},
+                "varanasi": {"lat": 25.3176, "lng": 82.9739, "name": "Varanasi, UP"},
+                "goa": {"lat": 15.2993, "lng": 74.1240, "name": "Goa"},
+                "kerala": {"lat": 10.8505, "lng": 76.2711, "name": "Kerala"},
+                "darjeeling": {"lat": 27.0360, "lng": 88.2589, "name": "Darjeeling, WB"},
+                "shimla": {"lat": 31.1048, "lng": 77.1734, "name": "Shimla, HP"},
+                "manali": {"lat": 32.2432, "lng": 77.1892, "name": "Manali, HP"},
+                "udaipur": {"lat": 24.5854, "lng": 73.7125, "name": "Udaipur, Rajasthan"},
+                "jodhpur": {"lat": 26.2389, "lng": 73.0243, "name": "Jodhpur, Rajasthan"},
+                "jaisalmer": {"lat": 26.9157, "lng": 70.9083, "name": "Jaisalmer, Rajasthan"},
+                "hyderabad": {"lat": 17.3850, "lng": 78.4867, "name": "Hyderabad, Telangana"},
+                "kolkata": {"lat": 22.5726, "lng": 88.3639, "name": "Kolkata, WB"},
+                "pune": {"lat": 18.5204, "lng": 73.8567, "name": "Pune, Maharashtra"},
+                "ahmedabad": {"lat": 23.0225, "lng": 72.5714, "name": "Ahmedabad, Gujarat"},
+                "lucknow": {"lat": 26.8467, "lng": 80.9462, "name": "Lucknow, UP"},
+                "kanpur": {"lat": 26.4499, "lng": 80.3319, "name": "Kanpur, UP"},
+                "nagpur": {"lat": 21.1458, "lng": 79.0882, "name": "Nagpur, Maharashtra"},
+                "indore": {"lat": 22.7196, "lng": 75.8577, "name": "Indore, MP"},
+                "bhopal": {"lat": 23.2599, "lng": 77.4126, "name": "Bhopal, MP"},
+                "patna": {"lat": 25.5941, "lng": 85.1376, "name": "Patna, Bihar"},
+                "ranchi": {"lat": 23.3441, "lng": 85.3096, "name": "Ranchi, Jharkhand"},
+                "guwahati": {"lat": 26.1445, "lng": 91.7362, "name": "Guwahati, Assam"},
+                "imphal": {"lat": 24.8170, "lng": 93.9368, "name": "Imphal, Manipur"},
+                "shillong": {"lat": 25.5788, "lng": 91.8933, "name": "Shillong, Meghalaya"},
+                "gangtok": {"lat": 27.3389, "lng": 88.6065, "name": "Gangtok, Sikkim"},
+                "port blair": {"lat": 11.6234, "lng": 92.7265, "name": "Port Blair, Andaman"},
+                "leh": {"lat": 34.1526, "lng": 77.5771, "name": "Leh, Ladakh"},
+                "srinagar": {"lat": 34.0837, "lng": 74.7973, "name": "Srinagar, Kashmir"}
+            }
+            
+            # Search for location (case-insensitive)
+            search_term = location_search.lower().strip()
+            found_location = None
+            
+            # First try exact match
+            if search_term in location_database:
+                found_location = location_database[search_term]
+            else:
+                # Try partial matches
+                for key, location in location_database.items():
+                    if search_term in key or key in search_term:
+                        found_location = location
+                        break
+                
+                # If still no match, try word-based search
+                if not found_location:
+                    search_words = search_term.split()
+                    for key, location in location_database.items():
+                        if any(word in key for word in search_words):
+                            found_location = location
+                            break
+            
+            if found_location:
+                st.session_state.coords = {"lat": found_location["lat"], "lng": found_location["lng"]}
+                st.success(f"✅ Found: {found_location['name']} - Latitude: {found_location['lat']:.6f}, Longitude: {found_location['lng']:.6f}")
+                # Clear the search input by rerunning
+                st.rerun()
+            else:
+                st.warning(f"⚠️ Location '{location_search}' not found in database. Please use the manual coordinate inputs below or try a different search term.")
+                st.info("💡 Try searching for: cities (Mumbai, Delhi), monuments (Taj Mahal, Red Fort), states (Goa, Kerala), or tourist spots (Darjeeling, Shimla)")
+        
         # Create a map centered around India
         if st.session_state.coords:
             # Show selected location on map
