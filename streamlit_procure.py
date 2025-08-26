@@ -70,33 +70,34 @@ def reset_selections():
 
 def create_google_maps_embed():
     """
-    Create an interactive map with coordinate extraction functionality
+    Create Google Maps embed with coordinate extraction functionality
     """
-    html_code = """
+    # Get the Google Maps API key from Streamlit secrets
+    api_key = st.secrets["firebase"]["GOOGLE_MAPS_API_KEY"]
+    
+    html_code = f"""
     <!DOCTYPE html>
     <html>
     <head>
-        <title>Interactive Location Picker</title>
-        <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
-        <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
+        <title>Google Maps Location Picker</title>
         <style>
-            #map {
+            #map {{
                 height: 400px;
                 width: 100%;
                 border-radius: 10px;
                 border: 2px solid #ddd;
-            }
-            .search-container {
+            }}
+            .search-container {{
                 margin-bottom: 15px;
-            }
-            #search-input {
+            }}
+            #search-input {{
                 width: 70%;
                 padding: 10px;
                 border: 1px solid #ddd;
                 border-radius: 5px;
                 font-size: 14px;
-            }
-            #search-button {
+            }}
+            #search-button {{
                 width: 25%;
                 padding: 10px;
                 background-color: #4CAF50;
@@ -105,22 +106,26 @@ def create_google_maps_embed():
                 border-radius: 5px;
                 cursor: pointer;
                 font-size: 14px;
-            }
-            #search-button:hover {
+            }}
+            #search-button:hover {{
                 background-color: #45a049;
-            }
-            .coordinates-display {
+            }}
+            .coordinates-display {{
                 margin-top: 15px;
                 padding: 10px;
                 background-color: #f0f0f0;
                 border-radius: 5px;
                 font-family: monospace;
-            }
-            .instructions {
+            }}
+            .instructions {{
                 margin-bottom: 15px;
                 color: #666;
                 font-size: 14px;
-            }
+            }}
+            .loading {{
+                color: #666;
+                font-style: italic;
+            }}
         </style>
     </head>
     <body>
@@ -142,96 +147,158 @@ def create_google_maps_embed():
         <script>
             let map;
             let marker;
+            let geocoder;
+            let searchBox;
             
-            function initMap() {
+            function initMap() {{
                 // Center map on India
-                const india = [20.5937, 78.9629];
+                const india = {{ lat: 20.5937, lng: 78.9629 }};
                 
-                map = L.map('map').setView(india, 5);
+                map = new google.maps.Map(document.getElementById("map"), {{
+                    zoom: 5,
+                    center: india,
+                    mapTypeId: google.maps.MapTypeId.ROADMAP,
+                    styles: [
+                        {{
+                            featureType: "poi",
+                            elementType: "labels",
+                            stylers: [{{ visibility: "off" }}]
+                        }}
+                    ]
+                }});
                 
-                // Add OpenStreetMap tiles
-                L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-                    attribution: '© OpenStreetMap contributors'
-                }).addTo(map);
+                geocoder = new google.maps.Geocoder();
                 
                 // Add click listener to map
-                map.on('click', function(event) {
-                    placeMarker(event.latlng);
-                    updateCoordinates(event.latlng);
-                });
+                map.addListener("click", function(event) {{
+                    placeMarker(event.latLng);
+                    updateCoordinates(event.latLng);
+                }});
+                
+                // Initialize search box
+                const input = document.getElementById("search-input");
+                searchBox = new google.maps.places.SearchBox(input);
+                
+                // Bias search results to India
+                map.addListener("bounds_changed", function() {{
+                    searchBox.setBounds(map.getBounds());
+                }});
+                
+                // Listen for search results
+                searchBox.addListener("places_changed", function() {{
+                    const places = searchBox.getPlaces();
+                    if (places.length === 0) return;
+                    
+                    const place = places[0];
+                    if (!place.geometry) return;
+                    
+                    // Center map on search result
+                    if (place.geometry.viewport) {{
+                        map.fitBounds(place.geometry.viewport);
+                    }} else {{
+                        map.setCenter(place.geometry.location);
+                        map.setZoom(15);
+                    }}
+                    
+                    // Place marker and update coordinates
+                    placeMarker(place.geometry.location);
+                    updateCoordinates(place.geometry.location);
+                    
+                    // Update search input with formatted address
+                    document.getElementById("search-input").value = place.formatted_address;
+                }});
                 
                 // Handle Enter key in search input
-                document.getElementById("search-input").addEventListener("keypress", function(event) {
-                    if (event.key === "Enter") {
+                input.addEventListener("keypress", function(event) {{
+                    if (event.key === "Enter") {{
                         searchLocation();
-                    }
-                });
-            }
+                    }}
+                }});
+            }}
             
-            function placeMarker(latLng) {
-                if (marker) {
-                    map.removeLayer(marker);
-                }
-                marker = L.marker(latLng).addTo(map);
-                marker.bindPopup("Selected Location").openPopup();
-            }
+            function placeMarker(latLng) {{
+                if (marker) {{
+                    marker.setMap(null);
+                }}
+                marker = new google.maps.Marker({{
+                    position: latLng,
+                    map: map,
+                    title: "Selected Location",
+                    animation: google.maps.Animation.DROP
+                }});
+            }}
             
-            function updateCoordinates(latLng) {
+            function updateCoordinates(latLng) {{
                 const display = document.getElementById("coordinates-display");
                 display.innerHTML = `
                     <strong>Selected Coordinates:</strong><br>
-                    Latitude: ${latLng.lat.toFixed(6)}°N<br>
-                    Longitude: ${latLng.lng.toFixed(6)}°E<br>
-                    <button onclick="copyCoordinates(${latLng.lat}, ${latLng.lng})" style="margin-top: 10px; padding: 5px 10px; background-color: #007bff; color: white; border: none; border-radius: 3px; cursor: pointer;">
+                    Latitude: ${{latLng.lat().toFixed(6)}}°N<br>
+                    Longitude: ${{latLng.lng().toFixed(6)}}°E<br>
+                    <button onclick="copyCoordinates(${{latLng.lat()}}, ${{latLng.lng()}})" style="margin-top: 10px; padding: 5px 10px; background-color: #007bff; color: white; border: none; border-radius: 3px; cursor: pointer;">
                         Copy Coordinates
                     </button>
                 `;
                 
                 // Send coordinates to Streamlit
-                if (window.parent && window.parent.postMessage) {
-                    window.parent.postMessage({
+                if (window.parent && window.parent.postMessage) {{
+                    window.parent.postMessage({{
                         type: 'coordinates',
-                        lat: latLng.lat,
-                        lng: latLng.lng
-                    }, '*');
-                }
-            }
+                        lat: latLng.lat(),
+                        lng: latLng.lng()
+                    }}, '*');
+                }}
+            }}
             
-            function searchLocation() {
+            function searchLocation() {{
                 const input = document.getElementById("search-input");
-                const query = input.value + ", India";
+                const query = input.value.trim();
                 
-                // Use Nominatim geocoding service (free)
-                fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}&limit=1`)
-                    .then(response => response.json())
-                    .then(data => {
-                        if (data.length > 0) {
-                            const place = data[0];
-                            const latLng = [parseFloat(place.lat), parseFloat(place.lon)];
-                            
-                            map.setView(latLng, 15);
-                            placeMarker(latLng);
-                            updateCoordinates(latLng);
-                            input.value = place.display_name;
-                        } else {
-                            alert("Location not found. Please try a different search term.");
-                        }
-                    })
-                    .catch(error => {
-                        alert("Search failed. Please try again.");
-                        console.error('Error:', error);
-                    });
-            }
+                if (!query) {{
+                    alert("Please enter a location to search for.");
+                    return;
+                }}
+                
+                // Show loading state
+                const searchBtn = document.getElementById("search-button");
+                const originalText = searchBtn.textContent;
+                searchBtn.textContent = "Searching...";
+                searchBtn.disabled = true;
+                
+                // Add "India" to improve search results
+                const searchQuery = query + ", India";
+                
+                geocoder.geocode({{ address: searchQuery }}, function(results, status) {{
+                    if (status === "OK") {{
+                        const place = results[0];
+                        map.setCenter(place.geometry.location);
+                        map.setZoom(15);
+                        placeMarker(place.geometry.location);
+                        updateCoordinates(place.geometry.location);
+                        input.value = place.formatted_address;
+                        
+                        // Show success message
+                        const display = document.getElementById("coordinates-display");
+                        display.innerHTML += `<br><span style="color: green;">✅ Location found: ${{place.formatted_address}}</span>`;
+                    }} else {{
+                        alert("Location not found. Please try a different search term or be more specific.");
+                    }}
+                    
+                    // Reset button state
+                    searchBtn.textContent = originalText;
+                    searchBtn.disabled = false;
+                }});
+            }}
             
-            function copyCoordinates(lat, lng) {
-                const text = `${lat.toFixed(6)}, ${lng.toFixed(6)}`;
-                navigator.clipboard.writeText(text).then(function() {
+            function copyCoordinates(lat, lng) {{
+                const text = `${{lat.toFixed(6)}}, ${{lng.toFixed(6)}}`;
+                navigator.clipboard.writeText(text).then(function() {{
                     alert("Coordinates copied to clipboard!");
-                });
-            }
-            
-            // Initialize map when page loads
-            window.onload = initMap;
+                }});
+            }}
+        </script>
+        
+        <script async defer
+            src="https://maps.googleapis.com/maps/api/js?key={api_key}&libraries=places&callback=initMap">
         </script>
     </body>
     </html>
@@ -315,8 +382,8 @@ else:
             
         st.info("💡 **Tip:** You can search for locations or use the map to find coordinates. **Coordinates are required** to proceed.")
         
-        # Interactive Map Location Picker
-        st.markdown("**🗺️ Interactive Map Location Picker:**")
+        # Google Maps Location Picker
+        st.markdown("**🗺️ Google Maps Location Picker:**")
         st.info("💡 **Instructions:** Search for a location or click anywhere on the map to select coordinates. The map will automatically extract the latitude and longitude.")
         
         # Create Google Maps embed
