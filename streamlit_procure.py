@@ -17,6 +17,8 @@ from firebase_admin import firestore
 import requests
 import uuid
 import re
+import folium
+from streamlit_folium import st_folium
 
 country = 'India'
 continent = 'Asia'
@@ -59,8 +61,7 @@ if "prolific_id" not in st.session_state:
 if 'coords' not in st.session_state:
     st.session_state.coords = None
 
-if 'maps_url' not in st.session_state:
-    st.session_state.maps_url = None
+# Removed maps_url session state as it's no longer needed
 
 if 'q1_index' not in st.session_state:
     st.session_state.q1_index = 0
@@ -69,7 +70,6 @@ def reset_selections():
     st.session_state.pop("q1", None)
     st.session_state.pop("q4", None)
     st.session_state.pop("coords", None)
-    st.session_state.pop("maps_url", None)
     st.session_state.q1_index = 0
 
 # ---- UI ----
@@ -81,14 +81,11 @@ Following are the instructions for the same.
 
 **What kind of images to upload**:
 
-- The images can show a variety of environments such as:
-    - Historical Monuments
-    - Residential buildings or houses
-    - Roads, Streets, or highways
-    - Markets, shops, post offices, courthouses, malls, etc.
+- Photos should depict a variety of surroundings within {country}.
+- Avoid uploading duplicate/near-duplicate photos that you have already uploaded.
 - Ensure the images are clear and well-lit.
 - Outdoor scenes are preferred.
-- Avoid uploading images with identifiable faces to protect privacy.
+- Avoid uploading images with identifiable faces and license plates to protect privacy. 
 
 **Image Requirements**:
 
@@ -142,43 +139,46 @@ else:
         
         about = st.text_area("What does the photo primarily depict (e.g., building, monument, market, etc)? In case there are multiple descriptors, write them in a comma-separated manner", height=100, key='q1')
         st.markdown(f"Where in {country} was the photo taken?")
+        st.markdown("**Click on the map below to select the location where the photo was taken:**")
+        st.info("💡 **Tip:** You can zoom in/out and pan around the map to find the exact location. Click anywhere on the map to set the coordinates.")
         
-        st.markdown(
-            "1. Go to [Google Maps](https://www.google.com/maps). \n"
-            "2. Find the location where the photo was taken. \n"
-            "3. Copy the URL from your browser's address bar. \n"
-            "4. Paste it in the box below. \n"
-            "5. Press ENTER."
+        # Create a Folium map centered around India with better styling
+        m = folium.Map(
+            location=[20.5937, 78.9629], 
+            zoom_start=5,
+            tiles='OpenStreetMap',
+            prefer_canvas=True
         )
-
-        maps_url = st.text_input("Paste the Google Maps URL here:", key='maps_url')
         
-        def get_coords_from_url(url):
-            try:
-                # Regex to find the coordinates (e.g., @22.572646,88.363895) in the URL
-                match = re.search(r'@(-?\d+\.\d+),(-?\d+\.\d+)', url)
-                if match:
-                    lat = float(match.group(1))
-                    lng = float(match.group(2))
-                    return {"lat": lat, "lng": lng}
-            except (ValueError, IndexError):
-                pass
-            return None
-        st.write(st.session_state.maps_url)
-        if maps_url:
-            
-            coords = get_coords_from_url(maps_url)
-            st.write(coords)
-            if coords:
-                st.session_state.coords = coords
-                # st.session_state.maps_url = maps_url
-                st.success(f"✅ Coordinates captured: Latitude: {coords['lat']:.6f}, Longitude: {coords['lng']:.6f}")
-            else:
-                st.session_state.coords = None
-                st.warning("⚠️ Invalid Google Maps URL. Please ensure the URL contains coordinates.")
+        # Add a marker if coordinates are already selected
+        if st.session_state.coords:
+            folium.Marker(
+                [st.session_state.coords['lat'], st.session_state.coords['lng']],
+                popup=f"Selected Location<br>Lat: {st.session_state.coords['lat']:.6f}<br>Lng: {st.session_state.coords['lng']:.6f}",
+                icon=folium.Icon(color='red', icon='info-sign')
+            ).add_to(m)
+
+        # Add a click handler to get coordinates
+        st_map = st_folium(m, width=700, height=400)
+
+        # Extract coordinates from the map click
+        if st_map and st_map.get("last_clicked"):
+            clicked_lat = st_map["last_clicked"]["lat"]
+            clicked_lng = st_map["last_clicked"]["lng"]
+            st.session_state.coords = {"lat": clicked_lat, "lng": clicked_lng}
+            st.success(f"✅ Coordinates captured: Latitude: {clicked_lat:.6f}, Longitude: {clicked_lng:.6f}")
+        else:
+            st.session_state.coords = None
+            st.warning("⚠️ No location selected on the map. Please click on the map to select a location.")
 
         if st.session_state.coords:
-            st.write(f"**Current Selected Location:** Latitude: {st.session_state.coords['lat']:.6f}, Longitude: {st.session_state.coords['lng']:.6f}")
+            col1, col2 = st.columns([3, 1])
+            with col1:
+                st.write(f"**Current Selected Location:** Latitude: {st.session_state.coords['lat']:.6f}, Longitude: {st.session_state.coords['lng']:.6f}")
+            with col2:
+                if st.button("🗑️ Clear Location", type="secondary"):
+                    st.session_state.coords = None
+                    st.rerun()
         
         # st.markdown(f"To what extent does this image contain visual cues (e.g., local architecture, language, or scenery) that identify it as being from {country}?")
         clue_text = None
@@ -203,7 +203,7 @@ else:
             if not uploaded_file or about in ['', None] or ((rating == 'Choose an option') or (rating in [2, 3] and clue_text in [None, ''])):
                 st.error('Please answer all the questions and upload a file.')
             elif not st.session_state.coords:
-                st.error('Please provide a Google Maps URL with coordinates first.')
+                st.error('Please select a location on the map first.')
             else:
                 # Submission logic...
                 image_id = str(uuid.uuid4())
@@ -247,7 +247,6 @@ else:
                 st.session_state.q1_index = 0
                 
                 st.session_state.coords = None
-                st.session_state.maps_url = None
                 st.rerun()
     else:
         doc_ref = db.collection("Image_procurement").document(st.session_state.prolific_id)

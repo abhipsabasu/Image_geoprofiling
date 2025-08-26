@@ -1,3 +1,5 @@
 firebase-admin==6.2.0
 PyGithub
 streamlit_js_eval
+folium
+streamlit-folium
