@@ -472,12 +472,7 @@ else:
         # Automatic coordinate capture from map
         st.markdown("**📍 Coordinate Capture:**")
         
-        # Display Google Maps URL when coordinates are available
-        st.markdown("**📍 Google Maps URL:**")
-        
-        # This will be populated by JavaScript when coordinates are selected
-        url_display = st.empty()
-        url_display.info("Search for a location or click on the map above to see the Google Maps URL here.")
+
         
         # Show coordinate status
         if not st.session_state.coords:
