@@ -302,8 +302,8 @@ else:
         clue_text = None
         rating = st.radio(
             f"**To what extent does this image contain visual cues (e.g., local architecture, language, or scenery) that identify it as being from {country}?**",
-            options=["Choose an option", 0, 1, 2, 3],
-            format_func=lambda x: f"{'No evidence at all' if x==0 else f'A few features that are shared by multiple countries within {continent}, but not fully specific to {country}' if x==2 else f'Enough evidence specific to {country}' if x==3 else f'There are visual indications like architectural style, vegetations, etc, but I do not know if they are specific to {country} or {continent}' if x==1 else ''}",
+            options=["Choose an option", 0, 1, 2],
+            format_func=lambda x: f"{'No evidence at all' if x==0 else f'Enough evidence specific to {country}' if x==2 else f'There are visual indications like architectural style, vegetations, etc, but I do not know if they are specific to {country}' if x==1 else ''}",
             index=st.session_state.q1_index,
             key='q2'
         )
