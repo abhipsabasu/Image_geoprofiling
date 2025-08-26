@@ -165,6 +165,7 @@ Following are the instructions for the same.
     -   **Select the location** where the photo was taken using the search box or map.
     -   **List the clues** that helped you make that judgment.
     -   **Rate the photo** on the popularity of the location captured.
+    -   **Enter the month and year** when the photo was taken.
     -   **Click** "Submit and Next" to move to the next image.
 3. If the screen freezes, do **NOT** refresh the page. Instead, wait for a few seconds for the internet connectivity to stabilize.
 4. After uploading all the photos, wait till you get a message saying 'Survey Complete'.
