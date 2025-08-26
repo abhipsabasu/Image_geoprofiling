@@ -264,11 +264,15 @@ def create_google_maps_embed():
                 searchBtn.textContent = "Searching...";
                 searchBtn.disabled = true;
                 
-                // Add "India" to improve search results
-                const searchQuery = query + ", India";
+                // Use Google Places API for search
+                const service = new google.maps.places.PlacesService(map);
+                const request = {{
+                    query: query + ", India",
+                    fields: ['name', 'geometry', 'formatted_address']
+                }};
                 
-                geocoder.geocode({{ address: searchQuery }}, function(results, status) {{
-                    if (status === "OK") {{
+                service.findPlaceFromQuery(request, function(results, status) {{
+                    if (status === google.maps.places.PlacesServiceStatus.OK && results.length > 0) {{
                         const place = results[0];
                         map.setCenter(place.geometry.location);
                         map.setZoom(15);
@@ -392,37 +396,26 @@ else:
         # Display the Google Maps embed
         components.html(google_maps_html, height=500, scrolling=False)
         
-        # Manual coordinate input as fallback
-        st.markdown("**📍 Manual Coordinate Input (if needed):**")
-        coord_col1, coord_col2 = st.columns(2)
-        
-        with coord_col1:
-            manual_lat = st.number_input(
-                "Latitude", 
-                min_value=-90.0, 
-                max_value=90.0, 
-                value=20.5937, 
-                step=0.000001,
-                format="%.6f",
-                help="Enter latitude between -90 and 90"
-            )
-        
-        with coord_col2:
-            manual_lng = st.number_input(
-                "Longitude", 
-                min_value=-180.0, 
-                max_value=180.0, 
-                value=78.9629, 
-                step=0.000001,
-                format="%.6f",
-                help="Enter longitude between -180 and 90"
-            )
-        
-        # Button to set manual coordinates
-        if st.button("📍 Set Manual Coordinates", type="primary"):
-            st.session_state.coords = {"lat": manual_lat, "lng": manual_lng}
-            st.success(f"✅ Manual coordinates set: {manual_lat:.6f}°N, {manual_lng:.6f}°E")
-            st.rerun()
+        # Add JavaScript to listen for coordinates from the embedded map
+        components.html("""
+        <script>
+            window.addEventListener('message', function(event) {
+                if (event.data.type === 'coordinates') {
+                    // Store coordinates in session state
+                    const data = {
+                        lat: event.data.lat,
+                        lng: event.data.lng
+                    };
+                    // Use Streamlit's session state update
+                    window.parent.postMessage({
+                        type: 'streamlit:setComponentValue',
+                        value: JSON.stringify(data)
+                    }, '*');
+                }
+            });
+        </script>
+        """, height=0)
+
         
         # Show coordinate status
         if not st.session_state.coords:
@@ -430,20 +423,7 @@ else:
         else:
             st.markdown(f"**📍 Selected Location:** {st.session_state.coords['lat']:.6f}°N, {st.session_state.coords['lng']:.6f}°E")
         
-        # Show current coordinates if set
-        if st.session_state.coords:
-            # Try to identify the location name
-            location_name = "Selected Location"
-            if abs(st.session_state.coords['lat'] - 19.0760) < 0.1 and abs(st.session_state.coords['lng'] - 72.8777) < 0.1:
-                location_name = "Mumbai"
-            elif abs(st.session_state.coords['lat'] - 28.7041) < 0.1 and abs(st.session_state.coords['lng'] - 77.1025) < 0.1:
-                location_name = "Delhi"
-            elif abs(st.session_state.coords['lat'] - 12.9716) < 0.1 and abs(st.session_state.coords['lng'] - 77.5946) < 0.1:
-                location_name = "Bangalore"
-            elif abs(st.session_state.coords['lat'] - 13.0827) < 0.1 and abs(st.session_state.coords['lng'] - 80.2707) < 0.1:
-                location_name = "Chennai"
-            
-            st.success(f"✅ {location_name}: Latitude: {st.session_state.coords['lat']:.6f}, Longitude: {st.session_state.coords['lng']:.6f}")
+
 
         if st.session_state.coords:
             col1, col2 = st.columns([3, 1])
