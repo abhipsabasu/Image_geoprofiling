@@ -17,6 +17,8 @@ from firebase_admin import firestore
 import requests
 import uuid
 import re
+from geopy.geocoders import Nominatim
+from geopy.exc import GeocoderTimedOut, GeocoderUnavailable
 
 country = 'India'
 continent = 'Asia'
@@ -68,175 +70,60 @@ def reset_selections():
     st.session_state.pop("coords", None)
     st.session_state.q1_index = 0
 
-def create_google_maps_embed():
+def geocode_location(location_text):
     """
-    Create an interactive map with coordinate extraction functionality
+    Convert location text to coordinates using Nominatim geocoding service
     """
-    html_code = """
-    <!DOCTYPE html>
-    <html>
-    <head>
-        <title>Interactive Location Picker</title>
-        <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
-        <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
-        <style>
-            #map {
-                height: 400px;
-                width: 100%;
-                border-radius: 10px;
-                border: 2px solid #ddd;
-            }
-            .search-container {
-                margin-bottom: 15px;
-            }
-            #search-input {
-                width: 70%;
-                padding: 10px;
-                border: 1px solid #ddd;
-                border-radius: 5px;
-                font-size: 14px;
-            }
-            #search-button {
-                width: 25%;
-                padding: 10px;
-                background-color: #4CAF50;
-                color: white;
-                border: none;
-                border-radius: 5px;
-                cursor: pointer;
-                font-size: 14px;
-            }
-            #search-button:hover {
-                background-color: #45a049;
-            }
-            .coordinates-display {
-                margin-top: 15px;
-                padding: 10px;
-                background-color: #f0f0f0;
-                border-radius: 5px;
-                font-family: monospace;
-            }
-            .instructions {
-                margin-bottom: 15px;
-                color: #666;
-                font-size: 14px;
-            }
-        </style>
-    </head>
-    <body>
-        <div class="instructions">
-            <strong>Instructions:</strong> Search for a location or click anywhere on the map to select coordinates.
-        </div>
+    try:
+        # Add "India" to the search query to improve accuracy for Indian locations
+        search_query = f"{location_text}, India"
         
-        <div class="search-container">
-            <input type="text" id="search-input" placeholder="Search for a location in India...">
-            <button id="search-button" onclick="searchLocation()">Search</button>
-        </div>
+        # Initialize geocoder
+        geolocator = Nominatim(user_agent="streamlit_app")
         
-        <div id="map"></div>
+        # Geocode the location
+        location = geolocator.geocode(search_query, timeout=10)
         
-        <div class="coordinates-display" id="coordinates-display">
-            <strong>Selected Coordinates:</strong> None selected
-        </div>
-        
-        <script>
-            let map;
-            let marker;
-            
-            function initMap() {
-                // Center map on India
-                const india = [20.5937, 78.9629];
-                
-                map = L.map('map').setView(india, 5);
-                
-                // Add OpenStreetMap tiles
-                L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-                    attribution: '© OpenStreetMap contributors'
-                }).addTo(map);
-                
-                // Add click listener to map
-                map.on('click', function(event) {
-                    placeMarker(event.latlng);
-                    updateCoordinates(event.latlng);
-                });
-                
-                // Handle Enter key in search input
-                document.getElementById("search-input").addEventListener("keypress", function(event) {
-                    if (event.key === "Enter") {
-                        searchLocation();
-                    }
-                });
+        if location:
+            return {
+                "lat": location.latitude,
+                "lng": location.longitude,
+                "name": location.address,
+                "success": True
+            }
+        else:
+            return {
+                "lat": None,
+                "lng": None,
+                "name": None,
+                "success": False,
+                "error": "Location not found"
             }
             
-            function placeMarker(latLng) {
-                if (marker) {
-                    map.removeLayer(marker);
-                }
-                marker = L.marker(latLng).addTo(map);
-                marker.bindPopup("Selected Location").openPopup();
-            }
-            
-            function updateCoordinates(latLng) {
-                const display = document.getElementById("coordinates-display");
-                display.innerHTML = `
-                    <strong>Selected Coordinates:</strong><br>
-                    Latitude: ${latLng.lat.toFixed(6)}°N<br>
-                    Longitude: ${latLng.lng.toFixed(6)}°E<br>
-                    <button onclick="copyCoordinates(${latLng.lat}, ${latLng.lng})" style="margin-top: 10px; padding: 5px 10px; background-color: #007bff; color: white; border: none; border-radius: 3px; cursor: pointer;">
-                        Copy Coordinates
-                    </button>
-                `;
-                
-                // Send coordinates to Streamlit
-                if (window.parent && window.parent.postMessage) {
-                    window.parent.postMessage({
-                        type: 'coordinates',
-                        lat: latLng.lat,
-                        lng: latLng.lng
-                    }, '*');
-                }
-            }
-            
-            function searchLocation() {
-                const input = document.getElementById("search-input");
-                const query = input.value + ", India";
-                
-                // Use Nominatim geocoding service (free)
-                fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}&limit=1`)
-                    .then(response => response.json())
-                    .then(data => {
-                        if (data.length > 0) {
-                            const place = data[0];
-                            const latLng = [parseFloat(place.lat), parseFloat(place.lon)];
-                            
-                            map.setView(latLng, 15);
-                            placeMarker(latLng);
-                            updateCoordinates(latLng);
-                            input.value = place.display_name;
-                        } else {
-                            alert("Location not found. Please try a different search term.");
-                        }
-                    })
-                    .catch(error => {
-                        alert("Search failed. Please try again.");
-                        console.error('Error:', error);
-                    });
-            }
-            
-            function copyCoordinates(lat, lng) {
-                const text = `${lat.toFixed(6)}, ${lng.toFixed(6)}`;
-                navigator.clipboard.writeText(text).then(function() {
-                    alert("Coordinates copied to clipboard!");
-                });
-            }
-            
-            // Initialize map when page loads
-            window.onload = initMap;
-        </script>
-    </body>
-    </html>
-    """
-    return html_code
+    except GeocoderTimedOut:
+        return {
+            "lat": None,
+            "lng": None,
+            "name": None,
+            "success": False,
+            "error": "Geocoding service timed out. Please try again."
+        }
+    except GeocoderUnavailable:
+        return {
+            "lat": None,
+            "lng": None,
+            "name": None,
+            "success": False,
+            "error": "Geocoding service unavailable. Please try again later."
+        }
+    except Exception as e:
+        return {
+            "lat": None,
+            "lng": None,
+            "name": None,
+            "success": False,
+            "error": f"Error: {str(e)}"
+        }
 
 # ---- UI ----
 st.title(f"Image Collection from {country}")
@@ -315,47 +202,71 @@ else:
             
         st.info("💡 **Tip:** You can search for locations or use the map to find coordinates. **Coordinates are required** to proceed.")
         
-        # Interactive Map Location Picker
-        st.markdown("**🗺️ Interactive Map Location Picker:**")
-        st.info("💡 **Instructions:** Search for a location or click anywhere on the map to select coordinates. The map will automatically extract the latitude and longitude.")
+        # Location search functionality
+        st.markdown("**🔍 Search for a location:**")
+        search_col1, search_col2 = st.columns([3, 1])
         
-        # Create Google Maps embed
-        google_maps_html = create_google_maps_embed()
-        
-        # Display the Google Maps embed
-        components.html(google_maps_html, height=500, scrolling=False)
-        
-        # Manual coordinate input as fallback
-        st.markdown("**📍 Manual Coordinate Input (if needed):**")
-        coord_col1, coord_col2 = st.columns(2)
-        
-        with coord_col1:
-            manual_lat = st.number_input(
-                "Latitude", 
-                min_value=-90.0, 
-                max_value=90.0, 
-                value=20.5937, 
-                step=0.000001,
-                format="%.6f",
-                help="Enter latitude between -90 and 90"
+        with search_col1:
+            location_search = st.text_input(
+                "Enter location name (e.g., 'Taj Mahal, Agra', 'Gateway of India, Mumbai')",
+                placeholder="Type location name here...",
+                help="Search for any location in India. Try: Taj Mahal, Red Fort, Golden Temple, Goa, etc."
             )
         
-        with coord_col2:
-            manual_lng = st.number_input(
-                "Longitude", 
-                min_value=-180.0, 
-                max_value=180.0, 
-                value=78.9629, 
-                step=0.000001,
-                format="%.6f",
-                help="Enter longitude between -180 and 90"
-            )
+        with search_col2:
+            search_button = st.button("🔍 Search", type="primary")
         
-        # Button to set manual coordinates
-        if st.button("📍 Set Manual Coordinates", type="primary"):
-            st.session_state.coords = {"lat": manual_lat, "lng": manual_lng}
-            st.success(f"✅ Manual coordinates set: {manual_lat:.6f}°N, {manual_lng:.6f}°E")
-            st.rerun()
+        # Show popular search suggestions
+        if not location_search:
+            st.markdown("**💡 Popular searches:** Taj Mahal, Red Fort, Golden Temple, Goa, Kerala, Darjeeling, Shimla")
+        
+        # Handle location search
+        if search_button and location_search:
+            with st.spinner("🔍 Searching for location..."):
+                # Use geocoding service to find any location
+                geocode_result = geocode_location(location_search)
+                
+                if geocode_result["success"]:
+                    st.session_state.coords = {
+                        "lat": geocode_result["lat"], 
+                        "lng": geocode_result["lng"]
+                    }
+                    st.session_state.location_name = geocode_result["name"]
+                    
+                    st.success(f"✅ **Location Found!**")
+                    st.info(f"📍 **Address:** {geocode_result['name']}")
+                    st.info(f"📍 **Coordinates:** {geocode_result['lat']:.6f}°N, {geocode_result['lng']:.6f}°E")
+                    
+                    # Clear the search input by rerunning
+                    st.rerun()
+                else:
+                    st.error(f"❌ **Location not found:** {geocode_result['error']}")
+                    st.info("💡 **Try:** Being more specific (e.g., 'Taj Mahal, Agra' instead of just 'Taj Mahal')")
+                    st.info("💡 **Or:** Use the manual coordinate inputs below")
+        
+        # Create a map centered around India
+        st.markdown("**🗺️ Location Map:**")
+        
+        # Create map data with proper column names
+        if st.session_state.coords:
+            # Show selected location on map
+            map_data = pd.DataFrame({
+                'latitude': [st.session_state.coords['lat']],  # Use 'latitude' instead of 'lat'
+                'longitude': [st.session_state.coords['lng']]  # Use 'longitude' instead of 'lon'
+            })
+            st.map(map_data)
+            st.info(f"📍 Map centered on selected location: {st.session_state.coords['lat']:.6f}, {st.session_state.coords['lng']:.6f}")
+        else:
+            # Show warning that no location is selected
+            st.warning("⚠️ **No location selected!** Please use the search box above or enter coordinates manually to select a location.")
+            st.info("💡 **Tip:** You can search for locations like 'Taj Mahal', 'Mumbai', 'Goa', etc., or use the coordinate inputs below.")
+            
+            # Show a basic map of India without centering on any specific location
+            map_data = pd.DataFrame({
+                'latitude': [20.5937, 19.0760, 28.7041, 12.9716],  # India center + major cities
+                'longitude': [78.9629, 72.8777, 77.1025, 77.5946]
+            })
+            st.map(map_data)
         
         # Show coordinate status
         if not st.session_state.coords:
