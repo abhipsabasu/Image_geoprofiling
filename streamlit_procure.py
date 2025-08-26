@@ -431,11 +431,11 @@ else:
         # Display the Google Maps embed
         components.html(google_maps_html, height=500, scrolling=False)
         
-        # Add a simple coordinate capture system
+        # Coordinate capture system
         st.markdown("**📍 Coordinate Capture:**")
-        st.info("After searching or clicking on the map, enter the coordinates below to capture them.")
+        st.info("💡 **How it works:** Search for a location or click on the map, then copy the coordinates from the green box above and paste them below.")
         
-        # Create a form for coordinate input
+        # Manual coordinate input
         with st.form("coordinate_capture"):
             coord_col1, coord_col2, coord_col3 = st.columns([2, 2, 1])
             
@@ -462,27 +462,14 @@ else:
                 except ValueError:
                     st.error("❌ Please enter valid numbers for coordinates.")
         
-        # Display current coordinates if set
-        if st.session_state.coords:
-            st.success(f"**📍 Current Location:** {st.session_state.coords['lat']:.6f}°N, {st.session_state.coords['lng']:.6f}°E")
-
-        
         # Show coordinate status
         if not st.session_state.coords:
             st.error("❌ **No coordinates selected.** Please select a location above to proceed.")
         else:
             st.markdown(f"**📍 Selected Location:** {st.session_state.coords['lat']:.6f}°N, {st.session_state.coords['lng']:.6f}°E")
-        
-
-
-        if st.session_state.coords:
-            col1, col2 = st.columns([3, 1])
-            with col1:
-                st.write(f"**Current Selected Location:** Latitude: {st.session_state.coords['lat']:.6f}, Longitude: {st.session_state.coords['lng']:.6f}")
-            with col2:
-                if st.button("🗑️ Clear Location", type="secondary"):
-                    st.session_state.coords = None
-                    st.rerun()
+            if st.button("🗑️ Clear Location", type="secondary"):
+                st.session_state.coords = None
+                st.rerun()
         
         # st.markdown(f"To what extent does this image contain visual cues (e.g., local architecture, language, or scenery) that identify it as being from {country}?")
         clue_text = None
