@@ -166,6 +166,7 @@ Following are the instructions for the same.
     -   **List the clues** that helped you make that judgment.
     -   **Rate the photo** on the popularity of the location captured.
     -   **Click** "Submit and Next" to move to the next image.
+3. If the screen freezes, do **NOT** refresh the page. Instead, wait for a few seconds for the internet connectivity to stabilize.
 
 You have *20* minutes to upload the photos and answer the questions surrounding them. After you upload the photo, wait for the photo to be visible on screen, then answer the questions.
 """, unsafe_allow_html=True)
@@ -385,7 +386,7 @@ else:
                     "year": year,
                 })
                 
-                st.success("✅ Image and responses saved! Continue with next image.")
+                st.success("✅ Image and responses saved!")
                 
                 # Clear coordinates and reset index
                 st.session_state.coords = None
