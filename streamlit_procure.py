@@ -431,36 +431,20 @@ else:
         # Display the Google Maps embed
         components.html(google_maps_html, height=500, scrolling=False)
         
-        # Simple coordinate capture system
-        st.markdown("**📍 Coordinate Capture:**")
-        st.info("💡 **How it works:** Search for a location or click on the map above, then use the form below to capture coordinates.")
+        # Automatic coordinate capture system
+        st.markdown("**📍 Coordinate Status:**")
         
-        # Simple coordinate input form
-        with st.form("coordinate_capture"):
-            coord_col1, coord_col2, coord_col3 = st.columns([2, 2, 1])
-            
-            with coord_col1:
-                lat_input = st.text_input("Latitude", placeholder="e.g., 19.0760", key="lat_input")
-            
-            with coord_col2:
-                lng_input = st.text_input("Longitude", placeholder="e.g., 72.8777", key="lng_input")
-            
-            with coord_col3:
-                st.markdown("**Action:**")
-                capture_button = st.form_submit_button("📍 Capture", type="primary")
-            
-            if capture_button and lat_input and lng_input:
-                try:
-                    lat = float(lat_input)
-                    lng = float(lng_input)
-                    if -90 <= lat <= 90 and -180 <= lng <= 180:
-                        st.session_state.coords = {"lat": lat, "lng": lng}
-                        st.success(f"✅ Coordinates captured: {lat:.6f}°N, {lng:.6f}°E")
-                        st.rerun()
-                    else:
-                        st.error("❌ Invalid coordinates. Latitude must be between -90 and 90, Longitude between -180 and 180.")
-                except ValueError:
-                    st.error("❌ Please enter valid numbers for coordinates.")
+        # Simple coordinate capture
+        st.markdown("**📍 Coordinate Status:**")
+        
+        # Show coordinate status
+        if not st.session_state.coords:
+            st.warning("⚠️ **No coordinates selected yet.** Please search for a location or click on the map above.")
+        else:
+            st.success(f"✅ **Location Selected:** {st.session_state.coords['lat']:.6f}°N, {st.session_state.coords['lng']:.6f}°E")
+            if st.button("🗑️ Clear Location", type="secondary"):
+                st.session_state.coords = None
+                st.rerun()
         
         # Show coordinate status
         if not st.session_state.coords:
