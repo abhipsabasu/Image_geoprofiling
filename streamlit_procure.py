@@ -265,7 +265,7 @@ def create_google_maps_embed():
                     </button>
                 `;
                 
-                // Send coordinates to Streamlit
+                // Send coordinates to Streamlit via postMessage
                 if (window.parent && window.parent.postMessage) {{
                     window.parent.postMessage({{
                         type: 'coordinates',
@@ -431,11 +431,11 @@ else:
         # Display the Google Maps embed
         components.html(google_maps_html, height=500, scrolling=False)
         
-        # Coordinate capture system
+        # Simple coordinate capture system
         st.markdown("**📍 Coordinate Capture:**")
-        st.info("💡 **How it works:** Search for a location or click on the map, then copy the coordinates from the green box above and paste them below.")
+        st.info("💡 **How it works:** Search for a location or click on the map above, then use the form below to capture coordinates.")
         
-        # Manual coordinate input
+        # Simple coordinate input form
         with st.form("coordinate_capture"):
             coord_col1, coord_col2, coord_col3 = st.columns([2, 2, 1])
             
@@ -447,7 +447,7 @@ else:
             
             with coord_col3:
                 st.markdown("**Action:**")
-                capture_button = st.form_submit_button("📍 Capture Coordinates", type="primary")
+                capture_button = st.form_submit_button("📍 Capture", type="primary")
             
             if capture_button and lat_input and lng_input:
                 try:
@@ -464,9 +464,9 @@ else:
         
         # Show coordinate status
         if not st.session_state.coords:
-            st.error("❌ **No coordinates selected.** Please select a location above to proceed.")
+            st.warning("⚠️ **No coordinates selected yet.** Please search for a location or click on the map above.")
         else:
-            st.markdown(f"**📍 Selected Location:** {st.session_state.coords['lat']:.6f}°N, {st.session_state.coords['lng']:.6f}°E")
+            st.success(f"✅ **Location Selected:** {st.session_state.coords['lat']:.6f}°N, {st.session_state.coords['lng']:.6f}°E")
             if st.button("🗑️ Clear Location", type="secondary"):
                 st.session_state.coords = None
                 st.rerun()
