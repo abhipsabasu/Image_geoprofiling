@@ -161,8 +161,9 @@ Following are the instructions for the same.
 **What to do:**
 1.  **Upload 10 images**, one at a time.
 2.  For each image:
-    -   **Rate** how clearly the photo suggests it was taken in {country}.
+    -   **Describe the photo** in a few words.
     -   **Select the location** where the photo was taken using the search box or map.
+    -   **Rate** how clearly the photo suggests it was taken in {country}.
     -   **List the clues** that helped you make that judgment.
     -   **Rate the photo** on the popularity of the location captured.
     -   **Enter the month and year** when the photo was taken.
