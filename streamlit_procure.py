@@ -63,6 +63,9 @@ if 'coords' not in st.session_state:
 
 if 'q1_index' not in st.session_state:
     st.session_state.q1_index = 0
+    
+if 'temp_images' not in st.session_state:
+    st.session_state.temp_images = []
 
 def reset_selections():
     st.session_state.pop("q1", None)
@@ -181,6 +184,10 @@ if not st.session_state.prolific_id:
 else:
     # --- MAIN APP LOGIC (This section runs only after Prolific ID is submitted) ---
     if st.session_state.index < 10:
+        # Show progress
+        st.markdown(f"**📸 Progress: {st.session_state.index}/10 images completed**")
+        progress_bar = st.progress(st.session_state.index / 10)
+        
         uploaded_file = st.file_uploader(f"**Upload image {st.session_state.index + 1}**", type=["jpg", "jpeg", "png"], key=st.session_state.index)
         if uploaded_file:
             file_bytes = uploaded_file.read() 
@@ -342,36 +349,24 @@ else:
             elif not st.session_state.coords:
                 st.error('Please select a location on the map first.')
             else:
-                # Submission logic...
-                image_id = str(uuid.uuid4())
-                file_name = f"{st.session_state.prolific_id}_{st.session_state.index}.png"
-                file_path = f"{country}_images/{file_name}"
-                api_url = f"https://api.github.com/repos/{owner}/{repo_name}/contents/{file_path}"
-
-                headers = {
-                    "Authorization": f"Bearer {token}",
-                    "Accept": "application/vnd.github.v3+json"
+                # Store image temporarily instead of uploading immediately
+                image_data = {
+                    "file_name": f"{st.session_state.prolific_id}_{st.session_state.index}.png",
+                    "file_path": f"{country}_images/{f'{st.session_state.prolific_id}_{st.session_state.index}.png'}",
+                    "encoded_content": encoded_content,
+                    "index": st.session_state.index
                 }
-
-                payload = {
-                    "message": f"Upload {file_path}",
-                    "content": encoded_content,
-                    "branch": "main"
-                }
-
-                response = requests.put(api_url, headers=headers, json=payload)
-                if response.status_code in [200, 201]:
-                    st.success("✅ Image uploaded to GitHub successfully.")
-                else:
-                    st.error(f"❌ Upload failed: {response.status_code}")
-                    st.text(response.json())
                 
+                # Add to temporary storage
+                st.session_state.temp_images.append(image_data)
+                
+                # Store response data (without uploading image yet)
                 st.session_state.responses.append({
                     "name": st.session_state.prolific_id,
                     "birth_country": st.session_state.birth_country,
                     "residence": st.session_state.residence,
                     "privacy": st.session_state.privacy,
-                    "image_url": file_path,
+                    "image_url": image_data["file_path"],  # Will be updated after upload
                     "rating": rating,
                     "coords": st.session_state.coords,
                     "popularity": popularity,
@@ -380,6 +375,8 @@ else:
                     "month": month,
                     "year": year,
                 })
+                
+                st.success("✅ Image and responses saved! Continue with next image.")
                 reset_selections()
                 
                 st.session_state.index += 1
@@ -388,6 +385,57 @@ else:
                 st.session_state.coords = None
                 st.rerun()
     else:
+        # Upload all images to GitHub at once
+        st.markdown("**📤 Uploading all images to GitHub...**")
+        
+        upload_progress = st.progress(0)
+        upload_status = st.empty()
+        
+        successful_uploads = 0
+        failed_uploads = 0
+        
+        for i, image_data in enumerate(st.session_state.temp_images):
+            try:
+                # Update progress
+                progress = (i + 1) / len(st.session_state.temp_images)
+                upload_progress.progress(progress)
+                upload_status.text(f"Uploading image {i + 1} of {len(st.session_state.temp_images)}...")
+                
+                # Upload to GitHub
+                api_url = f"https://api.github.com/repos/{owner}/{repo_name}/contents/{image_data['file_path']}"
+                
+                headers = {
+                    "Authorization": f"Bearer {token}",
+                    "Accept": "application/vnd.github.v3+json"
+                }
+
+                payload = {
+                    "message": f"Upload {image_data['file_path']}",
+                    "content": image_data['encoded_content'],
+                    "branch": "main"
+                }
+
+                response = requests.put(api_url, headers=headers, json=payload)
+                if response.status_code in [200, 201]:
+                    successful_uploads += 1
+                    # Update the response with actual GitHub URL
+                    st.session_state.responses[image_data['index']]['image_url'] = f"https://github.com/{owner}/{repo_name}/blob/main/{image_data['file_path']}"
+                else:
+                    failed_uploads += 1
+                    st.error(f"❌ Failed to upload {image_data['file_name']}: {response.status_code}")
+                    
+            except Exception as e:
+                failed_uploads += 1
+                st.error(f"❌ Error uploading {image_data['file_name']}: {str(e)}")
+        
+        # Show final upload results
+        upload_progress.progress(1.0)
+        if failed_uploads == 0:
+            upload_status.success(f"✅ All {successful_uploads} images uploaded successfully!")
+        else:
+            upload_status.warning(f"⚠️ {successful_uploads} images uploaded, {failed_uploads} failed")
+        
+        # Save to Firebase
         doc_ref = db.collection("Image_procurement").document(st.session_state.prolific_id)
         doc_ref.set({
             "prolific_id": st.session_state.prolific_id,
@@ -397,6 +445,11 @@ else:
             "timestamp": firestore.SERVER_TIMESTAMP,
             "responses": st.session_state.responses
         })
+        
         st.session_state.submitted_all = True
-        st.success("Survey complete. Thank you!")
-        st.write("✅ Survey complete! Thank you.")
+        st.success("🎉 Survey complete! Thank you!")
+        st.write(f"✅ **Survey Results:**")
+        st.write(f"📸 **Images:** {successful_uploads} uploaded successfully")
+        st.write(f"📊 **Responses:** {len(st.session_state.responses)} recorded")
+        st.write(f"🗺️ **Locations:** All coordinates captured")
+        st.write(f"📅 **Timestamps:** Month/year data collected")
