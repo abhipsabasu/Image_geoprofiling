@@ -141,28 +141,28 @@ else:
         st.info("💡 **Tip:** You can zoom in/out and pan around the map. Use the latitude and longitude inputs below to set the exact coordinates.")
         
         # Add some common location presets for India
-        st.markdown("**Quick location presets (click to set):**")
-        preset_cols = st.columns(4)
+        # st.markdown("**Quick location presets (click to set):**")
+        # preset_cols = st.columns(4)
         
-        with preset_cols[0]:
-            if st.button("🗺️ Mumbai", type="secondary"):
-                st.session_state.coords = {"lat": 19.0760, "lng": 72.8777}
-                st.rerun()
+        # with preset_cols[0]:
+        #     if st.button("🗺️ Mumbai", type="secondary"):
+        #         st.session_state.coords = {"lat": 19.0760, "lng": 72.8777}
+        #         st.rerun()
         
-        with preset_cols[1]:
-            if st.button("🗺️ Delhi", type="secondary"):
-                st.session_state.coords = {"lat": 28.7041, "lng": 77.1025}
-                st.rerun()
+        # with preset_cols[1]:
+        #     if st.button("🗺️ Delhi", type="secondary"):
+        #         st.session_state.coords = {"lat": 28.7041, "lng": 77.1025}
+        #         st.rerun()
         
-        with preset_cols[2]:
-            if st.button("🗺️ Bangalore", type="secondary"):
-                st.session_state.coords = {"lat": 12.9716, "lng": 77.5946}
-                st.rerun()
+        # with preset_cols[2]:
+        #     if st.button("🗺️ Bangalore", type="secondary"):
+        #         st.session_state.coords = {"lat": 12.9716, "lng": 77.5946}
+        #         st.rerun()
         
-        with preset_cols[3]:
-            if st.button("🗺️ Chennai", type="secondary"):
-                st.session_state.coords = {"lat": 13.0827, "lng": 80.2707}
-                st.rerun()
+        # with preset_cols[3]:
+        #     if st.button("🗺️ Chennai", type="secondary"):
+        #         st.session_state.coords = {"lat": 13.0827, "lng": 80.2707}
+        #         st.rerun()
         
         # Location search functionality
         st.markdown("**🔍 Search for a location:**")
@@ -285,35 +285,35 @@ else:
             st.markdown(f"**📍 Selected Location:** {st.session_state.coords['lat']:.6f}°N, {st.session_state.coords['lng']:.6f}°E")
         
         # Manual coordinate input as fallback
-        st.markdown("**Enter coordinates manually:**")
-        col1, col2 = st.columns(2)
+        # st.markdown("**Enter coordinates manually:**")
+        # col1, col2 = st.columns(2)
         
-        with col1:
-            lat_input = st.number_input(
-                "Latitude", 
-                min_value=-90.0, 
-                max_value=90.0, 
-                value=20.5937, 
-                step=0.000001,
-                format="%.6f",
-                help="Enter latitude between -90 and 90"
-            )
+        # with col1:
+        #     lat_input = st.number_input(
+        #         "Latitude", 
+        #         min_value=-90.0, 
+        #         max_value=90.0, 
+        #         value=20.5937, 
+        #         step=0.000001,
+        #         format="%.6f",
+        #         help="Enter latitude between -90 and 90"
+        #     )
         
-        with col2:
-            lon_input = st.number_input(
-                "Longitude", 
-                min_value=-180.0, 
-                max_value=180.0, 
-                value=78.9629, 
-                step=0.000001,
-                format="%.6f",
-                help="Enter longitude between -180 and 180"
-            )
+        # with col2:
+        #     lon_input = st.number_input(
+        #         "Longitude", 
+        #         min_value=-180.0, 
+        #         max_value=180.0, 
+        #         value=78.9629, 
+        #         step=0.000001,
+        #         format="%.6f",
+        #         help="Enter longitude between -180 and 180"
+        #     )
         
-        # Button to set coordinates
-        if st.button("📍 Set Coordinates", type="primary"):
-            st.session_state.coords = {"lat": lat_input, "lng": lon_input}
-            st.success(f"✅ Coordinates set: Latitude: {lat_input:.6f}, Longitude: {lon_input:.6f}")
+        # # Button to set coordinates
+        # if st.button("📍 Set Coordinates", type="primary"):
+        #     st.session_state.coords = {"lat": lat_input, "lng": lon_input}
+        #     st.success(f"✅ Coordinates set: Latitude: {lat_input:.6f}, Longitude: {lon_input:.6f}")
         
         # Show current coordinates if set
         if st.session_state.coords:
