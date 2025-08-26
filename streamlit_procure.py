@@ -256,20 +256,33 @@ else:
                 st.info("💡 Try searching for: cities (Mumbai, Delhi), monuments (Taj Mahal, Red Fort), states (Goa, Kerala), or tourist spots (Darjeeling, Shimla)")
         
         # Create a map centered around India
+        st.markdown("**🗺️ Location Map:**")
+        
+        # Create map data with proper column names
         if st.session_state.coords:
             # Show selected location on map
             map_data = pd.DataFrame({
-                'lat': [st.session_state.coords['lat']],  # Selected location
-                'lon': [st.session_state.coords['lng']]
+                'latitude': [st.session_state.coords['lat']],  # Use 'latitude' instead of 'lat'
+                'longitude': [st.session_state.coords['lng']]  # Use 'longitude' instead of 'lon'
             })
-            st.map(map_data, zoom=10)
+            st.map(map_data)
+            st.info(f"📍 Map centered on selected location: {st.session_state.coords['lat']:.6f}, {st.session_state.coords['lng']:.6f}")
         else:
-            # Show default center of India
+            # Show default center of India with multiple points for better visibility
             map_data = pd.DataFrame({
-                'lat': [20.5937],  # Center of India
-                'lon': [78.9629]
+                'latitude': [20.5937, 19.0760, 28.7041, 12.9716],  # India center + major cities
+                'longitude': [78.9629, 72.8777, 77.1025, 77.5946]
             })
-            st.map(map_data, zoom=5)
+            st.map(map_data)
+            st.info("📍 Map centered on India. Select a location above to center the map there.")
+        
+        # If map still doesn't work, show coordinates in a nice format
+        if not st.session_state.coords:
+            st.markdown("**📍 Current Map Center:** India")
+            st.markdown(f"**Latitude:** 20.5937°N")
+            st.markdown(f"**Longitude:** 78.9629°E")
+        else:
+            st.markdown(f"**📍 Selected Location:** {st.session_state.coords['lat']:.6f}°N, {st.session_state.coords['lng']:.6f}°E")
         
         # Manual coordinate input as fallback
         st.markdown("**Enter coordinates manually:**")
