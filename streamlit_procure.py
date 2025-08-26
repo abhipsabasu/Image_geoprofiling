@@ -95,7 +95,7 @@ Following are the instructions for the same.
 1.  **Upload 10 images**, one at a time.
 2.  For each image:
     -   **Rate** how clearly the photo suggests it was taken in India.
-    -   **Enter the google maps link** for the photo.
+    -   **Select the location** where the photo was taken using the search box or map.
     -   **List the clues** that helped you make that judgment.
     -   **Rate the photo** on the popularity of the location captured.
     -   **Click** "Submit and Next" to move to the next image.
@@ -137,8 +137,15 @@ else:
         
         about = st.text_area("What does the photo primarily depict (e.g., building, monument, market, etc)? In case there are multiple descriptors, write them in a comma-separated manner", height=100, key='q1')
         st.markdown(f"Where in {country} was the photo taken?")
-        st.markdown("**Use the map below to select the location where the photo was taken:**")
-        st.info("💡 **Tip:** You can zoom in/out and pan around the map. Use the latitude and longitude inputs below to set the exact coordinates.")
+        st.markdown("**Use the search box or map below to select the location where the photo was taken:**")
+        
+        # Warning that coordinates are required
+        if not st.session_state.coords:
+            st.error("🚨 **COORDINATES REQUIRED:** You must select a location to proceed with the survey!")
+        else:
+            st.success("✅ **Location selected successfully!**")
+            
+        st.info("💡 **Tip:** You can search for locations or use the map to find coordinates. **Coordinates are required** to proceed.")
         
         # Add some common location presets for India
         # st.markdown("**Quick location presets (click to set):**")
@@ -268,19 +275,20 @@ else:
             st.map(map_data)
             st.info(f"📍 Map centered on selected location: {st.session_state.coords['lat']:.6f}, {st.session_state.coords['lng']:.6f}")
         else:
-            # Show default center of India with multiple points for better visibility
+            # Show warning that no location is selected
+            st.warning("⚠️ **No location selected!** Please use the search box above or enter coordinates manually to select a location.")
+            st.info("💡 **Tip:** You can search for locations like 'Taj Mahal', 'Mumbai', 'Goa', etc., or use the coordinate inputs below.")
+            
+            # Show a basic map of India without centering on any specific location
             map_data = pd.DataFrame({
                 'latitude': [20.5937, 19.0760, 28.7041, 12.9716],  # India center + major cities
                 'longitude': [78.9629, 72.8777, 77.1025, 77.5946]
             })
             st.map(map_data)
-            st.info("📍 Map centered on India. Select a location above to center the map there.")
         
-        # If map still doesn't work, show coordinates in a nice format
+        # Show coordinate status
         if not st.session_state.coords:
-            st.markdown("**📍 Current Map Center:** India")
-            st.markdown(f"**Latitude:** 20.5937°N")
-            st.markdown(f"**Longitude:** 78.9629°E")
+            st.error("❌ **No coordinates selected.** Please select a location above to proceed.")
         else:
             st.markdown(f"**📍 Selected Location:** {st.session_state.coords['lat']:.6f}°N, {st.session_state.coords['lng']:.6f}°E")
         
