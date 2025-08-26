@@ -164,6 +164,8 @@ def create_google_maps_embed():
             let searchBox;
             
             function initMap() {{
+                console.log("initMap called - initializing map");
+                
                 // Center map on India
                 const india = {{ lat: 20.5937, lng: 78.9629 }};
                 
@@ -184,6 +186,7 @@ def create_google_maps_embed():
                 
                 // Add click listener to map
                 map.addListener("click", function(event) {{
+                    console.log("Map clicked at:", event.latLng);
                     placeMarker(event.latLng);
                     updateCoordinates(event.latLng);
                 }});
@@ -205,6 +208,8 @@ def create_google_maps_embed():
                     const place = places[0];
                     if (!place.geometry) return;
                     
+                    console.log("Search result received:", place.formatted_address);
+                    
                     // Center map on search result
                     if (place.geometry.viewport) {{
                         map.fitBounds(place.geometry.viewport);
@@ -219,6 +224,9 @@ def create_google_maps_embed():
                     
                     // Update search input with formatted address
                     document.getElementById("search-input").value = place.formatted_address;
+                    
+                    // Debug log
+                    console.log("Search result processed, coordinates updated");
                 }});
                 
                 // Handle Enter key in search input
@@ -227,6 +235,12 @@ def create_google_maps_embed():
                         searchLocation();
                     }}
                 }});
+                
+                // Verify HTML elements exist
+                console.log("Checking HTML elements:");
+                console.log("easy-copy element:", document.getElementById("easy-copy"));
+                console.log("coordinates-display element:", document.getElementById("coordinates-display"));
+                console.log("Map initialization complete");
             }}
             
             function placeMarker(latLng) {{
@@ -242,65 +256,74 @@ def create_google_maps_embed():
             }}
             
             function updateCoordinates(latLng) {{
-                const display = document.getElementById("coordinates-display");
-                display.innerHTML = `
-                    <strong>Selected Coordinates:</strong><br>
-                    Latitude: ${{latLng.lat().toFixed(6)}}°N<br>
-                    Longitude: ${{latLng.lng().toFixed(6)}}°E<br>
-                    <button onclick="copyCoordinates(${{latLng.lat()}}, ${{latLng.lng()}})" style="margin-top: 10px; padding: 5px 10px; background-color: #007bff; color: white; border: none; border-radius: 3px; cursor: pointer;">
-                        Copy Coordinates
-                    </button>
-                `;
+                console.log("updateCoordinates called with:", latLng);
                 
-                // Update hidden input fields for Streamlit
-                document.getElementById("lat-input").value = latLng.lat();
-                document.getElementById("lng-input").value = latLng.lng();
-                
-                // Update easy copy section
-                document.getElementById("easy-copy").innerHTML = `
-                    <strong>Google Maps URL:</strong><br>
-                    <a href="${{mapsUrl}}" target="_blank" style="color: #007bff; text-decoration: underline; word-break: break-all;">${{mapsUrl}}</a><br><br>
-                    <strong>Coordinates:</strong><br>
-                    <strong>Latitude:</strong> ${{latLng.lat().toFixed(6)}}°N<br>
-                    <strong>Longitude:</strong> ${{latLng.lng().toFixed(6)}}°E<br><br>
-                    <button onclick="copyToClipboard('${{mapsUrl}}')" style="margin-right: 10px; padding: 5px 10px; background-color: #007bff; color: white; border: none; border-radius: 3px; cursor: pointer;">
-                        📋 Copy URL
-                    </button>
-                    <button onclick="copyToClipboard('${{latLng.lat().toFixed(6)}}, ${{latLng.lng().toFixed(6)}}')" style="padding: 5px 10px; background-color: #4CAF50; color: white; border: none; border-radius: 3px; cursor: pointer;">
-                        📋 Copy Coordinates
-                    </button>
-                `;
-                
-                // Generate Google Maps URL and send to Streamlit
-                const mapsUrl = `https://www.google.com/maps?q=${{latLng.lat()}},${{latLng.lng()}}`;
-                
-                // Store coordinates in a global variable for the capture button
-                window.currentCoordinates = {{
-                    lat: latLng.lat(),
-                    lng: latLng.lng(),
-                    url: mapsUrl
-                }};
-                
-                // Send coordinates and URL to Streamlit via postMessage
-                if (window.parent && window.parent.postMessage) {{
-                    window.parent.postMessage({{
-                        type: 'coordinates',
+                try {{
+                    // Generate Google Maps URL first
+                    const mapsUrl = `https://www.google.com/maps?q=${{latLng.lat()}},${{latLng.lng()}}`;
+                    console.log("Generated URL:", mapsUrl);
+                    
+                    // Update coordinates display
+                    const display = document.getElementById("coordinates-display");
+                    if (display) {{
+                        display.innerHTML = `
+                            <strong>Selected Coordinates:</strong><br>
+                            Latitude: ${{latLng.lat().toFixed(6)}}°N<br>
+                            Longitude: ${{latLng.lng().toFixed(6)}}°E<br>
+                            <button onclick="copyCoordinates(${{latLng.lat()}}, ${{latLng.lng()}})" style="margin-top: 10px; padding: 5px 10px; background-color: #007bff; color: white; border: none; border-radius: 3px; cursor: pointer;">
+                                Copy Coordinates
+                            </button>
+                        `;
+                    }} else {{
+                        console.log("coordinates-display element not found");
+                    }}
+                    
+                    // Update hidden input fields for Streamlit
+                    const latInput = document.getElementById("lat-input");
+                    const lngInput = document.getElementById("lng-input");
+                    if (latInput) latInput.value = latLng.lat();
+                    if (lngInput) lngInput.value = latLng.lng();
+                    
+                    // Update easy copy section
+                    const easyCopy = document.getElementById("easy-copy");
+                    if (easyCopy) {{
+                        easyCopy.innerHTML = `
+                            <strong>Google Maps URL:</strong><br>
+                            <a href="${{mapsUrl}}" target="_blank" style="color: #007bff; text-decoration: underline; word-break: break-all;">${{mapsUrl}}</a><br><br>
+                            <strong>Coordinates:</strong><br>
+                            <strong>Latitude:</strong> ${{latLng.lat().toFixed(6)}}°N<br>
+                            <strong>Longitude:</strong> ${{latLng.lng().toFixed(6)}}°E<br><br>
+                            <button onclick="copyToClipboard('${{mapsUrl}}')" style="margin-right: 10px; padding: 5px 10px; background-color: #007bff; color: white; border: none; border-radius: 3px; cursor: pointer;">
+                                📋 Copy URL
+                            </button>
+                            <button onclick="copyToClipboard('${{latLng.lat().toFixed(6)}}, ${{latLng.lng().toFixed(6)}}')" style="padding: 5px 10px; background-color: #4CAF50; color: white; border: none; border-radius: 3px; cursor: pointer;">
+                                📋 Copy Coordinates
+                            </button>
+                        `;
+                        console.log("Easy copy section updated successfully");
+                    }} else {{
+                        console.log("easy-copy element not found");
+                    }}
+                    
+                    // Store coordinates in a global variable
+                    window.currentCoordinates = {{
                         lat: latLng.lat(),
                         lng: latLng.lng(),
                         url: mapsUrl
-                    }}, '*');
-                }}
-                
-                // Also try to update the URL display directly
-                try {{
-                    // Send a message to update the URL display
-                    window.parent.postMessage({{
-                        type: 'update_url_display',
-                        url: mapsUrl,
-                        coordinates: `${{latLng.lat().toFixed(6)}}, ${{latLng.lng().toFixed(6)}}`
-                    }}, '*');
-                }} catch (e) {{
-                    console.log('Could not update URL display:', e);
+                    }};
+                    
+                    // Send coordinates to Streamlit via postMessage
+                    if (window.parent && window.parent.postMessage) {{
+                        window.parent.postMessage({{
+                            type: 'coordinates',
+                            lat: latLng.lat(),
+                            lng: latLng.lng(),
+                            url: mapsUrl
+                        }}, '*');
+                    }}
+                    
+                }} catch (error) {{
+                    console.error("Error in updateCoordinates:", error);
                 }}
             }}
             
@@ -341,6 +364,8 @@ def create_google_maps_embed():
                         
                         // Update hidden address field
                         document.getElementById("address-input").value = place.formatted_address;
+                        
+                        console.log("Manual search completed, coordinates updated");
                     }} else {{
                         alert("Location not found. Please try a different search term or be more specific.");
                     }}
