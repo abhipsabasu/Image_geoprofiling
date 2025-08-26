@@ -68,9 +68,15 @@ if 'temp_images' not in st.session_state:
     st.session_state.temp_images = []
 
 def reset_selections():
-    st.session_state.pop("q1", None)
-    st.session_state.pop("q4", None)
-    st.session_state.pop("coords", None)
+    # Clear all form selections for the next image
+    st.session_state.pop("q1", None)  # Rating question
+    st.session_state.pop("q2", None)  # Rating question
+    st.session_state.pop("q3", None)  # Clues question
+    st.session_state.pop("q4", None)  # Popularity question
+    st.session_state.pop("q5", None)  # Description question
+    st.session_state.pop("q6_month", None)  # Month question
+    st.session_state.pop("q6_year", None)   # Year question
+    st.session_state.pop("coords", None)    # Map coordinates
     st.session_state.q1_index = 0
 
 def geocode_location(location_text):
