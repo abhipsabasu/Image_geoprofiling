@@ -17,8 +17,6 @@ from firebase_admin import firestore
 import requests
 import uuid
 import re
-import folium
-from streamlit_folium import st_folium
 
 country = 'India'
 continent = 'Asia'
@@ -139,37 +137,94 @@ else:
         
         about = st.text_area("What does the photo primarily depict (e.g., building, monument, market, etc)? In case there are multiple descriptors, write them in a comma-separated manner", height=100, key='q1')
         st.markdown(f"Where in {country} was the photo taken?")
-        st.markdown("**Click on the map below to select the location where the photo was taken:**")
-        st.info("💡 **Tip:** You can zoom in/out and pan around the map to find the exact location. Click anywhere on the map to set the coordinates.")
+        st.markdown("**Use the map below to select the location where the photo was taken:**")
+        st.info("💡 **Tip:** You can zoom in/out and pan around the map. Use the latitude and longitude inputs below to set the exact coordinates.")
         
-        # Create a Folium map centered around India with better styling
-        m = folium.Map(
-            location=[20.5937, 78.9629], 
-            zoom_start=5,
-            tiles='OpenStreetMap',
-            prefer_canvas=True
-        )
+        # Add some common location presets for India
+        st.markdown("**Quick location presets (click to set):**")
+        preset_cols = st.columns(4)
         
-        # Add a marker if coordinates are already selected
+        with preset_cols[0]:
+            if st.button("🗺️ Mumbai", type="secondary"):
+                st.session_state.coords = {"lat": 19.0760, "lng": 72.8777}
+                st.rerun()
+        
+        with preset_cols[1]:
+            if st.button("🗺️ Delhi", type="secondary"):
+                st.session_state.coords = {"lat": 28.7041, "lng": 77.1025}
+                st.rerun()
+        
+        with preset_cols[2]:
+            if st.button("🗺️ Bangalore", type="secondary"):
+                st.session_state.coords = {"lat": 12.9716, "lng": 77.5946}
+                st.rerun()
+        
+        with preset_cols[3]:
+            if st.button("🗺️ Chennai", type="secondary"):
+                st.session_state.coords = {"lat": 13.0827, "lng": 80.2707}
+                st.rerun()
+        
+        # Create a map centered around India
         if st.session_state.coords:
-            folium.Marker(
-                [st.session_state.coords['lat'], st.session_state.coords['lng']],
-                popup=f"Selected Location<br>Lat: {st.session_state.coords['lat']:.6f}<br>Lng: {st.session_state.coords['lng']:.6f}",
-                icon=folium.Icon(color='red', icon='info-sign')
-            ).add_to(m)
-
-        # Add a click handler to get coordinates
-        st_map = st_folium(m, width=700, height=400)
-
-        # Extract coordinates from the map click
-        if st_map and st_map.get("last_clicked"):
-            clicked_lat = st_map["last_clicked"]["lat"]
-            clicked_lng = st_map["last_clicked"]["lng"]
-            st.session_state.coords = {"lat": clicked_lat, "lng": clicked_lng}
-            st.success(f"✅ Coordinates captured: Latitude: {clicked_lat:.6f}, Longitude: {clicked_lng:.6f}")
+            # Show selected location on map
+            map_data = pd.DataFrame({
+                'lat': [st.session_state.coords['lat']],  # Selected location
+                'lon': [st.session_state.coords['lng']]
+            })
+            st.map(map_data, zoom=10)
         else:
-            st.session_state.coords = None
-            st.warning("⚠️ No location selected on the map. Please click on the map to select a location.")
+            # Show default center of India
+            map_data = pd.DataFrame({
+                'lat': [20.5937],  # Center of India
+                'lon': [78.9629]
+            })
+            st.map(map_data, zoom=5)
+        
+        # Manual coordinate input as fallback
+        st.markdown("**Enter coordinates manually:**")
+        col1, col2 = st.columns(2)
+        
+        with col1:
+            lat_input = st.number_input(
+                "Latitude", 
+                min_value=-90.0, 
+                max_value=90.0, 
+                value=20.5937, 
+                step=0.000001,
+                format="%.6f",
+                help="Enter latitude between -90 and 90"
+            )
+        
+        with col2:
+            lon_input = st.number_input(
+                "Longitude", 
+                min_value=-180.0, 
+                max_value=180.0, 
+                value=78.9629, 
+                step=0.000001,
+                format="%.6f",
+                help="Enter longitude between -180 and 180"
+            )
+        
+        # Button to set coordinates
+        if st.button("📍 Set Coordinates", type="primary"):
+            st.session_state.coords = {"lat": lat_input, "lng": lon_input}
+            st.success(f"✅ Coordinates set: Latitude: {lat_input:.6f}, Longitude: {lon_input:.6f}")
+        
+        # Show current coordinates if set
+        if st.session_state.coords:
+            # Try to identify the location name
+            location_name = "Selected Location"
+            if abs(st.session_state.coords['lat'] - 19.0760) < 0.1 and abs(st.session_state.coords['lng'] - 72.8777) < 0.1:
+                location_name = "Mumbai"
+            elif abs(st.session_state.coords['lat'] - 28.7041) < 0.1 and abs(st.session_state.coords['lng'] - 77.1025) < 0.1:
+                location_name = "Delhi"
+            elif abs(st.session_state.coords['lat'] - 12.9716) < 0.1 and abs(st.session_state.coords['lng'] - 77.5946) < 0.1:
+                location_name = "Bangalore"
+            elif abs(st.session_state.coords['lat'] - 13.0827) < 0.1 and abs(st.session_state.coords['lng'] - 80.2707) < 0.1:
+                location_name = "Chennai"
+            
+            st.success(f"✅ {location_name}: Latitude: {st.session_state.coords['lat']:.6f}, Longitude: {st.session_state.coords['lng']:.6f}")
 
         if st.session_state.coords:
             col1, col2 = st.columns([3, 1])
