@@ -76,7 +76,7 @@ def geocode_location(location_text):
     """
     try:
         # Add "India" to the search query to improve accuracy for Indian locations
-        search_query = f"{location_text}"
+        search_query = f"{location_text}, {country}"
         
         # Initialize geocoder
         geolocator = Nominatim(user_agent="streamlit_app")
@@ -149,7 +149,7 @@ Following are the instructions for the same.
 **What to do:**
 1.  **Upload 10 images**, one at a time.
 2.  For each image:
-    -   **Rate** how clearly the photo suggests it was taken in India.
+    -   **Rate** how clearly the photo suggests it was taken in {country}.
     -   **Select the location** where the photo was taken using the search box or map.
     -   **List the clues** that helped you make that judgment.
     -   **Rate the photo** on the popularity of the location captured.
@@ -181,7 +181,7 @@ if not st.session_state.prolific_id:
 else:
     # --- MAIN APP LOGIC (This section runs only after Prolific ID is submitted) ---
     if st.session_state.index < 10:
-        uploaded_file = st.file_uploader(f"Upload image {st.session_state.index + 1}", type=["jpg", "jpeg", "png"], key=st.session_state.index)
+        uploaded_file = st.file_uploader(f"**Upload image {st.session_state.index + 1}**", type=["jpg", "jpeg", "png"], key=st.session_state.index)
         if uploaded_file:
             file_bytes = uploaded_file.read() 
             if len(file_bytes) < 100:
@@ -190,8 +190,8 @@ else:
             image = Image.open(uploaded_file)
             st.image(image, use_container_width=True)
         
-        about = st.text_area("What does the photo primarily depict (e.g., building, monument, market, etc)? In case there are multiple descriptors, write them in a comma-separated manner", height=100, key='q1')
-        st.markdown(f"Where in {country} was the photo taken?")
+        about = st.text_area("**What does the photo primarily depict (e.g., building, monument, market, etc)? In case there are multiple descriptors, write them in a comma-separated manner**", height=100, key='q1')
+        st.markdown(f"**Where in {country} was the photo taken?**")
         st.markdown("**Use the search box or map below to select the location where the photo was taken:**")
         
         # Warning that coordinates are required
@@ -200,7 +200,7 @@ else:
         else:
             st.success("✅ **Location selected successfully!**")
             
-        st.info("💡 **Tip:** You can search for locations or use the map to find coordinates. **Coordinates are required** to proceed.")
+        st.info("💡 **Tip:** You can search for locations or use the map to find coordinates. **Coordinates are required** to proceed. If the exact location cannot be found, try including broader area names in the search string, like the name of the neighbourhood, city or state. If you are still unable to find the location, please select the nearest location from the map.")
         
         # Location search functionality
         st.markdown("**🔍 Search for a location:**")
@@ -210,7 +210,7 @@ else:
             location_search = st.text_input(
                 "Enter location name (e.g., 'Taj Mahal, Agra', 'Gateway of India, Mumbai')",
                 placeholder="Type location name here...",
-                help="Search for any location in India. Try: Taj Mahal, Red Fort, Golden Temple, Goa, etc."
+                help=f"Search for any location in {country}. Try: Taj Mahal, Red Fort, Golden Temple, Goa, etc."
             )
         
         with search_col2:
@@ -317,8 +317,27 @@ else:
             key='q5'
         )
 
+        # Month and Year questions
+        st.markdown("**📅 When was this photo taken?**")
+        month_col, year_col = st.columns(2)
+        
+        with month_col:
+            month = st.selectbox(
+                "**Month:**",
+                options=["Choose an option", "January", "February", "March", "April", "May", "June", 
+                        "July", "August", "September", "October", "November", "December", "Cannot recall"],
+                key='q6_month'
+            )
+        
+        with year_col:
+            year = st.selectbox(
+                "**Year:**",
+                options=["Choose an option"] + [str(i) for i in range(2024, 1999, -1)] + ["Cannot recall"],
+                key='q6_year'
+            )
+
         if st.button("Submit and Next"):
-            if not uploaded_file or about in ['', None] or ((rating == 'Choose an option') or (rating in [2, 3] and clue_text in [None, ''])):
+            if not uploaded_file or about in ['', None] or ((rating == 'Choose an option') or (rating in [2, 3] and clue_text in [None, ''])) or month == "Choose an option" or year == "Choose an option":
                 st.error('Please answer all the questions and upload a file.')
             elif not st.session_state.coords:
                 st.error('Please select a location on the map first.')
@@ -358,6 +377,8 @@ else:
                     "popularity": popularity,
                     "clues": clue_text,
                     "description": about,
+                    "month": month,
+                    "year": year,
                 })
                 reset_selections()
                 
