@@ -144,6 +144,19 @@ def create_google_maps_embed():
             <strong>Selected Coordinates:</strong> None selected
         </div>
         
+        <!-- Hidden input fields for Streamlit to read -->
+        <input type="hidden" id="lat-input" value="">
+        <input type="hidden" id="lng-input" value="">
+        <input type="hidden" id="address-input" value="">
+        
+        <!-- Easy copy section -->
+        <div style="margin-top: 15px; padding: 10px; background-color: #e8f5e8; border-radius: 5px; border: 1px solid #4CAF50;">
+            <strong>📋 Easy Copy:</strong><br>
+            <div id="easy-copy" style="font-family: monospace; margin: 10px 0; padding: 10px; background-color: white; border-radius: 3px;">
+                Click on the map or search for a location to see coordinates here
+            </div>
+        </div>
+        
         <script>
             let map;
             let marker;
@@ -239,6 +252,19 @@ def create_google_maps_embed():
                     </button>
                 `;
                 
+                // Update hidden input fields for Streamlit
+                document.getElementById("lat-input").value = latLng.lat();
+                document.getElementById("lng-input").value = latLng.lng();
+                
+                // Update easy copy section
+                document.getElementById("easy-copy").innerHTML = `
+                    <strong>Latitude:</strong> ${latLng.lat().toFixed(6)}°N<br>
+                    <strong>Longitude:</strong> ${latLng.lng().toFixed(6)}°E<br>
+                    <button onclick="copyToClipboard('${latLng.lat().toFixed(6)}, ${latLng.lng().toFixed(6)}')" style="margin-top: 5px; padding: 5px 10px; background-color: #4CAF50; color: white; border: none; border-radius: 3px; cursor: pointer;">
+                        📋 Copy to Clipboard
+                    </button>
+                `;
+                
                 // Send coordinates to Streamlit
                 if (window.parent && window.parent.postMessage) {{
                     window.parent.postMessage({{
@@ -283,6 +309,9 @@ def create_google_maps_embed():
                         // Show success message
                         const display = document.getElementById("coordinates-display");
                         display.innerHTML += `<br><span style="color: green;">✅ Location found: ${{place.formatted_address}}</span>`;
+                        
+                        // Update hidden address field
+                        document.getElementById("address-input").value = place.formatted_address;
                     }} else {{
                         alert("Location not found. Please try a different search term or be more specific.");
                     }}
@@ -295,6 +324,12 @@ def create_google_maps_embed():
             
             function copyCoordinates(lat, lng) {{
                 const text = `${{lat.toFixed(6)}}, ${{lng.toFixed(6)}}`;
+                navigator.clipboard.writeText(text).then(function() {{
+                    alert("Coordinates copied to clipboard!");
+                }});
+            }}
+            
+            function copyToClipboard(text) {{
                 navigator.clipboard.writeText(text).then(function() {{
                     alert("Coordinates copied to clipboard!");
                 }});
@@ -396,25 +431,40 @@ else:
         # Display the Google Maps embed
         components.html(google_maps_html, height=500, scrolling=False)
         
-        # Add JavaScript to listen for coordinates from the embedded map
-        components.html("""
-        <script>
-            window.addEventListener('message', function(event) {
-                if (event.data.type === 'coordinates') {
-                    // Store coordinates in session state
-                    const data = {
-                        lat: event.data.lat,
-                        lng: event.data.lng
-                    };
-                    // Use Streamlit's session state update
-                    window.parent.postMessage({
-                        type: 'streamlit:setComponentValue',
-                        value: JSON.stringify(data)
-                    }, '*');
-                }
-            });
-        </script>
-        """, height=0)
+        # Add a simple coordinate capture system
+        st.markdown("**📍 Coordinate Capture:**")
+        st.info("After searching or clicking on the map, enter the coordinates below to capture them.")
+        
+        # Create a form for coordinate input
+        with st.form("coordinate_capture"):
+            coord_col1, coord_col2, coord_col3 = st.columns([2, 2, 1])
+            
+            with coord_col1:
+                lat_input = st.text_input("Latitude", placeholder="e.g., 19.0760", key="lat_input")
+            
+            with coord_col2:
+                lng_input = st.text_input("Longitude", placeholder="e.g., 72.8777", key="lng_input")
+            
+            with coord_col3:
+                st.markdown("**Action:**")
+                capture_button = st.form_submit_button("📍 Capture Coordinates", type="primary")
+            
+            if capture_button and lat_input and lng_input:
+                try:
+                    lat = float(lat_input)
+                    lng = float(lng_input)
+                    if -90 <= lat <= 90 and -180 <= lng <= 180:
+                        st.session_state.coords = {"lat": lat, "lng": lng}
+                        st.success(f"✅ Coordinates captured: {lat:.6f}°N, {lng:.6f}°E")
+                        st.rerun()
+                    else:
+                        st.error("❌ Invalid coordinates. Latitude must be between -90 and 90, Longitude between -180 and 180.")
+                except ValueError:
+                    st.error("❌ Please enter valid numbers for coordinates.")
+        
+        # Display current coordinates if set
+        if st.session_state.coords:
+            st.success(f"**📍 Current Location:** {st.session_state.coords['lat']:.6f}°N, {st.session_state.coords['lng']:.6f}°E")
 
         
         # Show coordinate status
