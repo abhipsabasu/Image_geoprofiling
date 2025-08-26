@@ -70,34 +70,33 @@ def reset_selections():
 
 def create_google_maps_embed():
     """
-    Create Google Maps embed with coordinate extraction functionality
+    Create an interactive map with coordinate extraction functionality
     """
-    # Get the Google Maps API key from Streamlit secrets
-    api_key = st.secrets["firebase"]["GOOGLE_MAPS_API_KEY"]
-    
-    html_code = f"""
+    html_code = """
     <!DOCTYPE html>
     <html>
     <head>
-        <title>Google Maps Location Picker</title>
+        <title>Interactive Location Picker</title>
+        <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
+        <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
         <style>
-            #map {{
+            #map {
                 height: 400px;
                 width: 100%;
                 border-radius: 10px;
                 border: 2px solid #ddd;
-            }}
-            .search-container {{
+            }
+            .search-container {
                 margin-bottom: 15px;
-            }}
-            #search-input {{
+            }
+            #search-input {
                 width: 70%;
                 padding: 10px;
                 border: 1px solid #ddd;
                 border-radius: 5px;
                 font-size: 14px;
-            }}
-            #search-button {{
+            }
+            #search-button {
                 width: 25%;
                 padding: 10px;
                 background-color: #4CAF50;
@@ -106,26 +105,22 @@ def create_google_maps_embed():
                 border-radius: 5px;
                 cursor: pointer;
                 font-size: 14px;
-            }}
-            #search-button:hover {{
+            }
+            #search-button:hover {
                 background-color: #45a049;
-            }}
-            .coordinates-display {{
+            }
+            .coordinates-display {
                 margin-top: 15px;
                 padding: 10px;
                 background-color: #f0f0f0;
                 border-radius: 5px;
                 font-family: monospace;
-            }}
-            .instructions {{
+            }
+            .instructions {
                 margin-bottom: 15px;
                 color: #666;
                 font-size: 14px;
-            }}
-            .loading {{
-                color: #666;
-                font-style: italic;
-            }}
+            }
         </style>
     </head>
     <body>
@@ -144,263 +139,99 @@ def create_google_maps_embed():
             <strong>Selected Coordinates:</strong> None selected
         </div>
         
-        <!-- Hidden input fields for Streamlit to read -->
-        <input type="hidden" id="lat-input" value="">
-        <input type="hidden" id="lng-input" value="">
-        <input type="hidden" id="address-input" value="">
-        
-        <!-- Easy copy section -->
-        <div style="margin-top: 15px; padding: 10px; background-color: #e8f5e8; border-radius: 5px; border: 1px solid #4CAF50;">
-            <strong>📋 Google Maps URL & Coordinates:</strong><br>
-            <div id="easy-copy" style="font-family: monospace; margin: 10px 0; padding: 10px; background-color: white; border-radius: 3px;">
-                Click on the map or search for a location to see the Google Maps URL and coordinates here
-            </div>
-        </div>
-        
         <script>
             let map;
             let marker;
-            let geocoder;
-            let searchBox;
             
-            function initMap() {{
-                console.log("initMap called - initializing map");
-                
+            function initMap() {
                 // Center map on India
-                const india = {{ lat: 20.5937, lng: 78.9629 }};
+                const india = [20.5937, 78.9629];
                 
-                map = new google.maps.Map(document.getElementById("map"), {{
-                    zoom: 5,
-                    center: india,
-                    mapTypeId: google.maps.MapTypeId.ROADMAP,
-                    styles: [
-                        {{
-                            featureType: "poi",
-                            elementType: "labels",
-                            stylers: [{{ visibility: "off" }}]
-                        }}
-                    ]
-                }});
+                map = L.map('map').setView(india, 5);
                 
-                geocoder = new google.maps.Geocoder();
+                // Add OpenStreetMap tiles
+                L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                    attribution: '© OpenStreetMap contributors'
+                }).addTo(map);
                 
                 // Add click listener to map
-                map.addListener("click", function(event) {{
-                    console.log("Map clicked at:", event.latLng);
-                    placeMarker(event.latLng);
-                    updateCoordinates(event.latLng);
-                }});
-                
-                // Initialize search box
-                const input = document.getElementById("search-input");
-                searchBox = new google.maps.places.SearchBox(input);
-                
-                // Bias search results to India
-                map.addListener("bounds_changed", function() {{
-                    searchBox.setBounds(map.getBounds());
-                }});
-                
-                // Listen for search results
-                searchBox.addListener("places_changed", function() {{
-                    const places = searchBox.getPlaces();
-                    if (places.length === 0) return;
-                    
-                    const place = places[0];
-                    if (!place.geometry) return;
-                    
-                    console.log("Search result received:", place.formatted_address);
-                    
-                    // Center map on search result
-                    if (place.geometry.viewport) {{
-                        map.fitBounds(place.geometry.viewport);
-                    }} else {{
-                        map.setCenter(place.geometry.location);
-                        map.setZoom(15);
-                    }}
-                    
-                    // Place marker and update coordinates
-                    placeMarker(place.geometry.location);
-                    updateCoordinates(place.geometry.location);
-                    
-                    // Update search input with formatted address
-                    document.getElementById("search-input").value = place.formatted_address;
-                    
-                    // Debug log
-                    console.log("Search result processed, coordinates updated");
-                }});
+                map.on('click', function(event) {
+                    placeMarker(event.latlng);
+                    updateCoordinates(event.latlng);
+                });
                 
                 // Handle Enter key in search input
-                input.addEventListener("keypress", function(event) {{
-                    if (event.key === "Enter") {{
+                document.getElementById("search-input").addEventListener("keypress", function(event) {
+                    if (event.key === "Enter") {
                         searchLocation();
-                    }}
-                }});
+                    }
+                });
+            }
+            
+            function placeMarker(latLng) {
+                if (marker) {
+                    map.removeLayer(marker);
+                }
+                marker = L.marker(latLng).addTo(map);
+                marker.bindPopup("Selected Location").openPopup();
+            }
+            
+            function updateCoordinates(latLng) {
+                const display = document.getElementById("coordinates-display");
+                display.innerHTML = `
+                    <strong>Selected Coordinates:</strong><br>
+                    Latitude: ${latLng.lat.toFixed(6)}°N<br>
+                    Longitude: ${latLng.lng.toFixed(6)}°E<br>
+                    <button onclick="copyCoordinates(${latLng.lat}, ${latLng.lng})" style="margin-top: 10px; padding: 5px 10px; background-color: #007bff; color: white; border: none; border-radius: 3px; cursor: pointer;">
+                        Copy Coordinates
+                    </button>
+                `;
                 
-                // Verify HTML elements exist
-                console.log("Checking HTML elements:");
-                console.log("easy-copy element:", document.getElementById("easy-copy"));
-                console.log("coordinates-display element:", document.getElementById("coordinates-display"));
-                console.log("Map initialization complete");
-            }}
+                // Send coordinates to Streamlit
+                if (window.parent && window.parent.postMessage) {
+                    window.parent.postMessage({
+                        type: 'coordinates',
+                        lat: latLng.lat,
+                        lng: latLng.lng
+                    }, '*');
+                }
+            }
             
-            function placeMarker(latLng) {{
-                if (marker) {{
-                    marker.setMap(null);
-                }}
-                marker = new google.maps.Marker({{
-                    position: latLng,
-                    map: map,
-                    title: "Selected Location",
-                    animation: google.maps.Animation.DROP
-                }});
-            }}
-            
-            function updateCoordinates(latLng) {{
-                console.log("updateCoordinates called with:", latLng);
-                
-                try {{
-                    // Generate Google Maps URL first
-                    const mapsUrl = `https://www.google.com/maps?q=${{latLng.lat()}},${{latLng.lng()}}`;
-                    console.log("Generated URL:", mapsUrl);
-                    
-                    // Update coordinates display
-                    const display = document.getElementById("coordinates-display");
-                    if (display) {{
-                        display.innerHTML = `
-                            <strong>Selected Coordinates:</strong><br>
-                            Latitude: ${{latLng.lat().toFixed(6)}}°N<br>
-                            Longitude: ${{latLng.lng().toFixed(6)}}°E<br>
-                            <button onclick="copyCoordinates(${{latLng.lat()}}, ${{latLng.lng()}})" style="margin-top: 10px; padding: 5px 10px; background-color: #007bff; color: white; border: none; border-radius: 3px; cursor: pointer;">
-                                Copy Coordinates
-                            </button>
-                        `;
-                    }} else {{
-                        console.log("coordinates-display element not found");
-                    }}
-                    
-                    // Update hidden input fields for Streamlit
-                    const latInput = document.getElementById("lat-input");
-                    const lngInput = document.getElementById("lng-input");
-                    if (latInput) latInput.value = latLng.lat();
-                    if (lngInput) lngInput.value = latLng.lng();
-                    
-                    // Update easy copy section
-                    const easyCopy = document.getElementById("easy-copy");
-                    if (easyCopy) {{
-                        easyCopy.innerHTML = `
-                            <strong>Google Maps URL:</strong><br>
-                            <a href="${{mapsUrl}}" target="_blank" style="color: #007bff; text-decoration: underline; word-break: break-all;">${{mapsUrl}}</a><br><br>
-                            <strong>Coordinates:</strong><br>
-                            <strong>Latitude:</strong> ${{latLng.lat().toFixed(6)}}°N<br>
-                            <strong>Longitude:</strong> ${{latLng.lng().toFixed(6)}}°E<br><br>
-                            <button onclick="copyToClipboard('${{mapsUrl}}')" style="margin-right: 10px; padding: 5px 10px; background-color: #007bff; color: white; border: none; border-radius: 3px; cursor: pointer;">
-                                📋 Copy URL
-                            </button>
-                            <button onclick="copyToClipboard('${{latLng.lat().toFixed(6)}}, ${{latLng.lng().toFixed(6)}}')" style="padding: 5px 10px; background-color: #4CAF50; color: white; border: none; border-radius: 3px; cursor: pointer;">
-                                📋 Copy Coordinates
-                            </button>
-                        `;
-                        console.log("Easy copy section updated successfully");
-                    }} else {{
-                        console.log("easy-copy element not found");
-                    }}
-                    
-                    // Store coordinates in a global variable
-                    window.currentCoordinates = {{
-                        lat: latLng.lat(),
-                        lng: latLng.lng(),
-                        url: mapsUrl
-                    }};
-                    
-                    // Send coordinates to Streamlit via postMessage
-                    if (window.parent && window.parent.postMessage) {{
-                        window.parent.postMessage({{
-                            type: 'coordinates',
-                            lat: latLng.lat(),
-                            lng: latLng.lng(),
-                            url: mapsUrl
-                        }}, '*');
-                    }}
-                    
-                }} catch (error) {{
-                    console.error("Error in updateCoordinates:", error);
-                }}
-            }}
-            
-            function searchLocation() {{
+            function searchLocation() {
                 const input = document.getElementById("search-input");
-                const query = input.value.trim();
+                const query = input.value + ", India";
                 
-                if (!query) {{
-                    alert("Please enter a location to search for.");
-                    return;
-                }}
-                
-                // Show loading state
-                const searchBtn = document.getElementById("search-button");
-                const originalText = searchBtn.textContent;
-                searchBtn.textContent = "Searching...";
-                searchBtn.disabled = true;
-                
-                // Use Google Places API for search
-                const service = new google.maps.places.PlacesService(map);
-                const request = {{
-                    query: query + ", India",
-                    fields: ['name', 'geometry', 'formatted_address']
-                }};
-                
-                service.findPlaceFromQuery(request, function(results, status) {{
-                    if (status === google.maps.places.PlacesServiceStatus.OK && results.length > 0) {{
-                        const place = results[0];
-                        map.setCenter(place.geometry.location);
-                        map.setZoom(15);
-                        placeMarker(place.geometry.location);
-                        updateCoordinates(place.geometry.location);
-                        input.value = place.formatted_address;
-                        
-                        // Show success message
-                        const display = document.getElementById("coordinates-display");
-                        display.innerHTML += `<br><span style="color: green;">✅ Location found: ${{place.formatted_address}}</span>`;
-                        
-                        // Update hidden address field
-                        document.getElementById("address-input").value = place.formatted_address;
-                        
-                        console.log("Manual search completed, coordinates updated");
-                    }} else {{
-                        alert("Location not found. Please try a different search term or be more specific.");
-                    }}
-                    
-                    // Reset button state
-                    searchBtn.textContent = originalText;
-                    searchBtn.disabled = false;
-                }});
-            }}
+                // Use Nominatim geocoding service (free)
+                fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}&limit=1`)
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.length > 0) {
+                            const place = data[0];
+                            const latLng = [parseFloat(place.lat), parseFloat(place.lon)];
+                            
+                            map.setView(latLng, 15);
+                            placeMarker(latLng);
+                            updateCoordinates(latLng);
+                            input.value = place.display_name;
+                        } else {
+                            alert("Location not found. Please try a different search term.");
+                        }
+                    })
+                    .catch(error => {
+                        alert("Search failed. Please try again.");
+                        console.error('Error:', error);
+                    });
+            }
             
-            function copyCoordinates(lat, lng) {{
-                const text = `${{lat.toFixed(6)}}, ${{lng.toFixed(6)}}`;
-                navigator.clipboard.writeText(text).then(function() {{
+            function copyCoordinates(lat, lng) {
+                const text = `${lat.toFixed(6)}, ${lng.toFixed(6)}`;
+                navigator.clipboard.writeText(text).then(function() {
                     alert("Coordinates copied to clipboard!");
-                }});
-            }}
+                });
+            }
             
-            function copyToClipboard(text) {{
-                navigator.clipboard.writeText(text).then(function() {{
-                    alert("Coordinates copied to clipboard!");
-                }});
-            }}
-            
-            // Function to get current coordinates (can be called from Streamlit)
-            function getCurrentCoordinates() {{
-                if (window.currentCoordinates) {{
-                    return window.currentCoordinates;
-                }} else {{
-                    return null;
-                }}
-            }}
-        </script>
-        
-        <script async defer
-            src="https://maps.googleapis.com/maps/api/js?key={api_key}&libraries=places&callback=initMap">
+            // Initialize map when page loads
+            window.onload = initMap;
         </script>
     </body>
     </html>
@@ -484,8 +315,8 @@ else:
             
         st.info("💡 **Tip:** You can search for locations or use the map to find coordinates. **Coordinates are required** to proceed.")
         
-        # Google Maps Location Picker
-        st.markdown("**🗺️ Google Maps Location Picker:**")
+        # Interactive Map Location Picker
+        st.markdown("**🗺️ Interactive Map Location Picker:**")
         st.info("💡 **Instructions:** Search for a location or click anywhere on the map to select coordinates. The map will automatically extract the latitude and longitude.")
         
         # Create Google Maps embed
@@ -494,19 +325,67 @@ else:
         # Display the Google Maps embed
         components.html(google_maps_html, height=500, scrolling=False)
         
-        # Automatic coordinate capture from map
-        st.markdown("**📍 Coordinate Capture:**")
+        # Manual coordinate input as fallback
+        st.markdown("**📍 Manual Coordinate Input (if needed):**")
+        coord_col1, coord_col2 = st.columns(2)
         
-
+        with coord_col1:
+            manual_lat = st.number_input(
+                "Latitude", 
+                min_value=-90.0, 
+                max_value=90.0, 
+                value=20.5937, 
+                step=0.000001,
+                format="%.6f",
+                help="Enter latitude between -90 and 90"
+            )
+        
+        with coord_col2:
+            manual_lng = st.number_input(
+                "Longitude", 
+                min_value=-180.0, 
+                max_value=180.0, 
+                value=78.9629, 
+                step=0.000001,
+                format="%.6f",
+                help="Enter longitude between -180 and 90"
+            )
+        
+        # Button to set manual coordinates
+        if st.button("📍 Set Manual Coordinates", type="primary"):
+            st.session_state.coords = {"lat": manual_lat, "lng": manual_lng}
+            st.success(f"✅ Manual coordinates set: {manual_lat:.6f}°N, {manual_lng:.6f}°E")
+            st.rerun()
         
         # Show coordinate status
         if not st.session_state.coords:
-            st.warning("⚠️ **No coordinates selected yet.** Please search for a location or click on the map above.")
+            st.error("❌ **No coordinates selected.** Please select a location above to proceed.")
         else:
-            st.success(f"✅ **Location Selected:** {st.session_state.coords['lat']:.6f}°N, {st.session_state.coords['lng']:.6f}°E")
-            if st.button("🗑️ Clear Location", type="secondary"):
-                st.session_state.coords = None
-                st.rerun()
+            st.markdown(f"**📍 Selected Location:** {st.session_state.coords['lat']:.6f}°N, {st.session_state.coords['lng']:.6f}°E")
+        
+        # Show current coordinates if set
+        if st.session_state.coords:
+            # Try to identify the location name
+            location_name = "Selected Location"
+            if abs(st.session_state.coords['lat'] - 19.0760) < 0.1 and abs(st.session_state.coords['lng'] - 72.8777) < 0.1:
+                location_name = "Mumbai"
+            elif abs(st.session_state.coords['lat'] - 28.7041) < 0.1 and abs(st.session_state.coords['lng'] - 77.1025) < 0.1:
+                location_name = "Delhi"
+            elif abs(st.session_state.coords['lat'] - 12.9716) < 0.1 and abs(st.session_state.coords['lng'] - 77.5946) < 0.1:
+                location_name = "Bangalore"
+            elif abs(st.session_state.coords['lat'] - 13.0827) < 0.1 and abs(st.session_state.coords['lng'] - 80.2707) < 0.1:
+                location_name = "Chennai"
+            
+            st.success(f"✅ {location_name}: Latitude: {st.session_state.coords['lat']:.6f}, Longitude: {st.session_state.coords['lng']:.6f}")
+
+        if st.session_state.coords:
+            col1, col2 = st.columns([3, 1])
+            with col1:
+                st.write(f"**Current Selected Location:** Latitude: {st.session_state.coords['lat']:.6f}, Longitude: {st.session_state.coords['lng']:.6f}")
+            with col2:
+                if st.button("🗑️ Clear Location", type="secondary"):
+                    st.session_state.coords = None
+                    st.rerun()
         
         # st.markdown(f"To what extent does this image contain visual cues (e.g., local architecture, language, or scenery) that identify it as being from {country}?")
         clue_text = None
