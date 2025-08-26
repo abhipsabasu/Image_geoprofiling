@@ -167,6 +167,7 @@ Following are the instructions for the same.
     -   **Rate the photo** on the popularity of the location captured.
     -   **Click** "Submit and Next" to move to the next image.
 3. If the screen freezes, do **NOT** refresh the page. Instead, wait for a few seconds for the internet connectivity to stabilize.
+4. After uploading all the photos, wait till you get a message saying 'Survey Complete'.
 
 You have *20* minutes to upload the photos and answer the questions surrounding them. After you upload the photo, wait for the photo to be visible on screen, then answer the questions.
 """, unsafe_allow_html=True)
@@ -397,7 +398,7 @@ else:
                 st.rerun()
     else:
         # Upload all images to GitHub at once
-        st.markdown("**📤 Uploading all images to GitHub...**")
+        st.markdown("**📤 Uploading all images...**")
         
         upload_progress = st.progress(0)
         upload_status = st.empty()
