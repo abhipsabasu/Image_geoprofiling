@@ -69,14 +69,22 @@ if 'temp_images' not in st.session_state:
 
 def reset_selections():
     # Clear all form selections for the next image
-    st.session_state.pop("q1", None)  # Rating question
-    st.session_state.pop("q2", None)  # Rating question
-    st.session_state.pop("q3", None)  # Clues question
-    st.session_state.pop("q4", None)  # Popularity question
-    st.session_state.pop("q5", None)  # Description question
-    st.session_state.pop("q6_month", None)  # Month question
-    st.session_state.pop("q6_year", None)   # Year question
+    # Clear text inputs and text areas
+    st.session_state.pop("q1", None)  # Description text area
+    st.session_state.pop("q3", None)  # Clues text area
+    
+    # Clear radio button selections
+    st.session_state.pop("q2", None)  # Rating radio button
+    st.session_state.pop("q5", None)  # Popularity radio button
+    
+    # Clear selectbox selections
+    st.session_state.pop("q6_month", None)  # Month selectbox
+    st.session_state.pop("q6_year", None)   # Year selectbox
+    
+    # Clear coordinates
     st.session_state.pop("coords", None)    # Map coordinates
+    
+    # Reset question index
     st.session_state.q1_index = 0
 
 def geocode_location(location_text):
@@ -204,8 +212,7 @@ else:
             st.image(image, use_container_width=True)
         
         about = st.text_area("**What does the photo primarily depict (e.g., building, monument, market, etc)? In case there are multiple descriptors, write them in a comma-separated manner**", height=100, key='q1')
-        st.markdown(f"**Where in {country} was the photo taken?**")
-        st.markdown("**Use the search box or map below to select the location where the photo was taken:**")
+        st.markdown(f"**Where in {country} was the photo taken? **Use the search box or map below to select the location where the photo was taken:**")
         
         # Warning that coordinates are required
         if not st.session_state.coords:
@@ -316,7 +323,7 @@ else:
         rating = st.radio(
             f"**To what extent does this image contain visual cues (e.g., local architecture, language, or scenery) that identify it as being from {country}?**",
             options=["Choose an option", 0, 1, 2],
-            format_func=lambda x: f"{'No evidence at all' if x==0 else f'Enough evidence specific to {country}' if x==2 else f'There are visual indications like architectural style, vegetations, etc, but I do not know if they are specific to {country}' if x==1 else ''}",
+            format_func=lambda x: f"{'No evidence at all' if x==0 else f'Enough evidence specific to {country}' if x==2 else f'There are visual indications like architectural style, vegetations, etc, but I do not know if they are specific to {country}' if x==1 else 'Choose an option'}",
             index=st.session_state.q1_index,
             key='q2'
         )
