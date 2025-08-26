@@ -151,9 +151,9 @@ def create_google_maps_embed():
         
         <!-- Easy copy section -->
         <div style="margin-top: 15px; padding: 10px; background-color: #e8f5e8; border-radius: 5px; border: 1px solid #4CAF50;">
-            <strong>📋 Easy Copy:</strong><br>
+            <strong>📋 Google Maps URL & Coordinates:</strong><br>
             <div id="easy-copy" style="font-family: monospace; margin: 10px 0; padding: 10px; background-color: white; border-radius: 3px;">
-                Click on the map or search for a location to see coordinates here
+                Click on the map or search for a location to see the Google Maps URL and coordinates here
             </div>
         </div>
         
@@ -258,20 +258,49 @@ def create_google_maps_embed():
                 
                 // Update easy copy section
                 document.getElementById("easy-copy").innerHTML = `
+                    <strong>Google Maps URL:</strong><br>
+                    <a href="${{mapsUrl}}" target="_blank" style="color: #007bff; text-decoration: underline; word-break: break-all;">${{mapsUrl}}</a><br><br>
+                    <strong>Coordinates:</strong><br>
                     <strong>Latitude:</strong> ${{latLng.lat().toFixed(6)}}°N<br>
-                    <strong>Longitude:</strong> ${{latLng.lng().toFixed(6)}}°E<br>
-                    <button onclick="copyToClipboard('${{latLng.lat().toFixed(6)}}, ${{latLng.lng().toFixed(6)}}')" style="margin-top: 5px; padding: 5px 10px; background-color: #4CAF50; color: white; border: none; border-radius: 3px; cursor: pointer;">
-                        📋 Copy to Clipboard
+                    <strong>Longitude:</strong> ${{latLng.lng().toFixed(6)}}°E<br><br>
+                    <button onclick="copyToClipboard('${{mapsUrl}}')" style="margin-right: 10px; padding: 5px 10px; background-color: #007bff; color: white; border: none; border-radius: 3px; cursor: pointer;">
+                        📋 Copy URL
+                    </button>
+                    <button onclick="copyToClipboard('${{latLng.lat().toFixed(6)}}, ${{latLng.lng().toFixed(6)}}')" style="padding: 5px 10px; background-color: #4CAF50; color: white; border: none; border-radius: 3px; cursor: pointer;">
+                        📋 Copy Coordinates
                     </button>
                 `;
                 
-                // Send coordinates to Streamlit via postMessage
+                // Generate Google Maps URL and send to Streamlit
+                const mapsUrl = `https://www.google.com/maps?q=${{latLng.lat()}},${{latLng.lng()}}`;
+                
+                // Store coordinates in a global variable for the capture button
+                window.currentCoordinates = {{
+                    lat: latLng.lat(),
+                    lng: latLng.lng(),
+                    url: mapsUrl
+                }};
+                
+                // Send coordinates and URL to Streamlit via postMessage
                 if (window.parent && window.parent.postMessage) {{
                     window.parent.postMessage({{
                         type: 'coordinates',
                         lat: latLng.lat(),
-                        lng: latLng.lng()
+                        lng: latLng.lng(),
+                        url: mapsUrl
                     }}, '*');
+                }}
+                
+                // Also try to update the URL display directly
+                try {{
+                    // Send a message to update the URL display
+                    window.parent.postMessage({{
+                        type: 'update_url_display',
+                        url: mapsUrl,
+                        coordinates: `${{latLng.lat().toFixed(6)}}, ${{latLng.lng().toFixed(6)}}`
+                    }}, '*');
+                }} catch (e) {{
+                    console.log('Could not update URL display:', e);
                 }}
             }}
             
@@ -333,6 +362,15 @@ def create_google_maps_embed():
                 navigator.clipboard.writeText(text).then(function() {{
                     alert("Coordinates copied to clipboard!");
                 }});
+            }}
+            
+            // Function to get current coordinates (can be called from Streamlit)
+            function getCurrentCoordinates() {{
+                if (window.currentCoordinates) {{
+                    return window.currentCoordinates;
+                }} else {{
+                    return null;
+                }}
             }}
         </script>
         
@@ -431,20 +469,15 @@ else:
         # Display the Google Maps embed
         components.html(google_maps_html, height=500, scrolling=False)
         
-        # Automatic coordinate capture system
-        st.markdown("**📍 Coordinate Status:**")
+        # Automatic coordinate capture from map
+        st.markdown("**📍 Coordinate Capture:**")
         
-        # Simple coordinate capture
-        st.markdown("**📍 Coordinate Status:**")
+        # Display Google Maps URL when coordinates are available
+        st.markdown("**📍 Google Maps URL:**")
         
-        # Show coordinate status
-        if not st.session_state.coords:
-            st.warning("⚠️ **No coordinates selected yet.** Please search for a location or click on the map above.")
-        else:
-            st.success(f"✅ **Location Selected:** {st.session_state.coords['lat']:.6f}°N, {st.session_state.coords['lng']:.6f}°E")
-            if st.button("🗑️ Clear Location", type="secondary"):
-                st.session_state.coords = None
-                st.rerun()
+        # This will be populated by JavaScript when coordinates are selected
+        url_display = st.empty()
+        url_display.info("Search for a location or click on the map above to see the Google Maps URL here.")
         
         # Show coordinate status
         if not st.session_state.coords:
