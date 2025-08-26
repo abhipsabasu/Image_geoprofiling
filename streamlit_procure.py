@@ -68,24 +68,19 @@ if 'temp_images' not in st.session_state:
     st.session_state.temp_images = []
 
 def reset_selections():
-    # Clear all form selections for the next image
-    # Clear text inputs and text areas
-    st.session_state.pop("q1", None)  # Description text area
-    st.session_state.pop("q3", None)  # Clues text area
+    # Clear all form selections for the next image using a more robust method
     
-    # Clear radio button selections
-    st.session_state.pop("q2", None)  # Rating radio button
-    st.session_state.pop("q5", None)  # Popularity radio button
+    # Method 1: Try to clear specific keys
+    keys_to_clear = ["q1", "q2", "q3", "q5", "q6_month", "q6_year", "coords"]
+    for key in keys_to_clear:
+        if key in st.session_state:
+            del st.session_state[key]
     
-    # Clear selectbox selections
-    st.session_state.pop("q6_month", None)  # Month selectbox
-    st.session_state.pop("q6_year", None)   # Year selectbox
-    
-    # Clear coordinates
-    st.session_state.pop("coords", None)    # Map coordinates
-    
-    # Reset question index
+    # Method 2: Reset question index
     st.session_state.q1_index = 0
+    
+    # Method 3: Force rerun to clear form state
+    # This is more reliable than trying to clear individual keys
 
 def geocode_location(location_text):
     """
@@ -211,7 +206,7 @@ else:
             image = Image.open(uploaded_file)
             st.image(image, use_container_width=True)
         
-        about = st.text_area("**What does the photo primarily depict (e.g., building, monument, market, etc)? In case there are multiple descriptors, write them in a comma-separated manner**", height=100, key='q1')
+        about = st.text_area("**What does the photo primarily depict (e.g., building, monument, market, etc)? In case there are multiple descriptors, write them in a comma-separated manner**", height=100, key=f'q1_{st.session_state.index}')
         st.markdown(f"**Where in {country} was the photo taken? **Use the search box or map below to select the location where the photo was taken:**")
         
         # Warning that coordinates are required
@@ -325,16 +320,16 @@ else:
             options=["Choose an option", 0, 1, 2],
             format_func=lambda x: f"{'No evidence at all' if x==0 else f'Enough evidence specific to {country}' if x==2 else f'There are visual indications like architectural style, vegetations, etc, but I do not know if they are specific to {country}' if x==1 else 'Choose an option'}",
             index=st.session_state.q1_index,
-            key='q2'
+            key=f'q2_{st.session_state.index}'
         )
         if rating in [2, 3]:
-            clue_text = st.text_area("What visual clues or indicators helped you make this judgment?", height=100, key='q3')
+            clue_text = st.text_area("What visual clues or indicators helped you make this judgment?", height=100, key=f'q3_{st.session_state.index}')
         popularity = st.radio(
             "**How would you rate the popularity of the location depicted in the photo you uploaded?**",
             options=["Choose an option", 0, 1, 2],
             format_func=lambda x: f"{'The location depicts only a regular scene' if x==0 else f'The location may be locally popular, but not country-wide' if x==1 else f'The location is popular country-wide' if x==2 else 'Choose an option'}",
             index=st.session_state.q1_index,
-            key='q5'
+            key=f'q5_{st.session_state.index}'
         )
 
         # Month and Year questions
@@ -346,14 +341,14 @@ else:
                 "**Month:**",
                 options=["Choose an option", "January", "February", "March", "April", "May", "June", 
                         "July", "August", "September", "October", "November", "December", "Cannot recall"],
-                key='q6_month'
+                key=f'q6_month_{st.session_state.index}'
             )
         
         with year_col:
             year = st.selectbox(
                 "**Year:**",
-                options=["Choose an option"] + [str(i) for i in range(2024, 1999, -1)] + ["Cannot recall"],
-                key='q6_year'
+                options=["Choose an option"] + [str(i) for i in range(2025, 1999, -1)] + ["Cannot recall"],
+                key=f'q6_year_{st.session_state.index}'
             )
 
         if st.button("Submit and Next"):
@@ -390,12 +385,13 @@ else:
                 })
                 
                 st.success("✅ Image and responses saved! Continue with next image.")
-                reset_selections()
                 
+                # Clear coordinates and reset index
+                st.session_state.coords = None
                 st.session_state.index += 1
                 st.session_state.q1_index = 0
                 
-                st.session_state.coords = None
+                # Force rerun to get fresh forms with new keys
                 st.rerun()
     else:
         # Upload all images to GitHub at once
