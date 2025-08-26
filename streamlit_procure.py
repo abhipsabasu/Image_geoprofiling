@@ -258,9 +258,9 @@ def create_google_maps_embed():
                 
                 // Update easy copy section
                 document.getElementById("easy-copy").innerHTML = `
-                    <strong>Latitude:</strong> ${latLng.lat().toFixed(6)}°N<br>
-                    <strong>Longitude:</strong> ${latLng.lng().toFixed(6)}°E<br>
-                    <button onclick="copyToClipboard('${latLng.lat().toFixed(6)}, ${latLng.lng().toFixed(6)}')" style="margin-top: 5px; padding: 5px 10px; background-color: #4CAF50; color: white; border: none; border-radius: 3px; cursor: pointer;">
+                    <strong>Latitude:</strong> ${{latLng.lat().toFixed(6)}}°N<br>
+                    <strong>Longitude:</strong> ${{latLng.lng().toFixed(6)}}°E<br>
+                    <button onclick="copyToClipboard('${{latLng.lat().toFixed(6)}}, ${{latLng.lng().toFixed(6)}}')" style="margin-top: 5px; padding: 5px 10px; background-color: #4CAF50; color: white; border: none; border-radius: 3px; cursor: pointer;">
                         📋 Copy to Clipboard
                     </button>
                 `;
