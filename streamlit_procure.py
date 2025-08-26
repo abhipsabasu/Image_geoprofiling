@@ -76,7 +76,7 @@ def geocode_location(location_text):
     """
     try:
         # Add "India" to the search query to improve accuracy for Indian locations
-        search_query = f"{location_text}, India"
+        search_query = f"{location_text}"
         
         # Initialize geocoder
         geolocator = Nominatim(user_agent="streamlit_app")
