@@ -207,7 +207,7 @@ else:
             st.image(image, use_container_width=True)
         
         about = st.text_area("**What does the photo primarily depict (e.g., building, monument, market, etc)? In case there are multiple descriptors, write them in a comma-separated manner**", height=100, key=f'q1_{st.session_state.index}')
-        st.markdown(f"**Where in {country} was the photo taken? **Use the search box or map below to select the location where the photo was taken:**")
+        st.markdown(f"**Where in {country} was the photo taken? Use the search box or map below to select the location where the photo was taken:**")
         
         # Warning that coordinates are required
         if not st.session_state.coords:
@@ -225,7 +225,8 @@ else:
             location_search = st.text_input(
                 "Enter location name (e.g., 'Taj Mahal, Agra', 'Gateway of India, Mumbai')",
                 placeholder="Type location name here...",
-                help=f"Search for any location in {country}. Try: Taj Mahal, Red Fort, Golden Temple, Goa, etc."
+                help=f"Search for any location in {country}. Try: Taj Mahal, Red Fort, Golden Temple, Goa, etc.",
+                key=f'location_search_{st.session_state.index}'
             )
         
         with search_col2:
