@@ -27,7 +27,7 @@ firebase_secrets = st.secrets["firebase"]
 token = firebase_secrets["github_token"]
 repo_name = firebase_secrets["github_repo"]
 owner, repo_name = repo_name.split('/')
-
+# Maps_API_KEY = firebase_secrets["Maps_API_KEY"]
 # Convert secrets to dict
 cred_dict = {
     "type": firebase_secrets["type"],
@@ -60,6 +60,8 @@ if "prolific_id" not in st.session_state:
 
 if 'coords' not in st.session_state:
     st.session_state.coords = None
+
+# Removed maps_url session state as it's no longer needed
 
 if 'q1_index' not in st.session_state:
     st.session_state.q1_index = 0
@@ -202,6 +204,30 @@ else:
             
         st.info("💡 **Tip:** You can search for locations or use the map to find coordinates. **Coordinates are required** to proceed.")
         
+        # Add some common location presets for India
+        # st.markdown("**Quick location presets (click to set):**")
+        # preset_cols = st.columns(4)
+        
+        # with preset_cols[0]:
+        #     if st.button("🗺️ Mumbai", type="secondary"):
+        #         st.session_state.coords = {"lat": 19.0760, "lng": 72.8777}
+        #         st.rerun()
+        
+        # with preset_cols[1]:
+        #     if st.button("🗺️ Delhi", type="secondary"):
+        #         st.session_state.coords = {"lat": 28.7041, "lng": 77.1025}
+        #         st.rerun()
+        
+        # with preset_cols[2]:
+        #     if st.button("🗺️ Bangalore", type="secondary"):
+        #         st.session_state.coords = {"lat": 12.9716, "lng": 77.5946}
+        #         st.rerun()
+        
+        # with preset_cols[3]:
+        #     if st.button("🗺️ Chennai", type="secondary"):
+        #         st.session_state.coords = {"lat": 13.0827, "lng": 80.2707}
+        #         st.rerun()
+        
         # Location search functionality
         st.markdown("**🔍 Search for a location:**")
         search_col1, search_col2 = st.columns([3, 1])
@@ -222,27 +248,76 @@ else:
         
         # Handle location search
         if search_button and location_search:
-            with st.spinner("🔍 Searching for location..."):
-                # Use geocoding service to find any location
-                geocode_result = geocode_location(location_search)
+            # Common Indian locations with coordinates
+            location_database = {
+                "taj mahal": {"lat": 27.1751, "lng": 78.0421, "name": "Taj Mahal, Agra"},
+                "gateway of india": {"lat": 18.9217, "lng": 72.8347, "name": "Gateway of India, Mumbai"},
+                "red fort": {"lat": 28.6562, "lng": 77.2410, "name": "Red Fort, Delhi"},
+                "qutub minar": {"lat": 28.5245, "lng": 77.1855, "name": "Qutub Minar, Delhi"},
+                "hawa mahal": {"lat": 26.9239, "lng": 75.8267, "name": "Hawa Mahal, Jaipur"},
+                "golden temple": {"lat": 31.6200, "lng": 74.8765, "name": "Golden Temple, Amritsar"},
+                "ellora caves": {"lat": 20.0258, "lng": 75.1780, "name": "Ellora Caves, Maharashtra"},
+                "ajanta caves": {"lat": 20.5519, "lng": 75.7033, "name": "Ajanta Caves, Maharashtra"},
+                "khajuraho": {"lat": 24.8310, "lng": 79.9210, "name": "Khajuraho Temples, MP"},
+                "varanasi": {"lat": 25.3176, "lng": 82.9739, "name": "Varanasi, UP"},
+                "goa": {"lat": 15.2993, "lng": 74.1240, "name": "Goa"},
+                "kerala": {"lat": 10.8505, "lng": 76.2711, "name": "Kerala"},
+                "darjeeling": {"lat": 27.0360, "lng": 88.2589, "name": "Darjeeling, WB"},
+                "shimla": {"lat": 31.1048, "lng": 77.1734, "name": "Shimla, HP"},
+                "manali": {"lat": 32.2432, "lng": 77.1892, "name": "Manali, HP"},
+                "udaipur": {"lat": 24.5854, "lng": 73.7125, "name": "Udaipur, Rajasthan"},
+                "jodhpur": {"lat": 26.2389, "lng": 73.0243, "name": "Jodhpur, Rajasthan"},
+                "jaisalmer": {"lat": 26.9157, "lng": 70.9083, "name": "Jaisalmer, Rajasthan"},
+                "hyderabad": {"lat": 17.3850, "lng": 78.4867, "name": "Hyderabad, Telangana"},
+                "kolkata": {"lat": 22.5726, "lng": 88.3639, "name": "Kolkata, WB"},
+                "pune": {"lat": 18.5204, "lng": 73.8567, "name": "Pune, Maharashtra"},
+                "ahmedabad": {"lat": 23.0225, "lng": 72.5714, "name": "Ahmedabad, Gujarat"},
+                "lucknow": {"lat": 26.8467, "lng": 80.9462, "name": "Lucknow, UP"},
+                "kanpur": {"lat": 26.4499, "lng": 80.3319, "name": "Kanpur, UP"},
+                "nagpur": {"lat": 21.1458, "lng": 79.0882, "name": "Nagpur, Maharashtra"},
+                "indore": {"lat": 22.7196, "lng": 75.8577, "name": "Indore, MP"},
+                "bhopal": {"lat": 23.2599, "lng": 77.4126, "name": "Bhopal, MP"},
+                "patna": {"lat": 25.5941, "lng": 85.1376, "name": "Patna, Bihar"},
+                "ranchi": {"lat": 23.3441, "lng": 85.3096, "name": "Ranchi, Jharkhand"},
+                "guwahati": {"lat": 26.1445, "lng": 91.7362, "name": "Guwahati, Assam"},
+                "imphal": {"lat": 24.8170, "lng": 93.9368, "name": "Imphal, Manipur"},
+                "shillong": {"lat": 25.5788, "lng": 91.8933, "name": "Shillong, Meghalaya"},
+                "gangtok": {"lat": 27.3389, "lng": 88.6065, "name": "Gangtok, Sikkim"},
+                "port blair": {"lat": 11.6234, "lng": 92.7265, "name": "Port Blair, Andaman"},
+                "leh": {"lat": 34.1526, "lng": 77.5771, "name": "Leh, Ladakh"},
+                "srinagar": {"lat": 34.0837, "lng": 74.7973, "name": "Srinagar, Kashmir"}
+            }
+            
+            # Search for location (case-insensitive)
+            search_term = location_search.lower().strip()
+            found_location = None
+            
+            # First try exact match
+            if search_term in location_database:
+                found_location = location_database[search_term]
+            else:
+                # Try partial matches
+                for key, location in location_database.items():
+                    if search_term in key or key in search_term:
+                        found_location = location
+                        break
                 
-                if geocode_result["success"]:
-                    st.session_state.coords = {
-                        "lat": geocode_result["lat"], 
-                        "lng": geocode_result["lng"]
-                    }
-                    st.session_state.location_name = geocode_result["name"]
-                    
-                    st.success(f"✅ **Location Found!**")
-                    st.info(f"📍 **Address:** {geocode_result['name']}")
-                    st.info(f"📍 **Coordinates:** {geocode_result['lat']:.6f}°N, {geocode_result['lng']:.6f}°E")
-                    
-                    # Clear the search input by rerunning
-                    st.rerun()
-                else:
-                    st.error(f"❌ **Location not found:** {geocode_result['error']}")
-                    st.info("💡 **Try:** Being more specific (e.g., 'Taj Mahal, Agra' instead of just 'Taj Mahal')")
-                    st.info("💡 **Or:** Use the manual coordinate inputs below")
+                # If still no match, try word-based search
+                if not found_location:
+                    search_words = search_term.split()
+                    for key, location in location_database.items():
+                        if any(word in key for word in search_words):
+                            found_location = location
+                            break
+            
+            if found_location:
+                st.session_state.coords = {"lat": found_location["lat"], "lng": found_location["lng"]}
+                st.success(f"✅ Found: {found_location['name']} - Latitude: {found_location['lat']:.6f}, Longitude: {found_location['lng']:.6f}")
+                # Clear the search input by rerunning
+                st.rerun()
+            else:
+                st.warning(f"⚠️ Location '{location_search}' not found in database. Please use the manual coordinate inputs below or try a different search term.")
+                st.info("💡 Try searching for: cities (Mumbai, Delhi), monuments (Taj Mahal, Red Fort), states (Goa, Kerala), or tourist spots (Darjeeling, Shimla)")
         
         # Create a map centered around India
         st.markdown("**🗺️ Location Map:**")
@@ -273,6 +348,37 @@ else:
             st.error("❌ **No coordinates selected.** Please select a location above to proceed.")
         else:
             st.markdown(f"**📍 Selected Location:** {st.session_state.coords['lat']:.6f}°N, {st.session_state.coords['lng']:.6f}°E")
+        
+        # Manual coordinate input as fallback
+        # st.markdown("**Enter coordinates manually:**")
+        # col1, col2 = st.columns(2)
+        
+        # with col1:
+        #     lat_input = st.number_input(
+        #         "Latitude", 
+        #         min_value=-90.0, 
+        #         max_value=90.0, 
+        #         value=20.5937, 
+        #         step=0.000001,
+        #         format="%.6f",
+        #         help="Enter latitude between -90 and 90"
+        #     )
+        
+        # with col2:
+        #     lon_input = st.number_input(
+        #         "Longitude", 
+        #         min_value=-180.0, 
+        #         max_value=180.0, 
+        #         value=78.9629, 
+        #         step=0.000001,
+        #         format="%.6f",
+        #         help="Enter longitude between -180 and 180"
+        #     )
+        
+        # # Button to set coordinates
+        # if st.button("📍 Set Coordinates", type="primary"):
+        #     st.session_state.coords = {"lat": lat_input, "lng": lon_input}
+        #     st.success(f"✅ Coordinates set: Latitude: {lat_input:.6f}, Longitude: {lon_input:.6f}")
         
         # Show current coordinates if set
         if st.session_state.coords:
