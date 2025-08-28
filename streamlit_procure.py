@@ -175,15 +175,9 @@ Following are the instructions for the same.
 You have *20* minutes to upload the photos and answer the questions surrounding them. After you upload the photo, wait for the photo to be visible on screen, then answer the questions.
 """, unsafe_allow_html=True)
 else:
-    # Show View Instructions button after Prolific ID is submitted
-    if st.button("📋 View Instructions", type="secondary"):
-        st.session_state.show_instructions = not st.session_state.get('show_instructions', False)
-        st.rerun()
-    
-    # Display instructions if button was clicked
-    if st.session_state.get('show_instructions', False):
-        with st.expander("📋 Instructions", expanded=True):
-            st.markdown(f"""
+    # Show View Instructions expander after Prolific ID is submitted
+    with st.expander("📋 View Instructions", expanded=False):
+        st.markdown(f"""
 We are collecting a dataset of images from **{country}** to assess the knowledge of modern-day AI technologies about surroundings within the country. With your consent, we request you to upload photos that you have taken but have **not shared online**.
 
 Following are the instructions for the same.
@@ -206,7 +200,7 @@ Following are the instructions for the same.
 1.  **Upload 10 images**, one at a time.
 2.  For each image:
     -   **Select the location** where the photo was taken using the search box or map.
-    -   **Rate** how clearly the photo suggests it was taken in {country}. **List the clues** that helped you make that judgment.
+    -   **Rate** how clearly the photo suggests it was taken in {country}, and **list the clues** that helped you make that judgment.
     -   **Rate the photo** on the popularity of the location captured.
     -   **Enter the month and year** when the photo was taken.
     -   **Click** "Submit and Next" to move to the next image.
