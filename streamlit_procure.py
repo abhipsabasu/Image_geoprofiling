@@ -478,26 +478,26 @@ else:
         if rating in [2, 3]:
             clue_text = st.text_area("What visual clues or indicators helped you make this judgment?", height=100, key=f'q3_{st.session_state.index}')
         st.markdown("**How would you rate the popularity of the location depicted in the photo you uploaded?**")
-        popularity = st.selectbox(
-            "Select popularity level:",
-            options=["Choose an option", 1, 2, 3],
-            format_func=lambda x: f"{'1 - Low popularity' if x==1 else f'2 - Medium popularity' if x==2 else f'3 - Highly popular' if x==3 else 'Choose an option'}",
-            index=st.session_state.q1_index,
+        popularity = st.slider(
+            "Popularity level:",
+            min_value=1,
+            max_value=3,
+            value=1,
+            step=1,
             key=f'q5_{st.session_state.index}'
         )
         
-        # Show the scale visually
-        if popularity in [1, 2, 3]:
-            col1, col2, col3 = st.columns(3)
-            with col1:
-                st.markdown(f"**{'🟢' if popularity == 1 else '⚪'} 1**")
-                st.markdown("*Low popularity*")
-            with col2:
-                st.markdown(f"**{'🟡' if popularity == 2 else '⚪'} 2**")
-                st.markdown("*Medium popularity*")
-            with col3:
-                st.markdown(f"**{'🔴' if popularity == 3 else '⚪'} 3**")
-                st.markdown("*Highly popular*")
+        # Show the scale labels below the slider
+        col1, col2, col3 = st.columns(3)
+        with col1:
+            st.markdown("**1**")
+            st.markdown("*Low popularity*")
+        with col2:
+            st.markdown("**2**")
+            st.markdown("*Medium popularity*")
+        with col3:
+            st.markdown("**3**")
+            st.markdown("*Highly popular*")
 
         # Month and Year questions
         st.markdown("**📅 When was this photo taken?**")
