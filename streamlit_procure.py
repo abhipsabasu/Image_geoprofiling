@@ -72,7 +72,7 @@ def reset_selections():
     # Clear all form selections for the next image using a more robust method
     
     # Method 1: Try to clear specific keys
-    keys_to_clear = ["q1", "q2", "q3", "q5", "q6_month", "q6_year", "coords"]
+    keys_to_clear = ["q1", "q2", "q3", "q5", "q6_month", "q6_year", "coords", "location_text"]
     for key in keys_to_clear:
         if key in st.session_state:
             del st.session_state[key]
@@ -390,7 +390,25 @@ else:
                     
                     # Add a button to capture location selection from Google Maps
                     if st.button("📍 Capture Selected Location from Map", type="primary", key=f"capture_btn_selected_{st.session_state.index}"):
-                        st.info("💡 **Tip:** Use the search box in the map above to find and select a location, then click this button to capture the coordinates.")
+                        st.info("💡 **Tip:** Use the search box in the map above to find and select a location, then click this button to capture the location text.")
+                        
+                        # Add a text input to capture the location description
+                        location_text = st.text_input(
+                            "**Location Description:**",
+                            placeholder="e.g., Taj Mahal, Agra or Gateway of India, Mumbai",
+                            help="Enter the location description that appears in the map search box above",
+                            key=f"location_text_{st.session_state.index}"
+                        )
+                        
+                        if st.button("✅ Confirm Location", key=f"confirm_location_{st.session_state.index}"):
+                            if location_text.strip():
+                                # Store the location text instead of coordinates
+                                st.session_state.location_text = location_text.strip()
+                                st.session_state.coords = {"lat": 0, "lng": 0}  # Placeholder coordinates
+                                st.success(f"✅ Location captured: {location_text.strip()}")
+                                st.rerun()
+                            else:
+                                st.error("Please enter a location description.")
                     st.info(f"📍 Map centered on selected location: {st.session_state.coords['lat']:.6f}, {st.session_state.coords['lng']:.6f}")
                 else:
                     # Show warning that no location is selected
@@ -495,7 +513,25 @@ else:
                     
                     # Add a button to capture location selection from Google Maps
                     if st.button("📍 Capture Selected Location from Map", type="primary", key=f"capture_btn_{st.session_state.index}"):
-                        st.info("💡 **Tip:** Use the search box in the map above to find and select a location, then click this button to capture the coordinates.")
+                        st.info("💡 **Tip:** Use the search box in the map above to find and select a location, then click this button to capture the location text.")
+                        
+                        # Add a text input to capture the location description
+                        location_text = st.text_input(
+                            "**Location Description:**",
+                            placeholder="e.g., Taj Mahal, Agra or Gateway of India, Mumbai",
+                            help="Enter the location description that appears in the map search box above",
+                            key=f"location_text_default_{st.session_state.index}"
+                        )
+                        
+                        if st.button("✅ Confirm Location", key=f"confirm_location_default_{st.session_state.index}"):
+                            if location_text.strip():
+                                # Store the location text instead of coordinates
+                                st.session_state.location_text = location_text.strip()
+                                st.session_state.coords = {"lat": 0, "lng": 0}  # Placeholder coordinates
+                                st.success(f"✅ Location captured: {location_text.strip()}")
+                                st.rerun()
+                            else:
+                                st.error("Please enter a location description.")
                         
             else:
                 # Fallback to Streamlit map if no Google Maps API key
@@ -530,11 +566,14 @@ else:
                 })
                 st.map(map_data)
         
-        # Show coordinate status
+        # Show location status
         if not st.session_state.coords:
-            st.error("❌ **No coordinates selected.** Please select a location above to proceed.")
+            st.error("❌ **No location selected.** Please select a location above to proceed.")
         else:
-            st.markdown(f"**📍 Selected Location:** {st.session_state.coords['lat']:.6f}°N, {st.session_state.coords['lng']:.6f}°E")
+            if hasattr(st.session_state, 'location_text') and st.session_state.location_text:
+                st.markdown(f"**📍 Selected Location:** {st.session_state.location_text}")
+            else:
+                st.markdown(f"**📍 Selected Location:** {st.session_state.coords['lat']:.6f}°N, {st.session_state.coords['lng']:.6f}°E")
         
         # Show current coordinates if set
         if st.session_state.coords:
@@ -601,8 +640,8 @@ else:
         if st.button("Submit and Next"):
             if not uploaded_file or about in ['', None] or ((rating == 'Choose an option') or (rating in [2, 3] and clue_text in [None, ''])) or month == "Choose an option" or year == "Choose an option":
                 st.error('Please answer all the questions and upload a file.')
-            elif not st.session_state.coords:
-                st.error('Please select a location on the map first.')
+            elif not st.session_state.coords or (not hasattr(st.session_state, 'location_text') or not st.session_state.location_text):
+                st.error('Please select a location on the map first and capture the location description.')
             else:
                 # Store image temporarily instead of uploading immediately
                 image_data = {
@@ -623,7 +662,8 @@ else:
                     "privacy": st.session_state.privacy,
                     "image_url": image_data["file_path"],  # Will be updated after upload
                     "rating": rating,
-                    "coords": st.session_state.coords,
+                    "location_text": st.session_state.location_text,
+                    "coords": st.session_state.coords,  # Keep for compatibility
                     "popularity": popularity,
                     "clues": clue_text,
                     "description": about,
@@ -707,5 +747,5 @@ else:
         st.write(f"✅ **Survey Results:**")
         st.write(f"📸 **Images:** {successful_uploads} uploaded successfully")
         st.write(f"📊 **Responses:** {len(st.session_state.responses)} recorded")
-        st.write(f"🗺️ **Locations:** All coordinates captured")
+        st.write(f"🗺️ **Locations:** All location descriptions captured")
         st.write(f"📅 **Timestamps:** Month/year data collected")
