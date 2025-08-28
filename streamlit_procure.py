@@ -62,6 +62,9 @@ if "prolific_id" not in st.session_state:
 if 'coords' not in st.session_state:
     st.session_state.coords = None
 
+if 'location_text' not in st.session_state:
+    st.session_state.location_text = None
+
 if 'q1_index' not in st.session_state:
     st.session_state.q1_index = 0
     
@@ -260,25 +263,191 @@ else:
         
 
         
-        # Create a simple map centered around India
+        # Create a Google Map with search functionality
         st.markdown("**🗺️ Location Map:**")
         
-        # Simple fallback to Streamlit map for now
-        if st.session_state.coords:
-            map_data = pd.DataFrame({
-                'latitude': [st.session_state.coords['lat']],
-                'longitude': [st.session_state.coords['lng']]
-            })
-            st.map(map_data)
-            st.info(f"📍 Map centered on selected location: {st.session_state.coords['lat']:.6f}, {st.session_state.coords['lng']:.6f}")
+        # Get Google Maps API key from firebase_secrets
+        google_maps_api_key = firebase_secrets.get("GOOGLE_MAPS_API_KEY", "")
+        
+        if google_maps_api_key:
+            # Google Maps with search functionality
+            if st.session_state.coords:
+                # Show selected location on map
+                st.info(f"📍 Map centered on selected location: {st.session_state.coords['lat']:.6f}, {st.session_state.coords['lng']:.6f}")
+            
+            # Create Google Maps component with integrated search
+            components.html(
+                f"""
+                <div style="margin-bottom: 10px;">
+                    <input id="pac-input" type="text" placeholder="Search for a location in {country}..." 
+                           style="width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px; margin-bottom: 10px;">
+                </div>
+                <div id="map" style="height: 400px; width: 100%;"></div>
+                <script>
+                    function initMap() {{
+                        const map = new google.maps.Map(document.getElementById("map"), {{
+                            zoom: 5,
+                            center: {{ lat: 20.5937, lng: 78.9629 }}, // India center
+                            mapTypeId: google.maps.MapTypeId.ROADMAP
+                        }});
+                        
+                        // Add markers for major cities
+                        const cities = [
+                            {{ lat: 19.0760, lng: 72.8777, name: "Mumbai" }},
+                            {{ lat: 28.7041, lng: 77.1025, name: "Delhi" }},
+                            {{ lat: 12.9716, lng: 77.5946, name: "Bangalore" }},
+                            {{ lat: 13.0827, lng: 80.2707, name: "Chennai" }}
+                        ];
+                        
+                        cities.forEach(city => {{
+                            new google.maps.Marker({{
+                                position: {{ lat: city.lat, lng: city.lng }},
+                                map: map,
+                                title: city.name
+                            }});
+                        }});
+                        
+                        // Add search box functionality
+                        const input = document.getElementById("pac-input");
+                        const searchBox = new google.maps.places.SearchBox(input);
+                        
+                        // Bias the SearchBox results towards current map's viewport
+                        map.addListener("bounds_changed", () => {{
+                            searchBox.setBounds(map.getBounds());
+                        }});
+                        
+                        // Listen for the event fired when the user selects a prediction
+                        searchBox.addListener("places_changed", () => {{
+                            const places = searchBox.getPlaces();
+                            
+                            if (places.length === 0) {{
+                                return;
+                            }}
+                            
+                            // For each place, get the icon, name and location
+                            const bounds = new google.maps.LatLngBounds();
+                            
+                            places.forEach((place) => {{
+                                if (!place.geometry || !place.geometry.location) {{
+                                    console.log("Returned place contains no geometry");
+                                    return;
+                                }}
+                                
+                                // Create a marker for the selected place
+                                const marker = new google.maps.Marker({{
+                                    map,
+                                    title: place.name,
+                                    position: place.geometry.location,
+                                }});
+                                
+                                if (place.geometry.viewport) {{
+                                    bounds.union(place.geometry.viewport);
+                                }} else {{
+                                    bounds.extend(place.geometry.location);
+                                }}
+                            }});
+                            
+                            map.fitBounds(bounds);
+                            
+                            // Update coordinates in Streamlit
+                            const selectedPlace = places[0];
+                            if (selectedPlace.geometry && selectedPlace.geometry.location) {{
+                                const lat = selectedPlace.geometry.location.lat();
+                                const lng = selectedPlace.geometry.location.lng();
+                                
+                                // Automatically capture the location text
+                                const locationText = selectedPlace.formatted_address || selectedPlace.name;
+                                
+                                // Send location data back to Streamlit
+                                window.parent.postMessage({{
+                                    type: 'location_selected',
+                                    lat: lat,
+                                    lng: lng,
+                                    name: selectedPlace.name,
+                                    formatted_address: selectedPlace.formatted_address,
+                                    location_text: locationText
+                                }}, '*');
+                                
+                                // Update the search input with the selected location
+                                document.getElementById('pac-input').value = locationText;
+                                
+                                // Show success message
+                                const successDiv = document.createElement('div');
+                                successDiv.innerHTML = `<div style="background: #d4edda; color: #155724; padding: 10px; border-radius: 4px; margin: 10px 0; border: 1px solid #c3e6cb;">✅ Location captured: {locationText}</div>`;
+                                document.getElementById('map').parentNode.insertBefore(successDiv, document.getElementById('map').nextSibling);
+                                
+                                // Remove success message after 5 seconds
+                                setTimeout(() => {{
+                                    if (successDiv.parentNode) {{
+                                        successDiv.parentNode.removeChild(successDiv);
+                                    }}
+                                }}, 5000);
+                            }}
+                        }});
+                    }}
+                </script>
+                <script async defer src="https://maps.googleapis.com/maps/api/js?key={google_maps_api_key}&libraries=places&callback=initMap"></script>
+                """,
+                height=450
+            )
+            
+            # Show captured location if available
+            if hasattr(st.session_state, 'location_text') and st.session_state.location_text:
+                st.success(f"✅ **Location Captured:** {st.session_state.location_text}")
+                if st.button("🔄 Change Location", key=f"change_location_{st.session_state.index}"):
+                    del st.session_state.location_text
+                    st.session_state.coords = None
+                    st.rerun()
+            else:
+                st.info("💡 **Tip:** Use the search box in the map above to find and select a location. The location will be automatically captured when you select it.")
+                
+                # Add a component to capture location from JavaScript messages
+                components.html(
+                    """
+                    <div id="location-capture" style="display: none;"></div>
+                    <script>
+                        // Listen for location selection messages from the map
+                        window.addEventListener('message', function(event) {
+                            if (event.data.type === 'location_selected') {
+                                // Store the location data in the div for Streamlit to access
+                                document.getElementById('location-capture').innerHTML = JSON.stringify({
+                                    lat: event.data.lat,
+                                    lng: event.data.lng,
+                                    name: event.data.name,
+                                    location_text: event.data.location_text
+                                });
+                                
+                                // Trigger a custom event
+                                document.dispatchEvent(new CustomEvent('locationCaptured', {
+                                    detail: event.data
+                                }));
+                            }
+                        });
+                    </script>
+                    """,
+                    height=0
+                )
+                
+                # JavaScript to capture location and update Streamlit session state
+                if st.button("🔄 Refresh Location Capture", key=f"refresh_location_{st.session_state.index}"):
+                    st.rerun()
         else:
-            # Show a basic map of India
-            map_data = pd.DataFrame({
-                'latitude': [20.5937, 19.0760, 28.7041, 12.9716],
-                'longitude': [78.9629, 72.8777, 77.1025, 77.5946]
-            })
-            st.map(map_data)
-            st.info("💡 **Tip:** Use the search functionality above to select a location, then the map will center on your selection.")
+            # Fallback to Streamlit map if no Google Maps API key
+            st.warning("⚠️ Google Maps API key not configured. Using default map.")
+            if st.session_state.coords:
+                map_data = pd.DataFrame({
+                    'latitude': [st.session_state.coords['lat']],
+                    'longitude': [st.session_state.coords['lng']]
+                })
+                st.map(map_data)
+                st.info(f"📍 Map centered on selected location: {st.session_state.coords['lat']:.6f}, {st.session_state.coords['lng']:.6f}")
+            else:
+                map_data = pd.DataFrame({
+                    'latitude': [20.5937, 19.0760, 28.7041, 12.9716],
+                    'longitude': [78.9629, 72.8777, 77.1025, 77.5946]
+                })
+                st.map(map_data)
+                st.info("💡 **Tip:** Use the search functionality above to select a location, then the map will center on your selection.")
         
         # Show location status
         if not st.session_state.coords:
@@ -389,6 +558,7 @@ else:
                 
                 # Clear coordinates and reset index
                 st.session_state.coords = None
+                st.session_state.location_text = None
                 st.session_state.index += 1
                 st.session_state.q1_index = 0
                 
