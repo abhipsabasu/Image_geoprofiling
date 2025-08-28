@@ -251,8 +251,8 @@ else:
         st.markdown(f"**Where in {country} was the photo taken? Use the search box or map below to select the location where the photo was taken:**")
         
         # Warning that coordinates are required
-        if not st.session_state.coords:
-            st.error("🚨 **COORDINATES REQUIRED:** You must select a location to proceed with the survey!")
+        if not hasattr(st.session_state, 'location_text') or not st.session_state.location_text:
+            st.error("🚨 **LOCATION REQUIRED:** You must select a location to proceed with the survey!")
         else:
             st.success("✅ **Location selected successfully!**")
             
