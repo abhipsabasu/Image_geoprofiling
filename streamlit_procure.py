@@ -479,8 +479,8 @@ else:
             clue_text = st.text_area("What visual clues or indicators helped you make this judgment?", height=100, key=f'q3_{st.session_state.index}')
         popularity = st.radio(
             "**How would you rate the popularity of the location depicted in the photo you uploaded?**",
-            options=["Choose an option", 0, 1, 2],
-            format_func=lambda x: f"{'The location depicts only a regular scene' if x==0 else f'The location may be locally popular, but not country-wide' if x==1 else f'The location is popular country-wide' if x==2 else 'Choose an option'}",
+            options=["Choose an option", 1, 2, 3],
+            format_func=lambda x: f"{'Low popularity' if x==1 else f'Medium popularity' if x==2 else f'Highly popular' if x==3 else 'Choose an option'}",
             index=st.session_state.q1_index,
             key=f'q5_{st.session_state.index}'
         )
