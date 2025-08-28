@@ -373,7 +373,7 @@ else:
                                 
                                 // Show success message
                                 const successDiv = document.createElement('div');
-                                successDiv.innerHTML = `<div style="background: #d4edda; color: #155724; padding: 10px; border-radius: 4px; margin: 10px 0; border: 1px solid #c3e6cb;">✅ Location captured: {locationText}</div>`;
+                                successDiv.innerHTML = `<div style="background: #d4edda; color: #155724; padding: 10px; border-radius: 4px; margin: 10px 0; border: 1px solid #c3e6cb;">✅ Location captured: ${{locationText}}</div>`;
                                 document.getElementById('map').parentNode.insertBefore(successDiv, document.getElementById('map').nextSibling);
                                 
                                 // Remove success message after 5 seconds
