@@ -59,9 +59,6 @@ if "index" not in st.session_state:
 if "prolific_id" not in st.session_state:
     st.session_state.prolific_id = None
 
-if 'coords' not in st.session_state:
-    st.session_state.coords = None
-
 if 'location_text' not in st.session_state:
     st.session_state.location_text = None
 
@@ -75,7 +72,7 @@ def reset_selections():
     # Clear all form selections for the next image using a more robust method
     
     # Method 1: Try to clear specific keys
-    keys_to_clear = ["q1", "q2", "q3", "q5", "q6_month", "q6_year", "coords", "location_text"]
+    keys_to_clear = ["q1", "q2", "q3", "q5", "q6_month", "q6_year", "location_text"]
     for key in keys_to_clear:
         if key in st.session_state:
             del st.session_state[key]
@@ -271,10 +268,6 @@ else:
         
         if google_maps_api_key:
             # Google Maps with search functionality
-            if st.session_state.coords:
-                # Show selected location on map
-                st.info(f"📍 Map centered on selected location: {st.session_state.coords['lat']:.6f}, {st.session_state.coords['lng']:.6f}")
-            
             # Create Google Maps component with integrated search
             components.html(
                 f"""
@@ -434,52 +427,28 @@ else:
         else:
             # Fallback to Streamlit map if no Google Maps API key
             st.warning("⚠️ Google Maps API key not configured. Using default map.")
-            if st.session_state.coords:
-                map_data = pd.DataFrame({
-                    'latitude': [st.session_state.coords['lat']],
-                    'longitude': [st.session_state.coords['lng']]
-                })
-                st.map(map_data)
-                st.info(f"📍 Map centered on selected location: {st.session_state.coords['lat']:.6f}, {st.session_state.coords['lng']:.6f}")
-            else:
-                map_data = pd.DataFrame({
-                    'latitude': [20.5937, 19.0760, 28.7041, 12.9716],
-                    'longitude': [78.9629, 72.8777, 77.1025, 77.5946]
-                })
-                st.map(map_data)
-                st.info("💡 **Tip:** Use the search functionality above to select a location, then the map will center on your selection.")
+            # Show a basic map of India
+            map_data = pd.DataFrame({
+                'latitude': [20.5937, 19.0760, 28.7041, 12.9716],
+                'longitude': [78.9629, 72.8777, 77.1025, 77.5946]
+            })
+            st.map(map_data)
+            st.info("💡 **Tip:** Use the search functionality above to select a location.")
         
         # Show location status
-        if not st.session_state.coords:
+        if not hasattr(st.session_state, 'location_text') or not st.session_state.location_text:
             st.error("❌ **No location selected.** Please select a location above to proceed.")
         else:
-            if hasattr(st.session_state, 'location_text') and st.session_state.location_text:
-                st.markdown(f"**📍 Selected Location:** {st.session_state.location_text}")
-            else:
-                st.markdown(f"**📍 Selected Location:** {st.session_state.coords['lat']:.6f}°N, {st.session_state.coords['lng']:.6f}°E")
+            st.markdown(f"**📍 Selected Location:** {st.session_state.location_text}")
         
-        # Show current coordinates if set
-        if st.session_state.coords:
-            # Try to identify the location name
-            location_name = "Selected Location"
-            if abs(st.session_state.coords['lat'] - 19.0760) < 0.1 and abs(st.session_state.coords['lng'] - 72.8777) < 0.1:
-                location_name = "Mumbai"
-            elif abs(st.session_state.coords['lat'] - 28.7041) < 0.1 and abs(st.session_state.coords['lng'] - 77.1025) < 0.1:
-                location_name = "Delhi"
-            elif abs(st.session_state.coords['lat'] - 12.9716) < 0.1 and abs(st.session_state.coords['lng'] - 77.5946) < 0.1:
-                location_name = "Bangalore"
-            elif abs(st.session_state.coords['lat'] - 13.0827) < 0.1 and abs(st.session_state.coords['lng'] - 80.2707) < 0.1:
-                location_name = "Chennai"
-            
-            st.success(f"✅ {location_name}: Latitude: {st.session_state.coords['lat']:.6f}, Longitude: {st.session_state.coords['lng']:.6f}")
-
-        if st.session_state.coords:
+        # Show current location if set
+        if hasattr(st.session_state, 'location_text') and st.session_state.location_text:
             col1, col2 = st.columns([3, 1])
             with col1:
-                st.write(f"**Current Selected Location:** Latitude: {st.session_state.coords['lat']:.6f}, Longitude: {st.session_state.coords['lng']:.6f}")
+                st.write(f"**Current Selected Location:** {st.session_state.location_text}")
             with col2:
                 if st.button("🗑️ Clear Location", type="secondary"):
-                    st.session_state.coords = None
+                    st.session_state.location_text = None
                     st.rerun()
         
         # st.markdown(f"To what extent does this image contain visual cues (e.g., local architecture, language, or scenery) that identify it as being from {country}?")
@@ -523,7 +492,7 @@ else:
         if st.button("Submit and Next"):
             if not uploaded_file or about in ['', None] or ((rating == 'Choose an option') or (rating in [2, 3] and clue_text in [None, ''])) or month == "Choose an option" or year == "Choose an option":
                 st.error('Please answer all the questions and upload a file.')
-            elif not st.session_state.coords or (not hasattr(st.session_state, 'location_text') or not st.session_state.location_text):
+            elif not hasattr(st.session_state, 'location_text') or not st.session_state.location_text:
                 st.error('Please select a location on the map first and capture the location description.')
             else:
                 # Store image temporarily instead of uploading immediately
@@ -546,7 +515,6 @@ else:
                     "image_url": image_data["file_path"],  # Will be updated after upload
                     "rating": rating,
                     "location_text": st.session_state.location_text,
-                    "coords": st.session_state.coords,  # Keep for compatibility
                     "popularity": popularity,
                     "clues": clue_text,
                     "description": about,
@@ -556,8 +524,7 @@ else:
                 
                 st.success("✅ Image and responses saved!")
                 
-                # Clear coordinates and reset index
-                st.session_state.coords = None
+                # Clear location and reset index
                 st.session_state.location_text = None
                 st.session_state.index += 1
                 st.session_state.q1_index = 0
