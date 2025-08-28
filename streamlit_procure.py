@@ -271,10 +271,10 @@ else:
             # Create Google Maps component with integrated search
             components.html(
                 f"""
-                <div style="margin-bottom: 10px;">
-                    <input id="pac-input" type="text" placeholder="Search for a location in {country}..." 
-                           style="width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px; margin-bottom: 10px;">
-                </div>
+                                    <div style="margin-bottom: 10px;">
+                        <input id="pac-input" type="text" placeholder="Search for a location in {country}..." 
+                               style="width: 95%; padding: 8px; border: 1px solid #ccc; border-radius: 4px; margin-bottom: 10px; margin: 0 auto;">
+                    </div>
                 <div id="map" style="height: 400px; width: 95%; margin: 0 auto;"></div>
                 <script>
                     function initMap() {{
