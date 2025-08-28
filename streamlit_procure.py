@@ -20,6 +20,7 @@ import re
 from geopy.geocoders import Nominatim
 from geopy.exc import GeocoderTimedOut, GeocoderUnavailable
 
+
 country = 'India'
 continent = 'Asia'
 
@@ -300,29 +301,118 @@ else:
                     st.info("💡 **Try:** Being more specific (e.g., 'Taj Mahal, Agra' instead of just 'Taj Mahal')")
                     st.info("💡 **Or:** Use the manual coordinate inputs below")
         
-        # Create a map centered around India
+        # Create a Google Map centered around India
         st.markdown("**🗺️ Location Map:**")
         
-        # Create map data with proper column names
-        if st.session_state.coords:
-            # Show selected location on map
-            map_data = pd.DataFrame({
-                'latitude': [st.session_state.coords['lat']],  # Use 'latitude' instead of 'lat'
-                'longitude': [st.session_state.coords['lng']]  # Use 'longitude' instead of 'lon'
-            })
-            st.map(map_data)
-            st.info(f"📍 Map centered on selected location: {st.session_state.coords['lat']:.6f}, {st.session_state.coords['lng']:.6f}")
-        else:
-            # Show warning that no location is selected
-            st.warning("⚠️ **No location selected!** Please use the search box above or enter coordinates manually to select a location.")
-            st.info("💡 **Tip:** You can search for locations like 'Taj Mahal', 'Mumbai', 'Goa', etc., or use the coordinate inputs below.")
+        # Initialize Google Maps (you'll need to add your API key to secrets)
+        try:
+            # Try to get Google Maps API key from secrets
+            google_maps_api_key = st.secrets.get("google_maps", {}).get("api_key", "")
             
-            # Show a basic map of India without centering on any specific location
-            map_data = pd.DataFrame({
-                'latitude': [20.5937, 19.0760, 28.7041, 12.9716],  # India center + major cities
-                'longitude': [78.9629, 72.8777, 77.1025, 77.5946]
-            })
-            st.map(map_data)
+            if google_maps_api_key:
+                # Create map data with proper column names
+                if st.session_state.coords:
+                    # Show selected location on map
+                    map_data = pd.DataFrame({
+                        'latitude': [st.session_state.coords['lat']],  # Use 'latitude' instead of 'lat'
+                        'longitude': [st.session_state.coords['lng']]  # Use 'longitude' instead of 'lon'
+                    })
+                    
+                    # Create Google Maps component
+                    components.html(
+                        f"""
+                        <div id="map" style="height: 400px; width: 100%;"></div>
+                        <script>
+                            function initMap() {{
+                                const map = new google.maps.Map(document.getElementById("map"), {{
+                                    zoom: 15,
+                                    center: {{ lat: {st.session_state.coords['lat']}, lng: {st.session_state.coords['lng']} }},
+                                    mapTypeId: google.maps.MapTypeId.ROADMAP
+                                }});
+                                
+                                // Add marker for selected location
+                                new google.maps.Marker({{
+                                    position: {{ lat: {st.session_state.coords['lat']}, lng: {st.session_state.coords['lng']} }},
+                                    map: map,
+                                    title: "Selected Location"
+                                }});
+                            }}
+                        </script>
+                        <script async defer src="https://maps.googleapis.com/maps/api/js?key={google_maps_api_key}&callback=initMap"></script>
+                        """,
+                        height=400
+                    )
+                    st.info(f"📍 Map centered on selected location: {st.session_state.coords['lat']:.6f}, {st.session_state.coords['lng']:.6f}")
+                else:
+                    # Show warning that no location is selected
+                    st.warning("⚠️ **No location selected!** Please use the search box above or enter coordinates manually to select a location.")
+                    st.info("💡 **Tip:** You can search for locations like 'Taj Mahal', 'Mumbai', 'Goa', etc., or use the coordinate inputs below.")
+                    
+                    # Show a basic map of India without centering on any specific location
+                    components.html(
+                        f"""
+                        <div id="map" style="height: 400px; width: 100%;"></div>
+                        <script>
+                            function initMap() {{
+                                const map = new google.maps.Map(document.getElementById("map"), {{
+                                    zoom: 5,
+                                    center: {{ lat: 20.5937, lng: 78.9629 }}, // India center
+                                    mapTypeId: google.maps.MapTypeId.ROADMAP
+                                }});
+                                
+                                // Add markers for major Indian cities
+                                const cities = [
+                                    {{ lat: 19.0760, lng: 72.8777, name: "Mumbai" }},
+                                    {{ lat: 28.7041, lng: 77.1025, name: "Delhi" }},
+                                    {{ lat: 12.9716, lng: 77.5946, name: "Bangalore" }},
+                                    {{ lat: 13.0827, lng: 80.2707, name: "Chennai" }}
+                                ];
+                                
+                                cities.forEach(city => {{
+                                    new google.maps.Marker({{
+                                        position: {{ lat: city.lat, lng: city.lng }},
+                                        map: map,
+                                        title: city.name
+                                    }});
+                                }});
+                            }}
+                        </script>
+                        <script async defer src="https://maps.googleapis.com/maps/api/js?key={google_maps_api_key}&callback=initMap"></script>
+                        """,
+                        height=400
+                    )
+            else:
+                # Fallback to Streamlit map if no Google Maps API key
+                st.warning("⚠️ Google Maps API key not configured. Using default map.")
+                if st.session_state.coords:
+                    map_data = pd.DataFrame({
+                        'latitude': [st.session_state.coords['lat']],
+                        'longitude': [st.session_state.coords['lng']]
+                    })
+                    st.map(map_data)
+                else:
+                    map_data = pd.DataFrame({
+                        'latitude': [20.5937, 19.0760, 28.7041, 12.9716],
+                        'longitude': [78.9629, 72.8777, 77.1025, 77.5946]
+                    })
+                    st.map(map_data)
+                    
+        except Exception as e:
+            st.error(f"Error loading map: {str(e)}")
+            st.info("Falling back to default map...")
+            # Fallback to Streamlit map
+            if st.session_state.coords:
+                map_data = pd.DataFrame({
+                    'latitude': [st.session_state.coords['lat']],
+                    'longitude': [st.session_state.coords['lng']]
+                })
+                st.map(map_data)
+            else:
+                map_data = pd.DataFrame({
+                    'latitude': [20.5937, 19.0760, 28.7041, 12.9716],
+                    'longitude': [78.9629, 72.8777, 77.1025, 77.5946]
+                })
+                st.map(map_data)
         
         # Show coordinate status
         if not st.session_state.coords:
