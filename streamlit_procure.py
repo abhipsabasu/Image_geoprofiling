@@ -304,10 +304,10 @@ else:
         # Create a Google Map centered around India
         st.markdown("**🗺️ Location Map:**")
         
-        # Initialize Google Maps (you'll need to add your API key to secrets)
+        # Initialize Google Maps using API key from firebase_secrets
         try:
-            # Try to get Google Maps API key from secrets
-            google_maps_api_key = st.secrets.get("google_maps", {}).get("api_key", "")
+            # Get Google Maps API key from firebase_secrets
+            google_maps_api_key = firebase_secrets.get("GOOGLE_MAPS_API_KEY", "")
             
             if google_maps_api_key:
                 # Create map data with proper column names
