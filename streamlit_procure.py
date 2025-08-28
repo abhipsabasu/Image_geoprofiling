@@ -478,26 +478,47 @@ else:
         if rating in [2, 3]:
             clue_text = st.text_area("What visual clues or indicators helped you make this judgment?", height=100, key=f'q3_{st.session_state.index}')
         st.markdown("**How would you rate the popularity of the location depicted in the photo you uploaded?**")
-        popularity = st.slider(
-            "Popularity level:",
-            min_value=1,
-            max_value=3,
-            value=1,
-            step=1,
-            key=f'q5_{st.session_state.index}'
-        )
         
-        # Show the scale labels below the slider
-        col1, col2, col3 = st.columns(3)
-        with col1:
-            st.markdown("**1**")
-            st.markdown("*Low popularity*")
-        with col2:
-            st.markdown("**2**")
-            st.markdown("*Medium popularity*")
-        with col3:
-            st.markdown("**3**")
-            st.markdown("*Highly popular*")
+        # Create a container for the slider and labels
+        slider_container = st.container()
+        
+        with slider_container:
+            # Add some spacing above the slider
+            st.markdown("<br>", unsafe_allow_html=True)
+            
+            # Create the slider with custom styling
+            popularity = st.slider(
+                "Popularity level:",
+                min_value=1,
+                max_value=3,
+                value=1,
+                step=1,
+                key=f'q5_{st.session_state.index}'
+            )
+            
+            # Add spacing below the slider
+            st.markdown("<br>", unsafe_allow_html=True)
+            
+            # Show the scale labels with better alignment
+            st.markdown(
+                """
+                <div style="display: flex; justify-content: space-between; align-items: center; margin: 0 20px;">
+                    <div style="text-align: center; flex: 1;">
+                        <strong>1</strong><br>
+                        <em>Low popularity</em>
+                    </div>
+                    <div style="text-align: center; flex: 1;">
+                        <strong>2</strong><br>
+                        <em>Medium popularity</em>
+                    </div>
+                    <div style="text-align: center; flex: 1;">
+                        <strong>3</strong><br>
+                        <em>Highly popular</em>
+                    </div>
+                </div>
+                """,
+                unsafe_allow_html=True
+            )
 
         # Month and Year questions
         st.markdown("**📅 When was this photo taken?**")
