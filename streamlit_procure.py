@@ -139,7 +139,10 @@ def geocode_location(location_text):
 
 # ---- UI ----
 st.title(f"Image Collection from {country}")
-st.markdown(f"""
+
+# Show instructions only before Prolific ID is submitted
+if not st.session_state.prolific_id:
+    st.markdown(f"""
 We are collecting a dataset of images from **{country}** to assess the knowledge of modern-day AI technologies about surroundings within the country. With your consent, we request you to upload photos that you have taken but have **not shared online**.
 
 Following are the instructions for the same.
@@ -147,7 +150,7 @@ Following are the instructions for the same.
 **What kind of images to upload**:
 
 - Photos should depict a variety of surroundings within {country}.
-- Avoid uploading duplicate/near-duplicate photos that you have already uploaded.
+- Avoid uploading similar photos to the ones that you have already uploaded.
 - Ensure the images are clear and well-lit.
 - Outdoor scenes are preferred.
 - Avoid uploading images with identifiable faces and license plates to protect privacy. 
@@ -161,10 +164,49 @@ Following are the instructions for the same.
 **What to do:**
 1.  **Upload 10 images**, one at a time.
 2.  For each image:
-    -   **Describe the photo** in a few words.
     -   **Select the location** where the photo was taken using the search box or map.
-    -   **Rate** how clearly the photo suggests it was taken in {country}.
-    -   **List the clues** that helped you make that judgment.
+    -   **Rate** how clearly the photo suggests it was taken in {country}. **List the clues** that helped you make that judgment.
+    -   **Rate the photo** on the popularity of the location captured.
+    -   **Enter the month and year** when the photo was taken.
+    -   **Click** "Submit and Next" to move to the next image.
+3. If the screen freezes, do **NOT** refresh the page. Instead, wait for a few seconds for the internet connectivity to stabilize.
+4. After uploading all the photos, wait till you get a message saying 'Survey Complete'.
+
+You have *20* minutes to upload the photos and answer the questions surrounding them. After you upload the photo, wait for the photo to be visible on screen, then answer the questions.
+""", unsafe_allow_html=True)
+else:
+    # Show View Instructions button after Prolific ID is submitted
+    if st.button("📋 View Instructions", type="secondary"):
+        st.session_state.show_instructions = not st.session_state.get('show_instructions', False)
+        st.rerun()
+    
+    # Display instructions if button was clicked
+    if st.session_state.get('show_instructions', False):
+        with st.expander("📋 Instructions", expanded=True):
+            st.markdown(f"""
+We are collecting a dataset of images from **{country}** to assess the knowledge of modern-day AI technologies about surroundings within the country. With your consent, we request you to upload photos that you have taken but have **not shared online**.
+
+Following are the instructions for the same.
+
+**What kind of images to upload**:
+
+- Photos should depict a variety of surroundings within {country}.
+- Avoid uploading similar photos to the ones that you have already uploaded.
+- Ensure the images are clear and well-lit.
+- Outdoor scenes are preferred.
+- Avoid uploading images with identifiable faces and license plates to protect privacy. 
+
+**Image Requirements**:
+
+-   All images must be from **within {country}**.
+-   Do **not** upload images already posted on social media.
+-   Try to upload images that represent diverse locations or settings.
+
+**What to do:**
+1.  **Upload 10 images**, one at a time.
+2.  For each image:
+    -   **Select the location** where the photo was taken using the search box or map.
+    -   **Rate** how clearly the photo suggests it was taken in {country}. **List the clues** that helped you make that judgment.
     -   **Rate the photo** on the popularity of the location captured.
     -   **Enter the month and year** when the photo was taken.
     -   **Click** "Submit and Next" to move to the next image.
