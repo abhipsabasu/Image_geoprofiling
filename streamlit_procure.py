@@ -354,16 +354,35 @@ else:
                                         const lat = selectedPlace.geometry.location.lat();
                                         const lng = selectedPlace.geometry.location.lng();
                                         
-                                        // Send coordinates back to Streamlit
+                                        // Automatically capture the location text
+                                        const locationText = selectedPlace.formatted_address || selectedPlace.name;
+                                        
+                                        // Send location data back to Streamlit
                                         window.parent.postMessage({{
                                             type: 'location_selected',
                                             lat: lat,
                                             lng: lng,
-                                            name: selectedPlace.name
+                                            name: selectedPlace.name,
+                                            formatted_address: selectedPlace.formatted_address,
+                                            location_text: locationText
                                         }}, '*');
+                                        
+                                        // Update the search input with the selected location
+                                        document.getElementById('pac-input').value = locationText;
+                                        
+                                        // Show success message
+                                        const successDiv = document.createElement('div');
+                                        successDiv.innerHTML = `<div style="background: #d4edda; color: #155724; padding: 10px; border-radius: 4px; margin: 10px 0; border: 1px solid #c3e6cb;">✅ Location captured: ${locationText}</div>`;
+                                        document.getElementById('map').parentNode.insertBefore(successDiv, document.getElementById('map').nextSibling);
+                                        
+                                        // Remove success message after 5 seconds
+                                        setTimeout(() => {{
+                                            if (successDiv.parentNode) {{
+                                                successDiv.parentNode.removeChild(successDiv);
+                                            }}
+                                        }}, 5000);
                                     }}
                                 }});
-                            }}
                             
                             // Listen for messages from the map
                             window.addEventListener('message', function(event) {{
@@ -375,7 +394,7 @@ else:
                                     const customEvent = new CustomEvent('locationSelected', {{
                                         detail: {{
                                             lat: event.data.lat,
-                                            lng: event.data.lng,
+                                            lng: lng,
                                             name: event.data.name
                                         }}
                                     }});
@@ -388,27 +407,43 @@ else:
                         height=450
                     )
                     
-                    # Add a button to capture location selection from Google Maps
-                    if st.button("📍 Capture Selected Location from Map", type="primary", key=f"capture_btn_selected_{st.session_state.index}"):
-                        st.info("💡 **Tip:** Use the search box in the map above to find and select a location, then click this button to capture the location text.")
+                    # Show captured location if available
+                    if hasattr(st.session_state, 'location_text') and st.session_state.location_text:
+                        st.success(f"✅ **Location Captured:** {st.session_state.location_text}")
+                        if st.button("🔄 Change Location", key=f"change_location_{st.session_state.index}"):
+                            del st.session_state.location_text
+                            st.session_state.coords = None
+                            st.rerun()
+                    else:
+                        st.info("💡 **Tip:** Use the search box in the map above to find and select a location. The location will be automatically captured when you select it.")
                         
-                        # Add a text input to capture the location description
-                        location_text = st.text_input(
-                            "**Location Description:**",
-                            placeholder="e.g., Taj Mahal, Agra or Gateway of India, Mumbai",
-                            help="Enter the location description that appears in the map search box above",
-                            key=f"location_text_{st.session_state.index}"
+                        # Add a component to capture location from JavaScript messages
+                        components.html(
+                            """
+                            <div id="location-capture" style="display: none;"></div>
+                            <script>
+                                // Listen for location selection messages from the map
+                                window.addEventListener('message', function(event) {
+                                    if (event.data.type === 'location_selected') {
+                                        // Store the location data in the div for Streamlit to access
+                                        document.getElementById('location-capture').innerHTML = JSON.stringify({
+                                            lat: event.data.lat,
+                                            lng: event.data.lng,
+                                            name: event.data.name,
+                                            location_text: event.data.location_text
+                                        });
+                                        
+                                        // Trigger a custom event
+                                        document.dispatchEvent(new CustomEvent('locationCaptured', {
+                                            detail: event.data
+                                        }));
+                                    }
+                                });
+                            </script>
+                            """,
+                            height=0
                         )
                         
-                        if st.button("✅ Confirm Location", key=f"confirm_location_{st.session_state.index}"):
-                            if location_text.strip():
-                                # Store the location text instead of coordinates
-                                st.session_state.location_text = location_text.strip()
-                                st.session_state.coords = {"lat": 0, "lng": 0}  # Placeholder coordinates
-                                st.success(f"✅ Location captured: {location_text.strip()}")
-                                st.rerun()
-                            else:
-                                st.error("Please enter a location description.")
                     st.info(f"📍 Map centered on selected location: {st.session_state.coords['lat']:.6f}, {st.session_state.coords['lng']:.6f}")
                 else:
                     # Show warning that no location is selected
@@ -495,13 +530,33 @@ else:
                                         const lat = selectedPlace.geometry.location.lat();
                                         const lng = selectedPlace.geometry.location.lng();
                                         
-                                        // Send coordinates back to Streamlit
+                                        // Automatically capture the location text
+                                        const locationText = selectedPlace.formatted_address || selectedPlace.name;
+                                        
+                                        // Send location data back to Streamlit
                                         window.parent.postMessage({{
                                             type: 'location_selected',
                                             lat: lat,
                                             lng: lng,
-                                            name: selectedPlace.name
+                                            name: selectedPlace.name,
+                                            formatted_address: selectedPlace.formatted_address,
+                                            location_text: locationText
                                         }}, '*');
+                                        
+                                        // Update the search input with the selected location
+                                        document.getElementById('pac-input').value = locationText;
+                                        
+                                        // Show success message
+                                        const successDiv = document.createElement('div');
+                                        successDiv.innerHTML = `<div style="background: #d4edda; color: #155724; padding: 10px; border-radius: 4px; margin: 10px 0; border: 1px solid #c3e6cb;">✅ Location captured: ${locationText}</div>`;
+                                        document.getElementById('map').parentNode.insertBefore(successDiv, document.getElementById('map').nextSibling);
+                                        
+                                        // Remove success message after 5 seconds
+                                        setTimeout(() => {{
+                                            if (successDiv.parentNode) {{
+                                                successDiv.parentNode.removeChild(successDiv);
+                                            }}
+                                        }}, 5000);
                                     }}
                                 }});
                             }}
@@ -511,27 +566,42 @@ else:
                         height=450
                     )
                     
-                    # Add a button to capture location selection from Google Maps
-                    if st.button("📍 Capture Selected Location from Map", type="primary", key=f"capture_btn_{st.session_state.index}"):
-                        st.info("💡 **Tip:** Use the search box in the map above to find and select a location, then click this button to capture the location text.")
+                    # Show captured location if available
+                    if hasattr(st.session_state, 'location_text') and st.session_state.location_text:
+                        st.success(f"✅ **Location Captured:** {st.session_state.location_text}")
+                        if st.button("🔄 Change Location", key=f"change_location_default_{st.session_state.index}"):
+                            del st.session_state.location_text
+                            st.session_state.coords = None
+                            st.rerun()
+                    else:
+                        st.info("💡 **Tip:** Use the search box in the map above to find and select a location. The location will be automatically captured when you select it.")
                         
-                        # Add a text input to capture the location description
-                        location_text = st.text_input(
-                            "**Location Description:**",
-                            placeholder="e.g., Taj Mahal, Agra or Gateway of India, Mumbai",
-                            help="Enter the location description that appears in the map search box above",
-                            key=f"location_text_default_{st.session_state.index}"
+                        # Add a component to capture location from JavaScript messages
+                        components.html(
+                            """
+                            <div id="location-capture-default" style="display: none;"></div>
+                            <script>
+                                // Listen for location selection messages from the map
+                                window.addEventListener('message', function(event) {
+                                    if (event.data.type === 'location_selected') {
+                                        // Store the location data in the div for Streamlit to access
+                                        document.getElementById('location-capture-default').innerHTML = JSON.stringify({
+                                            lat: event.data.lat,
+                                            lng: event.data.lng,
+                                            name: event.data.name,
+                                            location_text: event.data.location_text
+                                        });
+                                        
+                                        // Trigger a custom event
+                                        document.dispatchEvent(new CustomEvent('locationCaptured', {
+                                            detail: event.data
+                                        }));
+                                    }
+                                });
+                            </script>
+                            """,
+                            height=0
                         )
-                        
-                        if st.button("✅ Confirm Location", key=f"confirm_location_default_{st.session_state.index}"):
-                            if location_text.strip():
-                                # Store the location text instead of coordinates
-                                st.session_state.location_text = location_text.strip()
-                                st.session_state.coords = {"lat": 0, "lng": 0}  # Placeholder coordinates
-                                st.success(f"✅ Location captured: {location_text.strip()}")
-                                st.rerun()
-                            else:
-                                st.error("Please enter a location description.")
                         
             else:
                 # Fallback to Streamlit map if no Google Maps API key
