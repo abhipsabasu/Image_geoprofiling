@@ -258,48 +258,7 @@ else:
             
         st.info("💡 **Tip:** You can search for locations or use the map to find coordinates. **Coordinates are required** to proceed. If the exact location cannot be found, try including broader area names in the search string, like the name of the neighbourhood, city or state. If you are still unable to find the location, please select the nearest location from the map.")
         
-        # Location search functionality
-        st.markdown("**🔍 Search for a location:**")
-        search_col1, search_col2 = st.columns([3, 1])
-        
-        with search_col1:
-            location_search = st.text_input(
-                "Enter location name (e.g., 'Taj Mahal, Agra', 'Gateway of India, Mumbai')",
-                placeholder="Type location name here...",
-                help=f"Search for any location in {country}. Try: Taj Mahal, Red Fort, Golden Temple, Goa, etc.",
-                key=f'location_search_{st.session_state.index}'
-            )
-        
-        with search_col2:
-            search_button = st.button("🔍 Search", type="primary")
-        
-        # Show popular search suggestions
-        if not location_search:
-            st.markdown("**💡 Popular searches:** Taj Mahal, Red Fort, Golden Temple, Goa, Kerala, Darjeeling, Shimla")
-        
-        # Handle location search
-        if search_button and location_search:
-            with st.spinner("🔍 Searching for location..."):
-                # Use geocoding service to find any location
-                geocode_result = geocode_location(location_search)
-                
-                if geocode_result["success"]:
-                    st.session_state.coords = {
-                        "lat": geocode_result["lat"], 
-                        "lng": geocode_result["lng"]
-                    }
-                    st.session_state.location_name = geocode_result["name"]
-                    
-                    st.success(f"✅ **Location Found!**")
-                    st.info(f"📍 **Address:** {geocode_result['name']}")
-                    st.info(f"📍 **Coordinates:** {geocode_result['lat']:.6f}°N, {geocode_result['lng']:.6f}°E")
-                    
-                    # Clear the search input by rerunning
-                    st.rerun()
-                else:
-                    st.error(f"❌ **Location not found:** {geocode_result['error']}")
-                    st.info("💡 **Try:** Being more specific (e.g., 'Taj Mahal, Agra' instead of just 'Taj Mahal')")
-                    st.info("💡 **Or:** Use the manual coordinate inputs below")
+
         
         # Create a Google Map centered around India
         st.markdown("**🗺️ Location Map:**")
@@ -318,9 +277,13 @@ else:
                         'longitude': [st.session_state.coords['lng']]  # Use 'longitude' instead of 'lon'
                     })
                     
-                    # Create Google Maps component
+                    # Create Google Maps component with search functionality
                     components.html(
                         f"""
+                        <div style="margin-bottom: 10px;">
+                            <input id="pac-input" type="text" placeholder="Search for a location in {country}..." 
+                                   style="width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px; margin-bottom: 10px;">
+                        </div>
                         <div id="map" style="height: 400px; width: 100%;"></div>
                         <script>
                             function initMap() {{
@@ -331,26 +294,116 @@ else:
                                 }});
                                 
                                 // Add marker for selected location
-                                new google.maps.Marker({{
+                                const marker = new google.maps.Marker({{
                                     position: {{ lat: {st.session_state.coords['lat']}, lng: {st.session_state.coords['lng']} }},
                                     map: map,
                                     title: "Selected Location"
                                 }});
+                                
+                                // Add search box functionality
+                                const input = document.getElementById("pac-input");
+                                const searchBox = new google.maps.places.SearchBox(input);
+                                
+                                // Bias the SearchBox results towards current map's viewport
+                                map.addListener("bounds_changed", () => {{
+                                    searchBox.setBounds(map.getBounds());
+                                }});
+                                
+                                // Listen for the event fired when the user selects a prediction
+                                searchBox.addListener("places_changed", () => {{
+                                    const places = searchBox.getPlaces();
+                                    
+                                    if (places.length === 0) {{
+                                        return;
+                                    }}
+                                    
+                                    // Clear existing markers
+                                    marker.setMap(null);
+                                    
+                                    // For each place, get the icon, name and location
+                                    const bounds = new google.maps.LatLngBounds();
+                                    
+                                    places.forEach((place) => {{
+                                        if (!place.geometry || !place.geometry.location) {{
+                                            console.log("Returned place contains no geometry");
+                                            return;
+                                        }}
+                                        
+                                        // Create a marker for each place
+                                        const newMarker = new google.maps.Marker({{
+                                            map,
+                                            title: place.name,
+                                            position: place.geometry.location,
+                                        }});
+                                        
+                                        // Update the marker reference
+                                        marker = newMarker;
+                                        
+                                        if (place.geometry.viewport) {{
+                                            bounds.union(place.geometry.viewport);
+                                        }} else {{
+                                            bounds.extend(place.geometry.location);
+                                        }}
+                                    }});
+                                    
+                                    map.fitBounds(bounds);
+                                    
+                                    // Update coordinates in Streamlit
+                                    const selectedPlace = places[0];
+                                    if (selectedPlace.geometry && selectedPlace.geometry.location) {{
+                                        const lat = selectedPlace.geometry.location.lat();
+                                        const lng = selectedPlace.geometry.location.lng();
+                                        
+                                        // Send coordinates back to Streamlit
+                                        window.parent.postMessage({{
+                                            type: 'location_selected',
+                                            lat: lat,
+                                            lng: lng,
+                                            name: selectedPlace.name
+                                        }}, '*');
+                                    }}
+                                }});
                             }}
+                            
+                            // Listen for messages from the map
+                            window.addEventListener('message', function(event) {{
+                                if (event.data.type === 'location_selected') {{
+                                    // Update the search input with the selected location name
+                                    document.getElementById('pac-input').value = event.data.name;
+                                    
+                                    // Trigger a custom event that Streamlit can listen to
+                                    const customEvent = new CustomEvent('locationSelected', {{
+                                        detail: {{
+                                            lat: event.data.lat,
+                                            lng: event.data.lng,
+                                            name: event.data.name
+                                        }}
+                                    }});
+                                    document.dispatchEvent(customEvent);
+                                }}
+                            }});
                         </script>
-                        <script async defer src="https://maps.googleapis.com/maps/api/js?key={google_maps_api_key}&callback=initMap"></script>
+                        <script async defer src="https://maps.googleapis.com/maps/api/js?key={google_maps_api_key}&libraries=places&callback=initMap"></script>
                         """,
-                        height=400
+                        height=450
                     )
+                    
+                    # Add a button to capture location selection from Google Maps
+                    if st.button("📍 Capture Selected Location from Map", type="primary", key=f"capture_btn_selected_{st.session_state.index}"):
+                        st.info("💡 **Tip:** Use the search box in the map above to find and select a location, then click this button to capture the coordinates.")
                     st.info(f"📍 Map centered on selected location: {st.session_state.coords['lat']:.6f}, {st.session_state.coords['lng']:.6f}")
                 else:
                     # Show warning that no location is selected
-                    st.warning("⚠️ **No location selected!** Please use the search box above or enter coordinates manually to select a location.")
-                    st.info("💡 **Tip:** You can search for locations like 'Taj Mahal', 'Mumbai', 'Goa', etc., or use the coordinate inputs below.")
+                    st.warning("⚠️ **No location selected!** Please use the search box in the map above to select a location.")
+                    st.info("💡 **Tip:** You can search for locations like 'Taj Mahal', 'Mumbai', 'Goa', etc., directly in the map search box.")
                     
-                    # Show a basic map of India without centering on any specific location
+                    # Show a basic map of India with search functionality
                     components.html(
                         f"""
+                        <div style="margin-bottom: 10px;">
+                            <input id="pac-input" type="text" placeholder="Search for a location in {country}..." 
+                                   style="width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px; margin-bottom: 10px;">
+                        </div>
                         <div id="map" style="height: 400px; width: 100%;"></div>
                         <script>
                             function initMap() {{
@@ -375,12 +428,75 @@ else:
                                         title: city.name
                                     }});
                                 }});
+                                
+                                // Add search box functionality
+                                const input = document.getElementById("pac-input");
+                                const searchBox = new google.maps.places.SearchBox(input);
+                                
+                                // Bias the SearchBox results towards current map's viewport
+                                map.addListener("bounds_changed", () => {{
+                                    searchBox.setBounds(map.getBounds());
+                                }});
+                                
+                                // Listen for the event fired when the user selects a prediction
+                                searchBox.addListener("places_changed", () => {{
+                                    const places = searchBox.getPlaces();
+                                    
+                                    if (places.length === 0) {{
+                                        return;
+                                    }}
+                                    
+                                    // For each place, get the icon, name and location
+                                    const bounds = new google.maps.LatLngBounds();
+                                    
+                                    places.forEach((place) => {{
+                                        if (!place.geometry || !place.geometry.location) {{
+                                            console.log("Returned place contains no geometry");
+                                            return;
+                                        }}
+                                        
+                                        // Create a marker for the selected place
+                                        const marker = new google.maps.Marker({{
+                                            map,
+                                            title: place.name,
+                                            position: place.geometry.location,
+                                        }});
+                                        
+                                        if (place.geometry.viewport) {{
+                                            bounds.union(place.geometry.viewport);
+                                        }} else {{
+                                            bounds.extend(place.geometry.location);
+                                        }}
+                                    }});
+                                    
+                                    map.fitBounds(bounds);
+                                    
+                                    // Update coordinates in Streamlit
+                                    const selectedPlace = places[0];
+                                    if (selectedPlace.geometry && selectedPlace.geometry.location) {{
+                                        const lat = selectedPlace.geometry.location.lat();
+                                        const lng = selectedPlace.geometry.location.lng();
+                                        
+                                        // Send coordinates back to Streamlit
+                                        window.parent.postMessage({{
+                                            type: 'location_selected',
+                                            lat: lat,
+                                            lng: lng,
+                                            name: selectedPlace.name
+                                        }}, '*');
+                                    }}
+                                }});
                             }}
                         </script>
-                        <script async defer src="https://maps.googleapis.com/maps/api/js?key={google_maps_api_key}&callback=initMap"></script>
+                        <script async defer src="https://maps.googleapis.com/maps/api/js?key={google_maps_api_key}&libraries=places&callback=initMap"></script>
                         """,
-                        height=400
+                        height=450
                     )
+                    
+                    # Add a button to capture location selection from Google Maps
+                    if st.button("📍 Capture Selected Location from Map", type="primary", key=f"capture_btn_{st.session_state.index}"):
+                        st.info("💡 **Tip:** Use the search box in the map above to find and select a location, then click this button to capture the coordinates.")
+                        
             else:
                 # Fallback to Streamlit map if no Google Maps API key
                 st.warning("⚠️ Google Maps API key not configured. Using default map.")
