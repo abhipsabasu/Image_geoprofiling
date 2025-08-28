@@ -165,7 +165,7 @@ Following are the instructions for the same.
 1.  **Upload 10 images**, one at a time.
 2.  For each image:
     -   **Select the location** where the photo was taken using the search box or map.
-    -   **Rate** how clearly the photo suggests it was taken in {country}. **List the clues** that helped you make that judgment.
+    -   **Rate** how clearly the photo suggests it was taken in {country}, and **list the clues** that helped you make that judgment.
     -   **Rate the photo** on the popularity of the location captured.
     -   **Enter the month and year** when the photo was taken.
     -   **Click** "Submit and Next" to move to the next image.
