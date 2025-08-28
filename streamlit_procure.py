@@ -394,6 +394,17 @@ else:
             else:
                 st.info("💡 **Tip:** Use the search box in the map above to find and select a location. The location will be automatically captured when you select it.")
                 
+                # Add a text input for manual location entry
+                manual_location = st.text_input(
+                    "Enter the location you selected on the map:",
+                    placeholder="e.g., Taj Mahal, Agra, Uttar Pradesh, India",
+                    key=f"manual_location_{st.session_state.index}"
+                )
+                
+                if manual_location:
+                    st.session_state.location_text = manual_location
+                    st.success(f"✅ **Location set:** {manual_location}")
+                
                 # Add a component to capture location from JavaScript messages
                 components.html(
                     f"""
@@ -427,22 +438,6 @@ else:
                     """,
                     height=0
                 )
-                
-                # Add a button to manually capture the location from JavaScript
-                if st.button("📍 Capture Selected Location", key=f"capture_location_{st.session_state.index}"):
-                    # Read the captured location from the JavaScript component
-                    st.rerun()
-                
-                # Add a text input for manual location entry as fallback
-                manual_location = st.text_input(
-                    "Or manually enter location:",
-                    placeholder="e.g., Taj Mahal, Agra, Uttar Pradesh, India",
-                    key=f"manual_location_{st.session_state.index}"
-                )
-                
-                if manual_location:
-                    st.session_state.location_text = manual_location
-                    st.success(f"✅ **Location set:** {manual_location}")
         else:
             # Fallback to Streamlit map if no Google Maps API key
             st.warning("⚠️ Google Maps API key not configured. Using default map.")
