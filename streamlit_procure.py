@@ -480,7 +480,7 @@ else:
         popularity = st.selectbox(
             "**How would you rate the popularity of the location depicted in the photo you uploaded?**",
             options=["Choose an option", 1, 2, 3],
-            format_func=lambda x: f"{'1 - Low popularity' if x==1 else f'2 - Medium popularity' if x==2 else f'3 - Highly popular' if x==3 else 'Choose an option'}",
+            format_func=lambda x: f"{'1 - Unpopular' if x==1 else f'2 - Moderately popular' if x==2 else f'3 - Very popular' if x==3 else 'Choose an option'}",
             index=st.session_state.q1_index,
             key=f'q5_{st.session_state.index}'
         )
