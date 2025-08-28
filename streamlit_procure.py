@@ -247,7 +247,7 @@ else:
             image = Image.open(uploaded_file)
             st.image(image, use_container_width=True)
         
-        about = st.text_area("**What does the photo primarily depict (e.g., building, monument, market, etc)? In case there are multiple descriptors, write them in a comma-separated manner**", height=100, key=f'q1_{st.session_state.index}')
+
         st.markdown(f"**Where in {country} was the photo taken? Use the search box or map below to select the location where the photo was taken:**")
         
         # Warning that coordinates are required
@@ -505,7 +505,7 @@ else:
             )
 
         if st.button("Submit and Next"):
-            if not uploaded_file or about in ['', None] or ((rating == 'Choose an option') or (rating in [2, 3] and clue_text in [None, ''])) or month == "Choose an option" or year == "Choose an option":
+            if not uploaded_file or ((rating == 'Choose an option') or (rating in [2, 3] and clue_text in [None, ''])) or month == "Choose an option" or year == "Choose an option":
                 st.error('Please answer all the questions and upload a file.')
             elif not hasattr(st.session_state, 'location_text') or not st.session_state.location_text:
                 st.error('Please select a location on the map first and capture the location description.')
@@ -532,7 +532,6 @@ else:
                     "location_text": st.session_state.location_text,
                     "popularity": popularity,
                     "clues": clue_text,
-                    "description": about,
                     "month": month,
                     "year": year,
                 })
