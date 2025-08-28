@@ -271,34 +271,34 @@ else:
             if google_maps_api_key:
                 # Create map data with proper column names
                 if st.session_state.coords:
-                    # Show selected location on map
-                    map_data = pd.DataFrame({
-                        'latitude': [st.session_state.coords['lat']],  # Use 'latitude' instead of 'lat'
-                        'longitude': [st.session_state.coords['lng']]  # Use 'longitude' instead of 'lon'
-                    })
-                    
-                    # Create Google Maps component with search functionality
-                    components.html(
-                        f"""
-                        <div style="margin-bottom: 10px;">
-                            <input id="pac-input" type="text" placeholder="Search for a location in {country}..." 
-                                   style="width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px; margin-bottom: 10px;">
-                        </div>
-                        <div id="map" style="height: 400px; width: 100%;"></div>
-                        <script>
-                            function initMap() {{
-                                const map = new google.maps.Map(document.getElementById("map"), {{
-                                    zoom: 15,
-                                    center: {{ lat: {st.session_state.coords['lat']}, lng: {st.session_state.coords['lng']} }},
-                                    mapTypeId: google.maps.MapTypeId.ROADMAP
-                                }});
-                                
-                                // Add marker for selected location
-                                const marker = new google.maps.Marker({{
-                                    position: {{ lat: {st.session_state.coords['lat']}, lng: {st.session_state.coords['lng']} }},
-                                    map: map,
-                                    title: "Selected Location"
-                                }});
+                # Show selected location on map
+                map_data = pd.DataFrame({
+                    'latitude': [st.session_state.coords['lat']],  # Use 'latitude' instead of 'lat'
+                    'longitude': [st.session_state.coords['lng']]  # Use 'longitude' instead of 'lon'
+                })
+                
+                # Create Google Maps component with search functionality
+                components.html(
+                    f"""
+                    <div style="margin-bottom: 10px;">
+                        <input id="pac-input" type="text" placeholder="Search for a location in {country}..." 
+                               style="width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px; margin-bottom: 10px;">
+                    </div>
+                    <div id="map" style="height: 400px; width: 100%;"></div>
+                    <script>
+                        function initMap() {{
+                            const map = new google.maps.Map(document.getElementById("map"), {{
+                                zoom: 15,
+                                center: {{ lat: {st.session_state.coords['lat']}, lng: {st.session_state.coords['lng']} }},
+                                mapTypeId: google.maps.MapTypeId.ROADMAP
+                            }});
+                            
+                            // Add marker for selected location
+                            const marker = new google.maps.Marker({{
+                                position: {{ lat: {st.session_state.coords['lat']}, lng: {st.session_state.coords['lng']} }},
+                                map: map,
+                                title: "Selected Location"
+                            }});
                                 
                                 // Add search box functionality
                                 const input = document.getElementById("pac-input");
@@ -394,7 +394,7 @@ else:
                                     const customEvent = new CustomEvent('locationSelected', {{
                                         detail: {{
                                             lat: event.data.lat,
-                                            lng: lng,
+                                            lng: event.data.lng,
                                             name: event.data.name
                                         }}
                                     }});
