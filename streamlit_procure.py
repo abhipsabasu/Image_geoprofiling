@@ -256,7 +256,7 @@ else:
         else:
             st.success("✅ **Location selected successfully!**")
             
-        st.info("Once you have selected the correct location on the map, **paste the location string you used in the text box below**. If you are unable to find the location, please select the nearest location from the map.")
+        
         
 
         
@@ -392,7 +392,8 @@ else:
                     st.session_state.coords = None
                     st.rerun()
             else:
-                st.info("💡 **Tip:** Use the search box in the map above to find and select a location. The location will be automatically captured when you select it.")
+                st.info("Once you have selected the correct location on the map, **paste the location string you used in the text box below**. If you are unable to find the location, please select the nearest location from the map.")
+                # st.info("💡 **Tip:** Use the search box in the map above to find and select a location. The location will be automatically captured when you select it.")
                 
                 # Add a text input for manual location entry
                 manual_location = st.text_input(
