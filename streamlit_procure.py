@@ -252,11 +252,11 @@ else:
         
         # Warning that coordinates are required
         if not hasattr(st.session_state, 'location_text') or not st.session_state.location_text:
-            st.error("🚨 **LOCATION REQUIRED:** You must select a location to proceed with the survey!")
+            st.error("🚨 **Search for the location where the photo was taken in the map text box below**")
         else:
             st.success("✅ **Location selected successfully!**")
             
-        st.info("💡 **Tip:** You can search for locations or use the map to find coordinates. **Coordinates are required** to proceed. If the exact location cannot be found, try including broader area names in the search string, like the name of the neighbourhood, city or state. If you are still unable to find the location, please select the nearest location from the map.")
+        st.info("Once you have selected the correct location on the map, **paste the location string you used in the text box below**. If you are unable to find the location, please select the nearest location from the map.")
         
 
         
@@ -275,7 +275,7 @@ else:
                     <input id="pac-input" type="text" placeholder="Search for a location in {country}..." 
                            style="width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px; margin-bottom: 10px;">
                 </div>
-                <div id="map" style="height: 400px; width: 100%;"></div>
+                <div id="map" style="height: 400px; width: 95%; margin: 0 auto;"></div>
                 <script>
                     function initMap() {{
                         const map = new google.maps.Map(document.getElementById("map"), {{
