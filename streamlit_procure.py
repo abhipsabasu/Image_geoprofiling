@@ -606,3 +606,4 @@ else:
         st.write(f"📊 **Responses:** {len(st.session_state.responses)} recorded")
         st.write(f"🗺️ **Locations:** All location descriptions captured")
         st.write(f"📅 **Timestamps:** Month/year data collected")
+        st.write(f"📧 **Note**: If you wish to revoke your consent, please contact us at <a href='mailto:abhipsabasu@iisc.ac.in'>abhipsabasu@iisc.ac.in</a>.")
