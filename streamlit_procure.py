@@ -448,7 +448,7 @@ else:
             format_func=lambda x: f"{'1 - Unpopular' if x==1 else f'2 - Moderately popular' if x==2 else f'3 - Very popular' if x==3 else 'Choose an option'}",
             index=st.session_state.q1_index,
             key=f'q5_{st.session_state.index}',
-            unsafe_allow_html=True
+            # unsafe_allow_html=True
         )
 
         # Month and Year questions
