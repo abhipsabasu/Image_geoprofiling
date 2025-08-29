@@ -238,7 +238,13 @@ else:
         st.markdown(f"**📸 Progress: {st.session_state.index}/10 images completed**")
         progress_bar = st.progress(st.session_state.index / 10)
         st.markdown("Answer all questions (marked with <span style='color: red;'>*</span>)", unsafe_allow_html=True)
-        st.markdown(f"**Upload image {st.session_state.index + 1}** <span style='color: red;'>*</span>", unsafe_allow_html=True)
+        st.markdown(f"""
+        <div style='margin-bottom: 5px; padding-bottom: 0px;'>
+            <strong>Upload image {st.session_state.index + 1}</strong> 
+            <span style='color: red;'>*</span>
+        </div>
+        """, unsafe_allow_html=True)
+        
         uploaded_file = st.file_uploader("", type=["jpg", "jpeg", "png"], key=st.session_state.index)
         if uploaded_file:
             file_bytes = uploaded_file.read() 
@@ -433,7 +439,12 @@ else:
         
         # st.markdown(f"To what extent does this image contain visual cues (e.g., local architecture, language, or scenery) that identify it as being from {country}?")
         clue_text = None
-        st.markdown(f"**To what extent does this image contain visual cues (e.g., local architecture, language, or scenery) that identify it as being from {country}?** <span style='color: red;'>*</span>", unsafe_allow_html=True)
+        st.markdown(f"""
+        <div style='margin-bottom: 5px; padding-bottom: 0px;'>
+            <strong>To what extent does this image contain visual cues (e.g., local architecture, language, or scenery) that identify it as being from {country}?</strong> 
+            <span style='color: red;'>*</span>
+        </div>
+        """, unsafe_allow_html=True)
         rating = st.radio(
             f"",
             options=["Choose an option", 0, 1, 2],
@@ -444,7 +455,12 @@ else:
         )
         if rating in [2, 3]:
             clue_text = st.text_area("What visual clues or indicators helped you make this judgment?", height=100, key=f'q3_{st.session_state.index}')
-        st.markdown(f"**How would you rate the popularity of the location depicted in the photo you uploaded?** <span style='color: red;'>*</span>", unsafe_allow_html=True)
+        st.markdown(f"""
+        <div style='margin-bottom: 5px; padding-bottom: 0px;'>
+            <strong>How would you rate the popularity of the location depicted in the photo you uploaded?</strong> 
+            <span style='color: red;'>*</span>
+        </div>
+        """, unsafe_allow_html=True)
         popularity = st.selectbox(
             "",
             options=["Choose an option", 1, 2, 3],
@@ -455,7 +471,12 @@ else:
         )
 
         # Month and Year questions
-        st.markdown("**📅 When was this photo taken?** <span style='color: red;'>*</span>", unsafe_allow_html=True)
+        st.markdown("""
+        <div style='margin-bottom: 5px; padding-bottom: 0px;'>
+            <strong>📅 When was this photo taken?</strong> 
+            <span style='color: red;'>*</span>
+        </div>
+        """, unsafe_allow_html=True)
         month_col, year_col = st.columns(2)
         
         with month_col:
