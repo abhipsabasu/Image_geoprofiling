@@ -68,14 +68,9 @@ if 'q1_index' not in st.session_state:
 if 'temp_images' not in st.session_state:
     st.session_state.temp_images = []
 
-if 'previous_images' not in st.session_state:
-    st.session_state.previous_images = []
 
-if 'previous_responses' not in st.session_state:
-    st.session_state.previous_responses = []
 
-if 'restore_form_data' not in st.session_state:
-    st.session_state.restore_form_data = None
+
 
 def reset_selections():
     # Clear all form selections for the next image using a more robust method
@@ -92,13 +87,10 @@ def reset_selections():
     # Method 3: Force rerun to clear form state
     # This is more reliable than trying to clear individual keys
 
-def restore_previous_data():
-    """Restore data from previous image when going back"""
-    # Find the response for the target index (the one we're going back to)
-    target_index = st.session_state.index - 1  # We're going back, so target is previous index
-    for i, response in enumerate(st.session_state.responses):
-        if response.get('index') == target_index:
-            # Found the response for target index, restore it
+def get_response_for_index(index):
+    """Get response data for a specific index"""
+    for response in st.session_state.responses:
+        if response.get('index') == index:
             return response
     return None
 
@@ -493,30 +485,30 @@ else:
         st.markdown("---")
         st.markdown("**🔍 Debug Information:**")
         st.write(f"Current Index: {st.session_state.index}")
-        st.write(f"Restore Form Data: {st.session_state.restore_form_data is not None}")
         st.write(f"Location Text: {st.session_state.location_text}")
         st.write(f"Available Images: {[img['index'] for img in st.session_state.temp_images]}")
         st.write(f"Available Responses: {[resp.get('index') for resp in st.session_state.responses]}")
+        if current_response:
+            st.write(f"Current Response Data: Rating={current_response.get('rating')}, Month={current_response.get('month')}, Year={current_response.get('year')}")
         st.markdown("---")
         
-        # Get restored data if available
+        # Get saved response data for current index
+        current_response = get_response_for_index(st.session_state.index)
         restored_rating = None
         restored_clues = None
         restored_popularity = None
         restored_month = None
         restored_year = None
         
-        if st.session_state.restore_form_data:
-            restored_rating = st.session_state.restore_form_data.get('rating')
-            restored_clues = st.session_state.restore_form_data.get('clues')
-            restored_popularity = st.session_state.restore_form_data.get('popularity')
-            restored_month = st.session_state.restore_form_data.get('month')
-            restored_year = st.session_state.restore_form_data.get('year')
-            st.info(f"🔄 Restoring form data: Rating={restored_rating}, Month={restored_month}, Year={restored_year}")
-            st.info(f"🔍 Full restore data: {st.session_state.restore_form_data}")
+        if current_response:
+            restored_rating = current_response.get('rating')
+            restored_clues = current_response.get('clues')
+            restored_popularity = current_response.get('popularity')
+            restored_month = current_response.get('month')
+            restored_year = current_response.get('year')
+            st.info(f"🔄 Loaded saved data: Rating={restored_rating}, Month={restored_month}, Year={restored_year}")
         else:
-            st.info(f"📝 No form data to restore for index {st.session_state.index}")
-            st.info(f"🔍 Available responses: {[resp.get('index') for resp in st.session_state.responses]}")
+            st.info(f"📝 No saved data for index {st.session_state.index}")
         
         # Determine default index for rating
         rating_index = 0
@@ -628,8 +620,6 @@ else:
                             "privacy": st.session_state.privacy,
                             "image_url": current_image_data["file_path"],
                             "rating": rating,
-                            "location_text": st.session_state.location_text,
-                            "popularity": popularity,
                             "clues": clue_text,
                             "month": month,
                             "year": year,
@@ -642,15 +632,13 @@ else:
                 # Go back to previous image
                 st.session_state.index -= 1
                 
-                # Restore previous data if available
-                restored_data = restore_previous_data()
-                if restored_data:
-                    st.session_state.location_text = restored_data.get('location_text')
-                    # Store form responses for restoration
-                    st.session_state.restore_form_data = restored_data
-                    st.info(f"🔄 Restoring data for index {st.session_state.index}: {restored_data.get('rating')}, {restored_data.get('month')}, {restored_data.get('year')}")
+                # Load the saved response data for the target index
+                target_response = get_response_for_index(st.session_state.index)
+                if target_response:
+                    st.session_state.location_text = target_response.get('location_text')
+                    st.info(f"🔄 Loaded saved data for index {st.session_state.index}")
                 else:
-                    st.warning(f"⚠️ No data found to restore for index {st.session_state.index}")
+                    st.warning(f"⚠️ No saved data found for index {st.session_state.index}")
                 
                 st.session_state.q1_index = 0
                 st.rerun()
@@ -694,9 +682,6 @@ else:
                     st.session_state.location_text = None
                     st.session_state.index += 1
                     st.session_state.q1_index = 0
-                    
-                    # Clear restore data to prevent it from affecting future images
-                    st.session_state.restore_form_data = None
                     
                     # Force rerun to get fresh forms with new keys
                     st.rerun()
