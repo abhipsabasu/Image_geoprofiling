@@ -263,6 +263,10 @@ else:
         # Check if we have a previous image to show when going back
         previous_image_to_show = find_image_for_index(st.session_state.index)
         
+        # Initialize variables
+        uploaded_file = None
+        encoded_content = None
+        
         if previous_image_to_show:
             # Show the previous image
             st.markdown(f"**📸 Previous Image {st.session_state.index + 1}:**")
@@ -274,7 +278,7 @@ else:
                 st.image(image, use_container_width=True)
                 # Use the previous image data
                 encoded_content = previous_image_to_show['encoded_content']
-                uploaded_file = True  # Mark as having a file
+                uploaded_file = "previous"  # Mark as having a previous file
                 st.success("✅ Previous image restored successfully!")
                 
                 # Add option to change the image
@@ -289,25 +293,30 @@ else:
                 uploaded_file = None
                 encoded_content = None
         
-        # Always show file uploader (either for new image or after changing)
-        if not previous_image_to_show or not uploaded_file:
-            st.markdown("**📤 Upload New Image:**")
-            uploaded_file = st.file_uploader(f"**Upload image {st.session_state.index + 1}**", type=["jpg", "jpeg", "png"], key=f"upload_{st.session_state.index}")
-            if uploaded_file:
-                file_bytes = uploaded_file.read() 
-                if len(file_bytes) < 100:
-                    st.error("⚠️ File seems too small. Possible read error.")
+        # Always show file uploader
+        st.markdown("**📤 Upload New Image:**")
+        new_uploaded_file = st.file_uploader(f"**Upload image {st.session_state.index + 1}**", type=["jpg", "jpeg", "png"], key=f"upload_{st.session_state.index}")
+        
+        if new_uploaded_file:
+            # New file uploaded - use this instead of previous
+            file_bytes = new_uploaded_file.read() 
+            if len(file_bytes) < 100:
+                st.error("⚠️ File seems too small. Possible read error.")
+            else:
                 encoded_content = base64.b64encode(file_bytes).decode("utf-8")
-                image = Image.open(uploaded_file)
+                image = Image.open(new_uploaded_file)
                 st.image(image, use_container_width=True)
+                uploaded_file = new_uploaded_file  # Mark as having a new file
+                st.success("✅ New image uploaded successfully!")
+        
+        # Show current status
+        if uploaded_file:
+            if uploaded_file == "previous":
+                st.info("📸 Using previous image")
+            else:
+                st.info("📸 Using newly uploaded image")
         else:
-            # Show option to upload new image even when previous exists
-            st.markdown("**📤 Want to change the image?**")
-            if st.button("🔄 Upload New Image", key=f"new_upload_{st.session_state.index}"):
-                # Clear the previous image and show uploader
-                st.session_state.temp_images = [img for img in st.session_state.temp_images if img['index'] != st.session_state.index]
-                st.session_state.responses = [resp for resp in st.session_state.responses if resp.get('index') != st.session_state.index]
-                st.rerun()
+            st.warning("⚠️ No image selected yet")
         
 
         st.markdown(f"**Where in {country} was the photo taken? Use the search box or map below to select the location where the photo was taken:**")
@@ -604,7 +613,7 @@ else:
             if st.session_state.index > 0 and st.button("⬅️ Back to Previous Image", type="secondary"):
                 # Store current progress before going back if we have data
                 current_index = st.session_state.index
-                if uploaded_file and rating != 'Choose an option' and month != "Choose an option" and year != "Choose an option":
+                if uploaded_file and uploaded_file != "previous" and rating != 'Choose an option' and month != "Choose an option" and year != "Choose an option":
                     # Check if we already have data for this index
                     existing_data = find_image_for_index(current_index)
                     if existing_data:
