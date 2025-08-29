@@ -402,39 +402,7 @@ else:
                     st.session_state.location_text = manual_location
                     st.success(f"✅ **Location set:** {manual_location}")
                 
-                # Add a component to capture location from JavaScript messages
-                components.html(
-                    f"""
-                    <div id="location-capture" style="display: none;"></div>
-                    <script>
-                        // Listen for location selection messages from the map
-                        window.addEventListener('message', function(event) {{
-                            if (event.data.type === 'location_selected') {{
-                                // Store the location data in the div for Streamlit to access
-                                document.getElementById('location-capture').innerHTML = JSON.stringify({{
-                                    lat: event.data.lat,
-                                    lng: event.data.lng,
-                                    name: event.data.name,
-                                    location_text: event.data.location_text
-                                }});
-                                
-                                // Show a visual confirmation
-                                const successDiv = document.createElement('div');
-                                successDiv.innerHTML = `<div style="background: #d4edda; color: #155724; padding: 10px; border-radius: 4px; margin: 10px 0; border: 1px solid #c3e6cb;">✅ Location captured: ${{event.data.location_text}}</div>`;
-                                document.body.appendChild(successDiv);
-                                
-                                // Remove success message after 5 seconds
-                                setTimeout(() => {{
-                                    if (successDiv.parentNode) {{
-                                        successDiv.parentNode.removeChild(successDiv);
-                                    }}
-                                }}, 5000);
-                            }}
-                        }});
-                    </script>
-                    """,
-                    height=0
-                )
+                
         else:
             # Fallback to Streamlit map if no Google Maps API key
             st.warning("⚠️ Google Maps API key not configured. Using default map.")
