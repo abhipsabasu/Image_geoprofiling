@@ -466,7 +466,7 @@ else:
             st.markdown(f"**📍 Selected Location:** {st.session_state.location_text}")
         
         # Debug location info
-        st.info(f"🔍 Location Debug: location_text = {st.session_state.location_text}, restore_form_data location = {st.session_state.restore_form_data.get('location_text') if st.session_state.restore_form_data else 'None'}")
+        st.info(f"🔍 Location Debug: location_text = {st.session_state.location_text}")
         
         # Show current location if set
         if hasattr(st.session_state, 'location_text') and st.session_state.location_text:
