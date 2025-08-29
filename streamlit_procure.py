@@ -447,7 +447,7 @@ else:
             <span style='color: red;'>*</span>
         </div>
         """, unsafe_allow_html=True)
-        rating = st.radio(
+        rating = st.selectbox(
             f"",
             options=["Choose an option", 0, 1, 2, 3],
             format_func=lambda x: f"{'Strong evidence specific to the country' if x==3 else f'Clear cues, but not typically associated with {country}' if x==2 else f'Some visual indications, but not sure if they are specific to {country}' if x==1 else f'No visual indicators visible in the photo' if x==0 else 'Choose an option'}",
