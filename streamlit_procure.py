@@ -238,7 +238,7 @@ else:
         st.markdown(f"**📸 Progress: {st.session_state.index}/10 images completed**")
         progress_bar = st.progress(st.session_state.index / 10)
         st.markdown("Answer all questions (marked with <span style='color: red;'>*</span>)", unsafe_allow_html=True)
-        uploaded_file = st.file_uploader(f"**Upload image {st.session_state.index + 1}** <span style='color: red;'>*</span>", type=["jpg", "jpeg", "png"], key=st.session_state.index, unsafe_allow_html=True)
+        uploaded_file = st.file_uploader(f"**Upload image {st.session_state.index + 1}** <span style='color: red;'>*</span>", type=["jpg", "jpeg", "png"], key=st.session_state.index)
         if uploaded_file:
             file_bytes = uploaded_file.read() 
             if len(file_bytes) < 100:
