@@ -456,7 +456,7 @@ else:
         if rating in [2, 3]:
             clue_text = st.text_area("What visual clues or indicators helped you make this judgment?", height=100, key=f'q3_{st.session_state.index}')
         st.markdown(f"""
-        <div style='margin-bottom: 5px; padding-bottom: 0px;'>
+        <div style='margin-bottom: 0px; padding-bottom: 0px;'>
             <strong>How would you rate the popularity of the location depicted in the photo you uploaded?</strong> 
             <span style='color: red;'>*</span>
         </div>
@@ -472,7 +472,7 @@ else:
 
         # Month and Year questions
         st.markdown("""
-        <div style='margin-bottom: 5px; padding-bottom: 0px;'>
+        <div style='margin-bottom: 0px; padding-bottom: 0px;'>
             <strong>📅 When was this photo taken?</strong> 
             <span style='color: red;'>*</span>
         </div>
