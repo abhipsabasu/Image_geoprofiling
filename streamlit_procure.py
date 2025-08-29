@@ -387,10 +387,6 @@ else:
             # Show captured location if available
             if hasattr(st.session_state, 'location_text') and st.session_state.location_text:
                 st.success(f"✅ **Location Captured:** {st.session_state.location_text}")
-                if st.button("🔄 Change Location", key=f"change_location_{st.session_state.index}"):
-                    del st.session_state.location_text
-                    st.session_state.coords = None
-                    st.rerun()
             else:
                 st.info("Once you have selected the correct location on the map, **paste the location string you used in the text box below**. If you are unable to find the location, please select the nearest location from the map.")
                 # st.info("💡 **Tip:** Use the search box in the map above to find and select a location. The location will be automatically captured when you select it.")
