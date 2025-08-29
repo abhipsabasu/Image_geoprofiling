@@ -399,8 +399,9 @@ else:
                 # st.info("💡 **Tip:** Use the search box in the map above to find and select a location. The location will be automatically captured when you select it.")
                 
                 # Add a text input for manual location entry
+                st.markdown("<div style='margin-bottom: 0px; padding-bottom: 0px;'>**Enter the location you selected on the map:** <span style='color: red;'>*</span></div>", unsafe_allow_html=True)
                 manual_location = st.text_input(
-                    "Enter the location you selected on the map:",
+                    "",
                     placeholder="e.g., Taj Mahal, Agra, Uttar Pradesh, India",
                     key=f"manual_location_{st.session_state.index}"
                 )
