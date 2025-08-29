@@ -481,6 +481,9 @@ else:
         # st.markdown(f"To what extent does this image contain visual cues (e.g., local architecture, language, or scenery) that identify it as being from {country}?")
         clue_text = None
         
+        # Get saved response data for current index
+        current_response = get_response_for_index(st.session_state.index)
+        
         # Debug: Show current state
         st.markdown("---")
         st.markdown("**🔍 Debug Information:**")
@@ -491,9 +494,6 @@ else:
         if current_response:
             st.write(f"Current Response Data: Rating={current_response.get('rating')}, Month={current_response.get('month')}, Year={current_response.get('year')}")
         st.markdown("---")
-        
-        # Get saved response data for current index
-        current_response = get_response_for_index(st.session_state.index)
         restored_rating = None
         restored_clues = None
         restored_popularity = None
