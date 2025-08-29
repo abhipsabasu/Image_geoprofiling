@@ -68,6 +68,15 @@ if 'q1_index' not in st.session_state:
 if 'temp_images' not in st.session_state:
     st.session_state.temp_images = []
 
+if 'previous_images' not in st.session_state:
+    st.session_state.previous_images = []
+
+if 'previous_responses' not in st.session_state:
+    st.session_state.previous_responses = []
+
+if 'restore_form_data' not in st.session_state:
+    st.session_state.restore_form_data = None
+
 def reset_selections():
     # Clear all form selections for the next image using a more robust method
     
@@ -82,6 +91,25 @@ def reset_selections():
     
     # Method 3: Force rerun to clear form state
     # This is more reliable than trying to clear individual keys
+
+def restore_previous_data():
+    """Restore data from previous image when going back"""
+    if st.session_state.previous_images and st.session_state.previous_responses:
+        # Get the most recent previous data
+        prev_image = st.session_state.previous_images.pop()
+        prev_response = st.session_state.previous_responses.pop()
+        
+        # Restore the image to temp_images
+        st.session_state.temp_images.append(prev_image)
+        
+        # Restore the response
+        st.session_state.responses.append(prev_response)
+        
+        # Restore location text
+        st.session_state.location_text = prev_response.get('location_text')
+        
+        return prev_response
+    return None
 
 def geocode_location(location_text):
     """
@@ -238,14 +266,40 @@ else:
         st.markdown(f"**📸 Progress: {st.session_state.index}/10 images completed**")
         progress_bar = st.progress(st.session_state.index / 10)
         
-        uploaded_file = st.file_uploader(f"**Upload image {st.session_state.index + 1}**", type=["jpg", "jpeg", "png"], key=st.session_state.index)
-        if uploaded_file:
-            file_bytes = uploaded_file.read() 
-            if len(file_bytes) < 100:
-                st.error("⚠️ File seems too small. Possible read error.")
-            encoded_content = base64.b64encode(file_bytes).decode("utf-8")
-            image = Image.open(uploaded_file)
-            st.image(image, use_container_width=True)
+        # Check if we have a previous image to show when going back
+        previous_image_to_show = None
+        if st.session_state.index > 0 and st.session_state.previous_images:
+            # Find the image for the current index
+            for img in st.session_state.previous_images:
+                if img['index'] == st.session_state.index:
+                    previous_image_to_show = img
+                    break
+        
+        if previous_image_to_show:
+            # Show the previous image
+            st.markdown(f"**📸 Previous Image {st.session_state.index + 1}:**")
+            # Convert base64 back to image for display
+            try:
+                image_bytes = base64.b64decode(previous_image_to_show['encoded_content'])
+                image = Image.open(BytesIO(image_bytes))
+                st.image(image, use_container_width=True)
+                # Use the previous image data
+                encoded_content = previous_image_to_show['encoded_content']
+                uploaded_file = True  # Mark as having a file
+            except Exception as e:
+                st.error(f"Error displaying previous image: {e}")
+                uploaded_file = None
+                encoded_content = None
+        else:
+            # Normal file upload
+            uploaded_file = st.file_uploader(f"**Upload image {st.session_state.index + 1}**", type=["jpg", "jpeg", "png"], key=st.session_state.index)
+            if uploaded_file:
+                file_bytes = uploaded_file.read() 
+                if len(file_bytes) < 100:
+                    st.error("⚠️ File seems too small. Possible read error.")
+                encoded_content = base64.b64encode(file_bytes).decode("utf-8")
+                image = Image.open(uploaded_file)
+                st.image(image, use_container_width=True)
         
 
         st.markdown(f"**Where in {country} was the photo taken? Use the search box or map below to select the location where the photo was taken:**")
@@ -432,20 +486,52 @@ else:
         
         # st.markdown(f"To what extent does this image contain visual cues (e.g., local architecture, language, or scenery) that identify it as being from {country}?")
         clue_text = None
+        
+        # Get restored data if available
+        restored_rating = None
+        restored_clues = None
+        restored_popularity = None
+        restored_month = None
+        restored_year = None
+        
+        if st.session_state.restore_form_data:
+            restored_rating = st.session_state.restore_form_data.get('rating')
+            restored_clues = st.session_state.restore_form_data.get('clues')
+            restored_popularity = st.session_state.restore_form_data.get('popularity')
+            restored_month = st.session_state.restore_form_data.get('month')
+            restored_year = st.session_state.restore_form_data.get('year')
+        
+        # Determine default index for rating
+        rating_index = 0
+        if restored_rating is not None and restored_rating != "Choose an option":
+            rating_index = ["Choose an option", 0, 1, 2].index(restored_rating)
+        
         rating = st.radio(
             f"**To what extent does this image contain visual cues (e.g., local architecture, language, or scenery) that identify it as being from {country}?**",
             options=["Choose an option", 0, 1, 2],
             format_func=lambda x: f"{'No evidence at all' if x==0 else f'Enough evidence specific to {country}' if x==2 else f'There are visual indications like architectural style, vegetations, etc, but I do not know if they are specific to {country}' if x==1 else 'Choose an option'}",
-            index=st.session_state.q1_index,
+            index=rating_index,
             key=f'q2_{st.session_state.index}'
         )
+        
         if rating in [2, 3]:
-            clue_text = st.text_area("What visual clues or indicators helped you make this judgment?", height=100, key=f'q3_{st.session_state.index}')
+            clue_text = st.text_area(
+                "What visual clues or indicators helped you make this judgment?", 
+                height=100, 
+                key=f'q3_{st.session_state.index}',
+                value=restored_clues if restored_clues else ""
+            )
+        
+        # Determine default index for popularity
+        popularity_index = 0
+        if restored_popularity is not None and restored_popularity != "Choose an option":
+            popularity_index = ["Choose an option", 1, 2, 3].index(restored_popularity)
+        
         popularity = st.selectbox(
             "**How would you rate the popularity of the location depicted in the photo you uploaded?**",
             options=["Choose an option", 1, 2, 3],
             format_func=lambda x: f"{'1 - Unpopular' if x==1 else f'2 - Moderately popular' if x==2 else f'3 - Very popular' if x==3 else 'Choose an option'}",
-            index=st.session_state.q1_index,
+            index=popularity_index,
             key=f'q5_{st.session_state.index}'
         )
 
@@ -453,62 +539,129 @@ else:
         st.markdown("**📅 When was this photo taken?**")
         month_col, year_col = st.columns(2)
         
+        # Determine default index for month
+        month_index = 0
+        if restored_month is not None and restored_month != "Choose an option":
+            month_options = ["Choose an option", "January", "February", "March", "April", "May", "June", 
+                           "July", "August", "September", "October", "November", "December", "Cannot recall"]
+            month_index = month_options.index(restored_month) if restored_month in month_options else 0
+        
         with month_col:
             month = st.selectbox(
                 "**Month:**",
                 options=["Choose an option", "January", "February", "March", "April", "May", "June", 
                         "July", "August", "September", "October", "November", "December", "Cannot recall"],
+                index=month_index,
                 key=f'q6_month_{st.session_state.index}'
             )
+        
+        # Determine default index for year
+        year_index = 0
+        if restored_year is not None and restored_year != "Choose an option":
+            year_options = ["Choose an option"] + [str(i) for i in range(2025, 1999, -1)] + ["Cannot recall"]
+            year_index = year_options.index(restored_year) if restored_year in year_options else 0
         
         with year_col:
             year = st.selectbox(
                 "**Year:**",
                 options=["Choose an option"] + [str(i) for i in range(2025, 1999, -1)] + ["Cannot recall"],
+                index=year_index,
                 key=f'q6_year_{st.session_state.index}'
             )
 
-        if st.button("Submit and Next"):
-            if not uploaded_file or ((rating == 'Choose an option') or (rating in [2, 3] and clue_text in [None, ''])) or month == "Choose an option" or year == "Choose an option":
-                st.error('Please answer all the questions and upload a file.')
-            elif not hasattr(st.session_state, 'location_text') or not st.session_state.location_text:
-                st.error('Please select a location on the map first and capture the location description.')
-            else:
-                # Store image temporarily instead of uploading immediately
-                image_data = {
-                    "file_name": f"{st.session_state.prolific_id}_{st.session_state.index}.png",
-                    "file_path": f"{country}_images/{f'{st.session_state.prolific_id}_{st.session_state.index}.png'}",
-                    "encoded_content": encoded_content,
-                    "index": st.session_state.index
-                }
+        # Navigation buttons
+        col1, col2, col3 = st.columns([1, 2, 1])
+        
+        with col1:
+            if st.session_state.index > 0 and st.button("⬅️ Back to Previous Image", type="secondary"):
+                # Store current progress before going back
+                if uploaded_file and rating != 'Choose an option' and month != "Choose an option" and year != "Choose an option":
+                    # Save current image and responses to previous storage
+                    current_image_data = {
+                        "file_name": f"{st.session_state.prolific_id}_{st.session_state.index}.png",
+                        "file_path": f"{country}_images/{f'{st.session_state.prolific_id}_{st.session_state.index}.png'}",
+                        "encoded_content": encoded_content,
+                        "index": st.session_state.index
+                    }
+                    
+                    current_response = {
+                        "name": st.session_state.prolific_id,
+                        "birth_country": st.session_state.birth_country,
+                        "residence": st.session_state.residence,
+                        "privacy": st.session_state.privacy,
+                        "image_url": current_image_data["file_path"],
+                        "rating": rating,
+                        "location_text": st.session_state.location_text,
+                        "popularity": popularity,
+                        "clues": clue_text,
+                        "month": month,
+                        "year": year,
+                    }
+                    
+                    st.session_state.previous_images.append(current_image_data)
+                    st.session_state.previous_responses.append(current_response)
                 
-                # Add to temporary storage
-                st.session_state.temp_images.append(image_data)
+                # Go back to previous image
+                st.session_state.index -= 1
                 
-                # Store response data (without uploading image yet)
-                st.session_state.responses.append({
-                    "name": st.session_state.prolific_id,
-                    "birth_country": st.session_state.birth_country,
-                    "residence": st.session_state.residence,
-                    "privacy": st.session_state.privacy,
-                    "image_url": image_data["file_path"],  # Will be updated after upload
-                    "rating": rating,
-                    "location_text": st.session_state.location_text,
-                    "popularity": popularity,
-                    "clues": clue_text,
-                    "month": month,
-                    "year": year,
-                })
+                # Restore previous data if available
+                restored_data = restore_previous_data()
+                if restored_data:
+                    st.session_state.location_text = restored_data.get('location_text')
+                    # Store form responses for restoration
+                    st.session_state.restore_form_data = restored_data
                 
-                st.success("✅ Image and responses saved!")
-                
-                # Clear location and reset index
-                st.session_state.location_text = None
-                st.session_state.index += 1
                 st.session_state.q1_index = 0
-                
-                # Force rerun to get fresh forms with new keys
                 st.rerun()
+        
+        with col2:
+            if st.button("Submit and Next"):
+                if not uploaded_file or ((rating == 'Choose an option') or (rating in [2, 3] and clue_text in [None, ''])) or month == "Choose an option" or year == "Choose an option":
+                    st.error('Please answer all the questions and upload a file.')
+                elif not hasattr(st.session_state, 'location_text') or not st.session_state.location_text:
+                    st.error('Please select a location on the map first and capture the location description.')
+                else:
+                    # Store image temporarily instead of uploading immediately
+                    image_data = {
+                        "file_name": f"{st.session_state.prolific_id}_{st.session_state.index}.png",
+                        "file_path": f"{country}_images/{f'{st.session_state.prolific_id}_{st.session_state.index}.png'}",
+                        "encoded_content": encoded_content,
+                        "index": st.session_state.index
+                    }
+                    
+                    # Add to temporary storage
+                    st.session_state.temp_images.append(image_data)
+                    
+                    # Store response data (without uploading image yet)
+                    st.session_state.responses.append({
+                        "name": st.session_state.prolific_id,
+                        "birth_country": st.session_state.birth_country,
+                        "residence": st.session_state.residence,
+                        "privacy": st.session_state.privacy,
+                        "image_url": image_data["file_path"],  # Will be updated after upload
+                        "rating": rating,
+                        "location_text": st.session_state.location_text,
+                        "popularity": popularity,
+                        "clues": clue_text,
+                        "month": month,
+                        "year": year,
+                    })
+                    
+                    st.success("✅ Image and responses saved!")
+                    
+                    # Clear location and reset index
+                    st.session_state.location_text = None
+                    st.session_state.index += 1
+                    st.session_state.q1_index = 0
+                    
+                    # Clear restore data to prevent it from affecting future images
+                    st.session_state.restore_form_data = None
+                    
+                    # Force rerun to get fresh forms with new keys
+                    st.rerun()
+        
+        with col3:
+            st.write("")  # Empty column for spacing
     else:
         # Upload all images to GitHub at once
         st.markdown("**📤 Uploading all images...**")
