@@ -438,7 +438,7 @@ else:
             format_func=lambda x: f"{'No evidence at all' if x==0 else f'Enough evidence specific to {country}' if x==2 else f'There are visual indications like architectural style, vegetations, etc, but I do not know if they are specific to {country}' if x==1 else 'Choose an option'}",
             index=st.session_state.q1_index,
             key=f'q2_{st.session_state.index}',
-            unsafe_allow_html=True
+            # unsafe_allow_html=True
         )
         if rating in [2, 3]:
             clue_text = st.text_area("What visual clues or indicators helped you make this judgment?", height=100, key=f'q3_{st.session_state.index}')
