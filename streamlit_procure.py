@@ -94,21 +94,19 @@ def reset_selections():
 
 def restore_previous_data():
     """Restore data from previous image when going back"""
-    if st.session_state.previous_images and st.session_state.previous_responses:
-        # Get the most recent previous data
-        prev_image = st.session_state.previous_images.pop()
-        prev_response = st.session_state.previous_responses.pop()
-        
-        # Restore the image to temp_images
-        st.session_state.temp_images.append(prev_image)
-        
-        # Restore the response
-        st.session_state.responses.append(prev_response)
-        
-        # Restore location text
-        st.session_state.location_text = prev_response.get('location_text')
-        
-        return prev_response
+    # Find the response for the current index (after going back)
+    target_index = st.session_state.index
+    for i, response in enumerate(st.session_state.responses):
+        if response.get('index') == target_index:
+            # Found the response for current index, restore it
+            return response
+    return None
+
+def find_image_for_index(index):
+    """Find image data for a specific index"""
+    for img in st.session_state.temp_images:
+        if img['index'] == index:
+            return img
     return None
 
 def geocode_location(location_text):
@@ -266,18 +264,17 @@ else:
         st.markdown(f"**📸 Progress: {st.session_state.index}/10 images completed**")
         progress_bar = st.progress(st.session_state.index / 10)
         
+        # Debug information
+        if st.session_state.index > 0:
+            st.info(f"🔍 Debug: Current index: {st.session_state.index}, Available images: {[img['index'] for img in st.session_state.temp_images]}, Available responses: {[resp.get('index') for resp in st.session_state.responses]}")
+        
         # Check if we have a previous image to show when going back
-        previous_image_to_show = None
-        if st.session_state.index > 0 and st.session_state.previous_images:
-            # Find the image for the current index
-            for img in st.session_state.previous_images:
-                if img['index'] == st.session_state.index:
-                    previous_image_to_show = img
-                    break
+        previous_image_to_show = find_image_for_index(st.session_state.index)
         
         if previous_image_to_show:
             # Show the previous image
             st.markdown(f"**📸 Previous Image {st.session_state.index + 1}:**")
+            st.info(f"🔄 Restoring image from index {previous_image_to_show['index']}")
             # Convert base64 back to image for display
             try:
                 image_bytes = base64.b64decode(previous_image_to_show['encoded_content'])
@@ -286,6 +283,7 @@ else:
                 # Use the previous image data
                 encoded_content = previous_image_to_show['encoded_content']
                 uploaded_file = True  # Mark as having a file
+                st.success("✅ Previous image restored successfully!")
             except Exception as e:
                 st.error(f"Error displaying previous image: {e}")
                 uploaded_file = None
@@ -500,6 +498,9 @@ else:
             restored_popularity = st.session_state.restore_form_data.get('popularity')
             restored_month = st.session_state.restore_form_data.get('month')
             restored_year = st.session_state.restore_form_data.get('year')
+            st.info(f"🔄 Restoring form data: Rating={restored_rating}, Month={restored_month}, Year={restored_year}")
+        else:
+            st.info(f"📝 No form data to restore for index {st.session_state.index}")
         
         # Determine default index for rating
         rating_index = 0
@@ -574,32 +575,51 @@ else:
         
         with col1:
             if st.session_state.index > 0 and st.button("⬅️ Back to Previous Image", type="secondary"):
-                # Store current progress before going back
+                # Store current progress before going back if we have data
                 if uploaded_file and rating != 'Choose an option' and month != "Choose an option" and year != "Choose an option":
-                    # Save current image and responses to previous storage
-                    current_image_data = {
-                        "file_name": f"{st.session_state.prolific_id}_{st.session_state.index}.png",
-                        "file_path": f"{country}_images/{f'{st.session_state.prolific_id}_{st.session_state.index}.png'}",
-                        "encoded_content": encoded_content,
-                        "index": st.session_state.index
-                    }
-                    
-                    current_response = {
-                        "name": st.session_state.prolific_id,
-                        "birth_country": st.session_state.birth_country,
-                        "residence": st.session_state.residence,
-                        "privacy": st.session_state.privacy,
-                        "image_url": current_image_data["file_path"],
-                        "rating": rating,
-                        "location_text": st.session_state.location_text,
-                        "popularity": popularity,
-                        "clues": clue_text,
-                        "month": month,
-                        "year": year,
-                    }
-                    
-                    st.session_state.previous_images.append(current_image_data)
-                    st.session_state.previous_responses.append(current_response)
+                    # Check if we already have data for this index
+                    existing_data = find_image_for_index(st.session_state.index)
+                    if existing_data:
+                        # Update existing data
+                        existing_data['encoded_content'] = encoded_content
+                        # Find and update existing response
+                        for response in st.session_state.responses:
+                            if response.get('index') == st.session_state.index:
+                                response.update({
+                                    'rating': rating,
+                                    'location_text': st.session_state.location_text,
+                                    'popularity': popularity,
+                                    'clues': clue_text,
+                                    'month': month,
+                                    'year': year,
+                                })
+                                break
+                    else:
+                        # Create new data
+                        current_image_data = {
+                            "file_name": f"{st.session_state.prolific_id}_{st.session_state.index}.png",
+                            "file_path": f"{country}_images/{f'{st.session_state.prolific_id}_{st.session_state.index}.png'}",
+                            "encoded_content": encoded_content,
+                            "index": st.session_state.index
+                        }
+                        
+                        current_response = {
+                            "name": st.session_state.prolific_id,
+                            "birth_country": st.session_state.birth_country,
+                            "residence": st.session_state.residence,
+                            "privacy": st.session_state.privacy,
+                            "image_url": current_image_data["file_path"],
+                            "rating": rating,
+                            "location_text": st.session_state.location_text,
+                            "popularity": popularity,
+                            "clues": clue_text,
+                            "month": month,
+                            "year": year,
+                        }
+                        
+                        # Add to temp storage
+                        st.session_state.temp_images.append(current_image_data)
+                        st.session_state.responses.append(current_response)
                 
                 # Go back to previous image
                 st.session_state.index -= 1
