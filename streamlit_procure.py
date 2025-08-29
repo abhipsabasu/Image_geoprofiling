@@ -237,8 +237,8 @@ else:
         # Show progress
         st.markdown(f"**📸 Progress: {st.session_state.index}/10 images completed**")
         progress_bar = st.progress(st.session_state.index / 10)
-        
-        uploaded_file = st.file_uploader(f"**Upload image {st.session_state.index + 1}**", type=["jpg", "jpeg", "png"], key=st.session_state.index)
+        st.markdown("Answer all questions (marked with <span style='color: red;'>*</span>)", unsafe_allow_html=True)
+        uploaded_file = st.file_uploader(f"**Upload image {st.session_state.index + 1}** <span style='color: red;'>*</span>", type=["jpg", "jpeg", "png"], key=st.session_state.index, unsafe_allow_html=True)
         if uploaded_file:
             file_bytes = uploaded_file.read() 
             if len(file_bytes) < 100:
@@ -248,7 +248,7 @@ else:
             st.image(image, use_container_width=True)
         
 
-        st.markdown(f"**Where in {country} was the photo taken? Use the search box or map below to select the location where the photo was taken:**")
+        st.markdown(f"**Where in {country} was the photo taken? Use the search box within map below to select the location where the photo was taken:** <span style='color: red;'>*</span>", unsafe_allow_html=True)
         
         # Warning that coordinates are required
         if not hasattr(st.session_state, 'location_text') or not st.session_state.location_text:
@@ -433,24 +433,26 @@ else:
         # st.markdown(f"To what extent does this image contain visual cues (e.g., local architecture, language, or scenery) that identify it as being from {country}?")
         clue_text = None
         rating = st.radio(
-            f"**To what extent does this image contain visual cues (e.g., local architecture, language, or scenery) that identify it as being from {country}?**",
+            f"**To what extent does this image contain visual cues (e.g., local architecture, language, or scenery) that identify it as being from {country}?** <span style='color: red;'>*</span>",
             options=["Choose an option", 0, 1, 2],
             format_func=lambda x: f"{'No evidence at all' if x==0 else f'Enough evidence specific to {country}' if x==2 else f'There are visual indications like architectural style, vegetations, etc, but I do not know if they are specific to {country}' if x==1 else 'Choose an option'}",
             index=st.session_state.q1_index,
-            key=f'q2_{st.session_state.index}'
+            key=f'q2_{st.session_state.index}',
+            unsafe_allow_html=True
         )
         if rating in [2, 3]:
             clue_text = st.text_area("What visual clues or indicators helped you make this judgment?", height=100, key=f'q3_{st.session_state.index}')
         popularity = st.selectbox(
-            "**How would you rate the popularity of the location depicted in the photo you uploaded?**",
+            "**How would you rate the popularity of the location depicted in the photo you uploaded?** <span style='color: red;'>*</span>",
             options=["Choose an option", 1, 2, 3],
             format_func=lambda x: f"{'1 - Unpopular' if x==1 else f'2 - Moderately popular' if x==2 else f'3 - Very popular' if x==3 else 'Choose an option'}",
             index=st.session_state.q1_index,
-            key=f'q5_{st.session_state.index}'
+            key=f'q5_{st.session_state.index}',
+            unsafe_allow_html=True
         )
 
         # Month and Year questions
-        st.markdown("**📅 When was this photo taken?**")
+        st.markdown("**📅 When was this photo taken?** <span style='color: red;'>*</span>", unsafe_allow_html=True)
         month_col, year_col = st.columns(2)
         
         with month_col:
@@ -501,7 +503,7 @@ else:
                 })
                 
                 st.success("✅ Image and responses saved!")
-                
+                st.toast("Saved successfully!", icon="✅")
                 # Clear location and reset index
                 st.session_state.location_text = None
                 st.session_state.index += 1
