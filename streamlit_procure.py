@@ -440,7 +440,7 @@ else:
         # st.markdown(f"To what extent does this image contain visual cues (e.g., local architecture, language, or scenery) that identify it as being from {country}?")
         clue_text = None
         st.markdown(f"""
-        <div style='margin-bottom: 5px; padding-bottom: 0px;'>
+        <div style='margin-bottom: 2px; padding-bottom: 0px;'>
             <strong>To what extent does this image contain visual cues (e.g., local architecture, language, or scenery) that identify it as being from {country}?</strong> 
             <span style='color: red;'>*</span>
         </div>
