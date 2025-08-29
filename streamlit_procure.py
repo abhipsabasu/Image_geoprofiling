@@ -68,10 +68,6 @@ if 'q1_index' not in st.session_state:
 if 'temp_images' not in st.session_state:
     st.session_state.temp_images = []
 
-
-
-
-
 def reset_selections():
     # Clear all form selections for the next image using a more robust method
     
@@ -86,20 +82,6 @@ def reset_selections():
     
     # Method 3: Force rerun to clear form state
     # This is more reliable than trying to clear individual keys
-
-def get_response_for_index(index):
-    """Get response data for a specific index"""
-    for response in st.session_state.responses:
-        if response.get('index') == index:
-            return response
-    return None
-
-def find_image_for_index(index):
-    """Find image data for a specific index"""
-    for img in st.session_state.temp_images:
-        if img['index'] == index:
-            return img
-    return None
 
 def geocode_location(location_text):
     """
@@ -256,67 +238,14 @@ else:
         st.markdown(f"**📸 Progress: {st.session_state.index}/10 images completed**")
         progress_bar = st.progress(st.session_state.index / 10)
         
-        # Debug information
-        if st.session_state.index > 0:
-            st.info(f"🔍 Debug: Current index: {st.session_state.index}, Available images: {[img['index'] for img in st.session_state.temp_images]}, Available responses: {[resp.get('index') for resp in st.session_state.responses]}")
-        
-        # Check if we have a previous image to show when going back
-        previous_image_to_show = find_image_for_index(st.session_state.index)
-        
-        # Initialize variables
-        uploaded_file = None
-        encoded_content = None
-        
-        if previous_image_to_show:
-            # Show the previous image
-            st.markdown(f"**📸 Previous Image {st.session_state.index + 1}:**")
-            st.info(f"🔄 Restoring image from index {previous_image_to_show['index']}")
-            # Convert base64 back to image for display
-            try:
-                image_bytes = base64.b64decode(previous_image_to_show['encoded_content'])
-                image = Image.open(BytesIO(image_bytes))
-                st.image(image, use_container_width=True)
-                # Use the previous image data
-                encoded_content = previous_image_to_show['encoded_content']
-                uploaded_file = "previous"  # Mark as having a previous file
-                st.success("✅ Previous image restored successfully!")
-                
-                # Add option to change the image
-                if st.button("🔄 Change Image", key=f"change_img_{st.session_state.index}"):
-                    # Clear the previous image and allow new upload
-                    st.session_state.temp_images = [img for img in st.session_state.temp_images if img['index'] != st.session_state.index]
-                    st.session_state.responses = [resp for resp in st.session_state.responses if resp.get('index') != st.session_state.index]
-                    st.rerun()
-                    
-            except Exception as e:
-                st.error(f"Error displaying previous image: {e}")
-                uploaded_file = None
-                encoded_content = None
-        
-        # Always show file uploader
-        st.markdown("**📤 Upload New Image:**")
-        new_uploaded_file = st.file_uploader(f"**Upload image {st.session_state.index + 1}**", type=["jpg", "jpeg", "png"], key=f"upload_{st.session_state.index}")
-        
-        if new_uploaded_file:
-            # New file uploaded - use this instead of previous
-            file_bytes = new_uploaded_file.read() 
+        uploaded_file = st.file_uploader(f"**Upload image {st.session_state.index + 1}**", type=["jpg", "jpeg", "png"], key=st.session_state.index)
+        if uploaded_file:
+            file_bytes = uploaded_file.read() 
             if len(file_bytes) < 100:
                 st.error("⚠️ File seems too small. Possible read error.")
-            else:
-                encoded_content = base64.b64encode(file_bytes).decode("utf-8")
-                image = Image.open(new_uploaded_file)
-                st.image(image, use_container_width=True)
-                uploaded_file = new_uploaded_file  # Mark as having a new file
-                st.success("✅ New image uploaded successfully!")
-        
-        # Show current status
-        if uploaded_file:
-            if uploaded_file == "previous":
-                st.info("📸 Using previous image")
-            else:
-                st.info("📸 Using newly uploaded image")
-        else:
-            st.warning("⚠️ No image selected yet")
+            encoded_content = base64.b64encode(file_bytes).decode("utf-8")
+            image = Image.open(uploaded_file)
+            st.image(image, use_container_width=True)
         
 
         st.markdown(f"**Where in {country} was the photo taken? Use the search box or map below to select the location where the photo was taken:**")
@@ -466,7 +395,6 @@ else:
                 manual_location = st.text_input(
                     "Enter the location you selected on the map:",
                     placeholder="e.g., Taj Mahal, Agra, Uttar Pradesh, India",
-                    value=st.session_state.location_text if st.session_state.location_text else "",
                     key=f"manual_location_{st.session_state.index}"
                 )
                 
@@ -474,7 +402,39 @@ else:
                     st.session_state.location_text = manual_location
                     st.success(f"✅ **Location set:** {manual_location}")
                 
-                
+                # Add a component to capture location from JavaScript messages
+                components.html(
+                    f"""
+                    <div id="location-capture" style="display: none;"></div>
+                    <script>
+                        // Listen for location selection messages from the map
+                        window.addEventListener('message', function(event) {{
+                            if (event.data.type === 'location_selected') {{
+                                // Store the location data in the div for Streamlit to access
+                                document.getElementById('location-capture').innerHTML = JSON.stringify({{
+                                    lat: event.data.lat,
+                                    lng: event.data.lng,
+                                    name: event.data.name,
+                                    location_text: event.data.location_text
+                                }});
+                                
+                                // Show a visual confirmation
+                                const successDiv = document.createElement('div');
+                                successDiv.innerHTML = `<div style="background: #d4edda; color: #155724; padding: 10px; border-radius: 4px; margin: 10px 0; border: 1px solid #c3e6cb;">✅ Location captured: ${{event.data.location_text}}</div>`;
+                                document.body.appendChild(successDiv);
+                                
+                                // Remove success message after 5 seconds
+                                setTimeout(() => {{
+                                    if (successDiv.parentNode) {{
+                                        successDiv.parentNode.removeChild(successDiv);
+                                    }}
+                                }}, 5000);
+                            }}
+                        }});
+                    </script>
+                    """,
+                    height=0
+                )
         else:
             # Fallback to Streamlit map if no Google Maps API key
             st.warning("⚠️ Google Maps API key not configured. Using default map.")
@@ -492,9 +452,6 @@ else:
         else:
             st.markdown(f"**📍 Selected Location:** {st.session_state.location_text}")
         
-        # Debug location info
-        st.info(f"🔍 Location Debug: location_text = {st.session_state.location_text}")
-        
         # Show current location if set
         if hasattr(st.session_state, 'location_text') and st.session_state.location_text:
             col1, col2 = st.columns([3, 1])
@@ -507,68 +464,20 @@ else:
         
         # st.markdown(f"To what extent does this image contain visual cues (e.g., local architecture, language, or scenery) that identify it as being from {country}?")
         clue_text = None
-        
-        # Get saved response data for current index
-        current_response = get_response_for_index(st.session_state.index)
-        
-        # Debug: Show current state
-        st.markdown("---")
-        st.markdown("**🔍 Debug Information:**")
-        st.write(f"Current Index: {st.session_state.index}")
-        st.write(f"Location Text: {st.session_state.location_text}")
-        st.write(f"Available Images: {[img['index'] for img in st.session_state.temp_images]}")
-        st.write(f"Available Responses: {[resp.get('index') for resp in st.session_state.responses]}")
-        if current_response:
-            st.write(f"Current Response Data: Rating={current_response.get('rating')}, Month={current_response.get('month')}, Year={current_response.get('year')}")
-        st.markdown("---")
-        restored_rating = None
-        restored_clues = None
-        restored_popularity = None
-        restored_month = None
-        restored_year = None
-        
-        if current_response:
-            restored_rating = current_response.get('rating')
-            restored_clues = current_response.get('clues')
-            restored_popularity = current_response.get('popularity')
-            restored_month = current_response.get('month')
-            restored_year = current_response.get('year')
-            st.info(f"🔄 Loaded saved data: Rating={restored_rating}, Month={restored_month}, Year={restored_year}")
-        else:
-            st.info(f"📝 No saved data for index {st.session_state.index}")
-        
-        # Determine default index for rating
-        rating_index = 0
-        if restored_rating is not None and restored_rating != "Choose an option":
-            rating_index = ["Choose an option", 0, 1, 2].index(restored_rating)
-            st.info(f"🔄 Rating restored: {restored_rating} -> index {rating_index}")
-        
         rating = st.radio(
             f"**To what extent does this image contain visual cues (e.g., local architecture, language, or scenery) that identify it as being from {country}?**",
             options=["Choose an option", 0, 1, 2],
             format_func=lambda x: f"{'No evidence at all' if x==0 else f'Enough evidence specific to {country}' if x==2 else f'There are visual indications like architectural style, vegetations, etc, but I do not know if they are specific to {country}' if x==1 else 'Choose an option'}",
-            index=rating_index,
+            index=st.session_state.q1_index,
             key=f'q2_{st.session_state.index}'
         )
-        
         if rating in [2, 3]:
-            clue_text = st.text_area(
-                "What visual clues or indicators helped you make this judgment?", 
-                height=100, 
-                key=f'q3_{st.session_state.index}',
-                value=restored_clues if restored_clues else ""
-            )
-        
-        # Determine default index for popularity
-        popularity_index = 0
-        if restored_popularity is not None and restored_popularity != "Choose an option":
-            popularity_index = ["Choose an option", 1, 2, 3].index(restored_popularity)
-        
+            clue_text = st.text_area("What visual clues or indicators helped you make this judgment?", height=100, key=f'q3_{st.session_state.index}')
         popularity = st.selectbox(
             "**How would you rate the popularity of the location depicted in the photo you uploaded?**",
             options=["Choose an option", 1, 2, 3],
             format_func=lambda x: f"{'1 - Unpopular' if x==1 else f'2 - Moderately popular' if x==2 else f'3 - Very popular' if x==3 else 'Choose an option'}",
-            index=popularity_index,
+            index=st.session_state.q1_index,
             key=f'q5_{st.session_state.index}'
         )
 
@@ -576,145 +485,62 @@ else:
         st.markdown("**📅 When was this photo taken?**")
         month_col, year_col = st.columns(2)
         
-        # Determine default index for month
-        month_index = 0
-        if restored_month is not None and restored_month != "Choose an option":
-            month_options = ["Choose an option", "January", "February", "March", "April", "May", "June", 
-                           "July", "August", "September", "October", "November", "December", "Cannot recall"]
-            month_index = month_options.index(restored_month) if restored_month in month_options else 0
-        
         with month_col:
             month = st.selectbox(
                 "**Month:**",
                 options=["Choose an option", "January", "February", "March", "April", "May", "June", 
                         "July", "August", "September", "October", "November", "December", "Cannot recall"],
-                index=month_index,
                 key=f'q6_month_{st.session_state.index}'
             )
-        
-        # Determine default index for year
-        year_index = 0
-        if restored_year is not None and restored_year != "Choose an option":
-            year_options = ["Choose an option"] + [str(i) for i in range(2025, 1999, -1)] + ["Cannot recall"]
-            year_index = year_options.index(restored_year) if restored_year in year_options else 0
         
         with year_col:
             year = st.selectbox(
                 "**Year:**",
                 options=["Choose an option"] + [str(i) for i in range(2025, 1999, -1)] + ["Cannot recall"],
-                index=year_index,
                 key=f'q6_year_{st.session_state.index}'
             )
 
-        # Navigation buttons
-        col1, col2, col3 = st.columns([1, 2, 1])
-        
-        with col1:
-            if st.session_state.index > 0 and st.button("⬅️ Back to Previous Image", type="secondary"):
-                # Store current progress before going back if we have data
-                current_index = st.session_state.index
-                if uploaded_file and uploaded_file != "previous" and rating != 'Choose an option' and month != "Choose an option" and year != "Choose an option":
-                    # Check if we already have data for this index
-                    existing_data = find_image_for_index(current_index)
-                    if existing_data:
-                        # Update existing data
-                        existing_data['encoded_content'] = encoded_content
-                        # Find and update existing response
-                        for response in st.session_state.responses:
-                            if response.get('index') == current_index:
-                                response.update({
-                                    'rating': rating,
-                                    'location_text': st.session_state.location_text,
-                                    'popularity': popularity,
-                                    'clues': clue_text,
-                                    'month': month,
-                                    'year': year,
-                                })
-                                break
-                    else:
-                        # Create new data
-                        current_image_data = {
-                            "file_name": f"{st.session_state.prolific_id}_{current_index}.png",
-                            "file_path": f"{country}_images/{f'{st.session_state.prolific_id}_{current_index}.png'}",
-                            "encoded_content": encoded_content,
-                            "index": current_index
-                        }
-                        
-                        current_response = {
-                            "name": st.session_state.prolific_id,
-                            "birth_country": st.session_state.birth_country,
-                            "residence": st.session_state.residence,
-                            "privacy": st.session_state.privacy,
-                            "image_url": current_image_data["file_path"],
-                            "rating": rating,
-                            "clues": clue_text,
-                            "month": month,
-                            "year": year,
-                        }
-                        
-                        # Add to temp storage
-                        st.session_state.temp_images.append(current_image_data)
-                        st.session_state.responses.append(current_response)
+        if st.button("Submit and Next"):
+            if not uploaded_file or ((rating == 'Choose an option') or (rating in [2, 3] and clue_text in [None, ''])) or month == "Choose an option" or year == "Choose an option":
+                st.error('Please answer all the questions and upload a file.')
+            elif not hasattr(st.session_state, 'location_text') or not st.session_state.location_text:
+                st.error('Please select a location on the map first and capture the location description.')
+            else:
+                # Store image temporarily instead of uploading immediately
+                image_data = {
+                    "file_name": f"{st.session_state.prolific_id}_{st.session_state.index}.png",
+                    "file_path": f"{country}_images/{f'{st.session_state.prolific_id}_{st.session_state.index}.png'}",
+                    "encoded_content": encoded_content,
+                    "index": st.session_state.index
+                }
                 
-                # Go back to previous image
-                st.session_state.index -= 1
+                # Add to temporary storage
+                st.session_state.temp_images.append(image_data)
                 
-                # Load the saved response data for the target index
-                target_response = get_response_for_index(st.session_state.index)
-                if target_response:
-                    st.session_state.location_text = target_response.get('location_text')
-                    st.info(f"🔄 Loaded saved data for index {st.session_state.index}")
-                else:
-                    st.warning(f"⚠️ No saved data found for index {st.session_state.index}")
+                # Store response data (without uploading image yet)
+                st.session_state.responses.append({
+                    "name": st.session_state.prolific_id,
+                    "birth_country": st.session_state.birth_country,
+                    "residence": st.session_state.residence,
+                    "privacy": st.session_state.privacy,
+                    "image_url": image_data["file_path"],  # Will be updated after upload
+                    "rating": rating,
+                    "location_text": st.session_state.location_text,
+                    "popularity": popularity,
+                    "clues": clue_text,
+                    "month": month,
+                    "year": year,
+                })
                 
+                st.success("✅ Image and responses saved!")
+                
+                # Clear location and reset index
+                st.session_state.location_text = None
+                st.session_state.index += 1
                 st.session_state.q1_index = 0
+                
+                # Force rerun to get fresh forms with new keys
                 st.rerun()
-        
-        with col2:
-            if st.button("Submit and Next"):
-                if not uploaded_file or ((rating == 'Choose an option') or (rating in [2, 3] and clue_text in [None, ''])) or month == "Choose an option" or year == "Choose an option":
-                    st.error('Please answer all the questions and upload a file.')
-                elif not hasattr(st.session_state, 'location_text') or not st.session_state.location_text:
-                    st.error('Please select a location on the map first and capture the location description.')
-                else:
-                    # Store image temporarily instead of uploading immediately
-                    image_data = {
-                        "file_name": f"{st.session_state.prolific_id}_{st.session_state.index}.png",
-                        "file_path": f"{country}_images/{f'{st.session_state.prolific_id}_{st.session_state.index}.png'}",
-                        "encoded_content": encoded_content,
-                        "index": st.session_state.index
-                    }
-                    
-                    # Add to temporary storage
-                    st.session_state.temp_images.append(image_data)
-                    
-                    # Store response data (without uploading image yet)
-                    st.session_state.responses.append({
-                        "name": st.session_state.prolific_id,
-                        "birth_country": st.session_state.birth_country,
-                        "residence": st.session_state.residence,
-                        "privacy": st.session_state.privacy,
-                        "image_url": image_data["file_path"],  # Will be updated after upload
-                        "rating": rating,
-                        "location_text": st.session_state.location_text,
-                        "popularity": popularity,
-                        "clues": clue_text,
-                        "month": month,
-                        "year": year,
-                    })
-                    
-                    st.success("✅ Image and responses saved!")
-                    
-                    # Clear location and reset index
-                    st.session_state.location_text = None
-                    st.session_state.index += 1
-                    st.session_state.q1_index = 0
-                    
-                    # Force rerun to get fresh forms with new keys
-                    st.rerun()
-        
-        with col3:
-            st.write("")  # Empty column for spacing
     else:
         # Upload all images to GitHub at once
         st.markdown("**📤 Uploading all images...**")
