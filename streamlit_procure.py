@@ -94,11 +94,11 @@ def reset_selections():
 
 def restore_previous_data():
     """Restore data from previous image when going back"""
-    # Find the response for the current index (after going back)
-    target_index = st.session_state.index
+    # Find the response for the target index (the one we're going back to)
+    target_index = st.session_state.index - 1  # We're going back, so target is previous index
     for i, response in enumerate(st.session_state.responses):
         if response.get('index') == target_index:
-            # Found the response for current index, restore it
+            # Found the response for target index, restore it
             return response
     return None
 
@@ -447,6 +447,7 @@ else:
                 manual_location = st.text_input(
                     "Enter the location you selected on the map:",
                     placeholder="e.g., Taj Mahal, Agra, Uttar Pradesh, India",
+                    value=st.session_state.location_text if st.session_state.location_text else "",
                     key=f"manual_location_{st.session_state.index}"
                 )
                 
@@ -472,6 +473,9 @@ else:
         else:
             st.markdown(f"**📍 Selected Location:** {st.session_state.location_text}")
         
+        # Debug location info
+        st.info(f"🔍 Location Debug: location_text = {st.session_state.location_text}, restore_form_data location = {st.session_state.restore_form_data.get('location_text') if st.session_state.restore_form_data else 'None'}")
+        
         # Show current location if set
         if hasattr(st.session_state, 'location_text') and st.session_state.location_text:
             col1, col2 = st.columns([3, 1])
@@ -484,6 +488,16 @@ else:
         
         # st.markdown(f"To what extent does this image contain visual cues (e.g., local architecture, language, or scenery) that identify it as being from {country}?")
         clue_text = None
+        
+        # Debug: Show current state
+        st.markdown("---")
+        st.markdown("**🔍 Debug Information:**")
+        st.write(f"Current Index: {st.session_state.index}")
+        st.write(f"Restore Form Data: {st.session_state.restore_form_data is not None}")
+        st.write(f"Location Text: {st.session_state.location_text}")
+        st.write(f"Available Images: {[img['index'] for img in st.session_state.temp_images]}")
+        st.write(f"Available Responses: {[resp.get('index') for resp in st.session_state.responses]}")
+        st.markdown("---")
         
         # Get restored data if available
         restored_rating = None
@@ -499,13 +513,16 @@ else:
             restored_month = st.session_state.restore_form_data.get('month')
             restored_year = st.session_state.restore_form_data.get('year')
             st.info(f"🔄 Restoring form data: Rating={restored_rating}, Month={restored_month}, Year={restored_year}")
+            st.info(f"🔍 Full restore data: {st.session_state.restore_form_data}")
         else:
             st.info(f"📝 No form data to restore for index {st.session_state.index}")
+            st.info(f"🔍 Available responses: {[resp.get('index') for resp in st.session_state.responses]}")
         
         # Determine default index for rating
         rating_index = 0
         if restored_rating is not None and restored_rating != "Choose an option":
             rating_index = ["Choose an option", 0, 1, 2].index(restored_rating)
+            st.info(f"🔄 Rating restored: {restored_rating} -> index {rating_index}")
         
         rating = st.radio(
             f"**To what extent does this image contain visual cues (e.g., local architecture, language, or scenery) that identify it as being from {country}?**",
@@ -576,15 +593,16 @@ else:
         with col1:
             if st.session_state.index > 0 and st.button("⬅️ Back to Previous Image", type="secondary"):
                 # Store current progress before going back if we have data
+                current_index = st.session_state.index
                 if uploaded_file and rating != 'Choose an option' and month != "Choose an option" and year != "Choose an option":
                     # Check if we already have data for this index
-                    existing_data = find_image_for_index(st.session_state.index)
+                    existing_data = find_image_for_index(current_index)
                     if existing_data:
                         # Update existing data
                         existing_data['encoded_content'] = encoded_content
                         # Find and update existing response
                         for response in st.session_state.responses:
-                            if response.get('index') == st.session_state.index:
+                            if response.get('index') == current_index:
                                 response.update({
                                     'rating': rating,
                                     'location_text': st.session_state.location_text,
@@ -597,10 +615,10 @@ else:
                     else:
                         # Create new data
                         current_image_data = {
-                            "file_name": f"{st.session_state.prolific_id}_{st.session_state.index}.png",
-                            "file_path": f"{country}_images/{f'{st.session_state.prolific_id}_{st.session_state.index}.png'}",
+                            "file_name": f"{st.session_state.prolific_id}_{current_index}.png",
+                            "file_path": f"{country}_images/{f'{st.session_state.prolific_id}_{current_index}.png'}",
                             "encoded_content": encoded_content,
-                            "index": st.session_state.index
+                            "index": current_index
                         }
                         
                         current_response = {
@@ -630,6 +648,9 @@ else:
                     st.session_state.location_text = restored_data.get('location_text')
                     # Store form responses for restoration
                     st.session_state.restore_form_data = restored_data
+                    st.info(f"🔄 Restoring data for index {st.session_state.index}: {restored_data.get('rating')}, {restored_data.get('month')}, {restored_data.get('year')}")
+                else:
+                    st.warning(f"⚠️ No data found to restore for index {st.session_state.index}")
                 
                 st.session_state.q1_index = 0
                 st.rerun()
