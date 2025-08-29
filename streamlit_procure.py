@@ -185,8 +185,8 @@ Following are the instructions for the same.
 
 **What kind of images to upload**:
 
-- Photos should depict a variety of surroundings within {country}.
-- Avoid uploading similar photos to the ones that you have already uploaded.
+- Photos should depict a variety of surroundings within {country}. Try to avoid sharing images of well-known, highly-recognizable tourist attractions.
+- Upload a diverse and distinct set of images in terms of content.
 - Ensure the images are clear and well-lit.
 - Outdoor scenes are preferred.
 - Avoid uploading images with identifiable faces and license plates to protect privacy. 
@@ -449,8 +449,8 @@ else:
         """, unsafe_allow_html=True)
         rating = st.radio(
             f"",
-            options=["Choose an option", 0, 1, 2],
-            format_func=lambda x: f"{'No evidence at all' if x==0 else f'Enough evidence specific to {country}' if x==2 else f'There are visual indications like architectural style, vegetations, etc, but I do not know if they are specific to {country}' if x==1 else 'Choose an option'}",
+            options=["Choose an option", 0, 1, 2, 3],
+            format_func=lambda x: f"{'Strong evidence specific to the country' if x==3 else f'Clear cues, but not typically associated with {country}' if x==2 else f'Some visual indications, but not sure if they are specific to {country}' if x==1 else f'No visual indicators visible in the photo' if x==0 else 'Choose an option'}",
             index=st.session_state.q1_index,
             key=f'q2_{st.session_state.index}',
             # unsafe_allow_html=True
@@ -466,7 +466,7 @@ else:
         popularity = st.selectbox(
             "",
             options=["Choose an option", 1, 2, 3],
-            format_func=lambda x: f"{'1 - Unpopular' if x==1 else f'2 - Moderately popular' if x==2 else f'3 - Very popular' if x==3 else 'Choose an option'}",
+            format_func=lambda x: f"{'1 - Not Popular' if x==1 else f'2 - Locally Popular' if x==2 else f'3 - Country-wide Popular' if x==3 else 'Choose an option'}",
             index=st.session_state.q1_index,
             key=f'q5_{st.session_state.index}',
             # unsafe_allow_html=True
