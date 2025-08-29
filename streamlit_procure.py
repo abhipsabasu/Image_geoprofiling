@@ -276,13 +276,23 @@ else:
                 encoded_content = previous_image_to_show['encoded_content']
                 uploaded_file = True  # Mark as having a file
                 st.success("✅ Previous image restored successfully!")
+                
+                # Add option to change the image
+                if st.button("🔄 Change Image", key=f"change_img_{st.session_state.index}"):
+                    # Clear the previous image and allow new upload
+                    st.session_state.temp_images = [img for img in st.session_state.temp_images if img['index'] != st.session_state.index]
+                    st.session_state.responses = [resp for resp in st.session_state.responses if resp.get('index') != st.session_state.index]
+                    st.rerun()
+                    
             except Exception as e:
                 st.error(f"Error displaying previous image: {e}")
                 uploaded_file = None
                 encoded_content = None
-        else:
-            # Normal file upload
-            uploaded_file = st.file_uploader(f"**Upload image {st.session_state.index + 1}**", type=["jpg", "jpeg", "png"], key=st.session_state.index)
+        
+        # Always show file uploader (either for new image or after changing)
+        if not previous_image_to_show or not uploaded_file:
+            st.markdown("**📤 Upload New Image:**")
+            uploaded_file = st.file_uploader(f"**Upload image {st.session_state.index + 1}**", type=["jpg", "jpeg", "png"], key=f"upload_{st.session_state.index}")
             if uploaded_file:
                 file_bytes = uploaded_file.read() 
                 if len(file_bytes) < 100:
@@ -290,6 +300,14 @@ else:
                 encoded_content = base64.b64encode(file_bytes).decode("utf-8")
                 image = Image.open(uploaded_file)
                 st.image(image, use_container_width=True)
+        else:
+            # Show option to upload new image even when previous exists
+            st.markdown("**📤 Want to change the image?**")
+            if st.button("🔄 Upload New Image", key=f"new_upload_{st.session_state.index}"):
+                # Clear the previous image and show uploader
+                st.session_state.temp_images = [img for img in st.session_state.temp_images if img['index'] != st.session_state.index]
+                st.session_state.responses = [resp for resp in st.session_state.responses if resp.get('index') != st.session_state.index]
+                st.rerun()
         
 
         st.markdown(f"**Where in {country} was the photo taken? Use the search box or map below to select the location where the photo was taken:**")
