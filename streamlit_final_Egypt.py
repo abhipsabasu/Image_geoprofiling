@@ -156,7 +156,7 @@ if 'q4_index' not in st.session_state:
 
 # Current image
 if st.session_state.index < len(image_files):
-    
+    st.write(f"Image {st.session_state.index + 1} of {len(image_files)}")
     image_path = image_files[st.session_state.index]
     image_name = GITHUB + image_path
     # print(st.session_state.index, 'hello', image_name)
