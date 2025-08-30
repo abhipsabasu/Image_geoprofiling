@@ -60,7 +60,7 @@ def load_data(seed):
     eligible_rows = df[df['frequency'] > 0]
 
     # Step 2: Randomly sample 30 rows from the eligible ones
-    n = min(30, len(eligible_rows))
+    n = min(50, len(eligible_rows))
     selected_indices = eligible_rows.iloc[:n].index #.sample(n=n, random_state=seed).index
     # Step 3: Subtract 1 from 'count' for selected rows
     df.loc[selected_indices, 'frequency'] -= 1
