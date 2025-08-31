@@ -528,7 +528,7 @@ else:
                     "year": year,
                 })
                 
-                st.success("✅ Image and responses saved!")
+                st.write("✅ Image and responses saved!")
                 st.toast("Saved successfully!", icon="✅")
                 # Clear location and reset index
                 st.session_state.location_text = None
