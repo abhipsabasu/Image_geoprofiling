@@ -21,8 +21,8 @@ from geopy.geocoders import Nominatim
 from geopy.exc import GeocoderTimedOut, GeocoderUnavailable
 
 
-country = 'Kenya'
-continent = 'Asia'
+country = 'Canada'
+continent = 'North America'
 
 firebase_secrets = st.secrets["firebase"]
 token = firebase_secrets["github_token"]
@@ -88,7 +88,7 @@ def geocode_location(location_text):
     Convert location text to coordinates using Nominatim geocoding service
     """
     try:
-        # Add "Kenya" to the search query to improve accuracy for Kenyan locations
+        # Add "Canada" to the search query to improve accuracy for Canadian locations
         search_query = f"{location_text}, {country}"
         
         # Initialize geocoder
@@ -296,16 +296,16 @@ else:
                     function initMap() {{
                         const map = new google.maps.Map(document.getElementById("map"), {{
                             zoom: 6,
-                            center: {{ lat: -1.2921, lng: 36.8219 }}, // Kenya center
+                            center: {{ lat: 56.1304, lng: -106.3468 }}, // Canada center
                             mapTypeId: google.maps.MapTypeId.ROADMAP
                         }});
                         
                         // Add markers for major cities
                         const cities = [
-                            {{ lat: -1.2921, lng: 36.8219, name: "Nairobi" }},
-                            {{ lat: -3.3731, lng: 37.3822, name: "Mombasa" }},
-                            {{ lat: 0.3476, lng: 32.5825, name: "Kampala" }},
-                            {{ lat: -0.0236, lng: 37.9062, name: "Nakuru" }}
+                            {{ lat: 43.6532, lng: -79.3832, name: "Toronto" }},
+                            {{ lat: 45.5017, lng: -73.5673, name: "Montreal" }},
+                            {{ lat: 49.2827, lng: -123.1207, name: "Vancouver" }},
+                            {{ lat: 51.0447, lng: -114.0719, name: "Calgary" }}
                         ];
                         
                         cities.forEach(city => {{
@@ -412,7 +412,7 @@ else:
                 
                 manual_location = st.text_input(
                     "",
-                    placeholder="e.g., Nairobi National Park, Mombasa Old Town, Nakuru Lake",
+                    placeholder="e.g., Niagara Falls, Banff National Park, CN Tower",
                     key=f"manual_location_{st.session_state.index}"
                 )
                 
