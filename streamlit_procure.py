@@ -237,6 +237,15 @@ else:
         # Show progress
         st.markdown(f"**📸 Progress: {st.session_state.index}/10 images completed**")
         progress_bar = st.progress(st.session_state.index / 10)
+        
+        # Show success message if exists
+        if hasattr(st.session_state, 'show_success') and st.session_state.show_success:
+            st.success(st.session_state.success_message)
+            st.toast("Saved successfully!", icon="✅")
+            # Clear the success message
+            st.session_state.show_success = False
+            st.session_state.success_message = ""
+        
         st.markdown("Answer all questions (marked with <span style='color: red;'>*</span>)", unsafe_allow_html=True)
         st.markdown(f"""
         <div style='margin-bottom: 5px; padding-bottom: 0px;'>
@@ -528,8 +537,10 @@ else:
                     "year": year,
                 })
                 
-                st.write("✅ Image and responses saved!")
-                st.toast("Saved successfully!", icon="✅")
+                # Store success message in session state
+                st.session_state.show_success = True
+                st.session_state.success_message = f"✅ Image {st.session_state.index + 1} saved successfully!"
+                
                 # Clear location and reset index
                 st.session_state.location_text = None
                 st.session_state.index += 1
