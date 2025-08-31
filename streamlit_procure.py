@@ -264,7 +264,7 @@ else:
             st.image(image, use_container_width=True)
         
 
-        st.markdown(f"**Where in {country} was the photo taken? Use the search box within the map below to select the location where the photo was taken:** <span style='color: red;'>*</span>", unsafe_allow_html=True)
+        st.markdown(f"**Where in {country} was the photo taken? Use the search box within the map below to select the location where the photo was taken and then copy the search string once you are satisfied with its location on the map:** <span style='color: red;'>*</span>", unsafe_allow_html=True)
         
         # Warning that coordinates are required
         if not hasattr(st.session_state, 'location_text') or not st.session_state.location_text:
@@ -404,7 +404,7 @@ else:
             if hasattr(st.session_state, 'location_text') and st.session_state.location_text:
                 st.success(f"✅ **Location Captured:** {st.session_state.location_text}")
             else:
-                st.info("Once you have selected the correct location on the map, **paste the location string you used in the text box below**. If you are unable to find the location, please select the nearest location from the map.")
+                st.info("Once you have identified the correct location on the map, **paste the location string you used in the text box below**. If you are unable to find the location, please select the nearest location from the map.")
                 # st.info("💡 **Tip:** Use the search box in the map above to find and select a location. The location will be automatically captured when you select it.")
                 
                 # Add a text input for manual location entry
@@ -459,7 +459,7 @@ else:
         rating = st.selectbox(
             f"",
             options=["Choose an option", 0, 1, 2, 3],
-            format_func=lambda x: f"{'Strong evidence specific to the country' if x==3 else f'Clear cues, but not typically associated with {country}' if x==2 else f'Some visual indications, but not sure if they are specific to {country}' if x==1 else f'No visual indicators visible in the photo' if x==0 else 'Choose an option'}",
+            format_func=lambda x: f"{'Strong evidence specific to the country' if x==3 else f'Visual indicators present, but not typically associated with {country}' if x==2 else f'Some visual indications, but not sure if they are specific to {country}' if x==1 else f'No visual indicators visible in the photo' if x==0 else 'Choose an option'}",
             index=st.session_state.q1_index,
             key=f'q2_{st.session_state.index}',
             # unsafe_allow_html=True
@@ -617,4 +617,4 @@ else:
         st.write(f"📊 **Responses:** {len(st.session_state.responses)} recorded")
         st.write(f"🗺️ **Locations:** All location descriptions captured")
         st.write(f"📅 **Timestamps:** Month/year data collected")
-        st.write(f"📧 **Note**: If you wish to revoke your consent, please contact us at <a href='mailto:abhipsabasu@iisc.ac.in'>abhipsabasu@iisc.ac.in</a>.")
+        st.markdown(f"📧 **Note**: If you wish to revoke your consent, please contact us at <a href='mailto:abhipsabasu@iisc.ac.in'>abhipsabasu@iisc.ac.in</a>.", unsafe_allow_html=True)
