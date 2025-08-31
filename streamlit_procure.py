@@ -21,7 +21,7 @@ from geopy.geocoders import Nominatim
 from geopy.exc import GeocoderTimedOut, GeocoderUnavailable
 
 
-country = 'India'
+country = 'Kenya'
 continent = 'Asia'
 
 firebase_secrets = st.secrets["firebase"]
@@ -88,7 +88,7 @@ def geocode_location(location_text):
     Convert location text to coordinates using Nominatim geocoding service
     """
     try:
-        # Add "India" to the search query to improve accuracy for Indian locations
+        # Add "Kenya" to the search query to improve accuracy for Kenyan locations
         search_query = f"{location_text}, {country}"
         
         # Initialize geocoder
@@ -295,17 +295,17 @@ else:
                 <script>
                     function initMap() {{
                         const map = new google.maps.Map(document.getElementById("map"), {{
-                            zoom: 5,
-                            center: {{ lat: 20.5937, lng: 78.9629 }}, // India center
+                            zoom: 6,
+                            center: {{ lat: -1.2921, lng: 36.8219 }}, // Kenya center
                             mapTypeId: google.maps.MapTypeId.ROADMAP
                         }});
                         
                         // Add markers for major cities
                         const cities = [
-                            {{ lat: 19.0760, lng: 72.8777, name: "Mumbai" }},
-                            {{ lat: 28.7041, lng: 77.1025, name: "Delhi" }},
-                            {{ lat: 12.9716, lng: 77.5946, name: "Bangalore" }},
-                            {{ lat: 13.0827, lng: 80.2707, name: "Chennai" }}
+                            {{ lat: -1.2921, lng: 36.8219, name: "Nairobi" }},
+                            {{ lat: -3.3731, lng: 37.3822, name: "Mombasa" }},
+                            {{ lat: 0.3476, lng: 32.5825, name: "Kampala" }},
+                            {{ lat: -0.0236, lng: 37.9062, name: "Nakuru" }}
                         ];
                         
                         cities.forEach(city => {{
@@ -412,7 +412,7 @@ else:
                 
                 manual_location = st.text_input(
                     "",
-                    placeholder="e.g., Taj Mahal, Agra, Uttar Pradesh, India",
+                    placeholder="e.g., Nairobi National Park, Mombasa Old Town, Nakuru Lake",
                     key=f"manual_location_{st.session_state.index}"
                 )
                 
