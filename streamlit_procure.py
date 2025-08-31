@@ -255,7 +255,7 @@ else:
             st.image(image, use_container_width=True)
         
 
-        st.markdown(f"**Where in {country} was the photo taken? Use the search box within map below to select the location where the photo was taken:** <span style='color: red;'>*</span>", unsafe_allow_html=True)
+        st.markdown(f"**Where in {country} was the photo taken? Use the search box within the map below to select the location where the photo was taken:** <span style='color: red;'>*</span>", unsafe_allow_html=True)
         
         # Warning that coordinates are required
         if not hasattr(st.session_state, 'location_text') or not st.session_state.location_text:
@@ -399,7 +399,7 @@ else:
                 # st.info("💡 **Tip:** Use the search box in the map above to find and select a location. The location will be automatically captured when you select it.")
                 
                 # Add a text input for manual location entry
-                st.markdown("<div style='margin-bottom: 0px; padding-bottom: 0px;'><strong>Enter the location you selected on the map:</strong> <span style='color: red;'>*</span></div>", unsafe_allow_html=True)
+                st.markdown("<div style='margin-bottom: 0px; padding-bottom: 0px;'><strong>Enter the location you selected on the map, and press enter.</strong> <span style='color: red;'>*</span></div>", unsafe_allow_html=True)
                 
                 manual_location = st.text_input(
                     "",
