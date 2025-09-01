@@ -21,8 +21,8 @@ from geopy.geocoders import Nominatim
 from geopy.exc import GeocoderTimedOut, GeocoderUnavailable
 
 
-country = 'Australia'
-continent = 'Oceania'
+country = 'France'
+continent = 'Europe'
 
 firebase_secrets = st.secrets["firebase"]
 token = firebase_secrets["github_token"]
@@ -88,7 +88,7 @@ def geocode_location(location_text):
     Convert location text to coordinates using Nominatim geocoding service
     """
     try:
-        # Add "Australia" to the search query to improve accuracy for Australian locations
+        # Add "France" to the search query to improve accuracy for French locations
         search_query = f"{location_text}, {country}"
         
         # Initialize geocoder
@@ -296,16 +296,16 @@ else:
                     function initMap() {{
                         const map = new google.maps.Map(document.getElementById("map"), {{
                             zoom: 6,
-                            center: {{ lat: -25.2744, lng: 133.7751 }}, // Australia center
+                            center: {{ lat: 46.2276, lng: 2.2137 }}, // France center
                             mapTypeId: google.maps.MapTypeId.ROADMAP
                         }});
                         
                         // Add markers for major cities
                         const cities = [
-                            {{ lat: -33.8688, lng: 151.2093, name: "Sydney" }},
-                            {{ lat: -37.8136, lng: 144.9631, name: "Melbourne" }},
-                            {{ lat: -27.4698, lng: 153.0251, name: "Brisbane" }},
-                            {{ lat: -31.9505, lng: 115.8605, name: "Perth" }}
+                            {{ lat: 48.8566, lng: 2.3522, name: "Paris" }},
+                            {{ lat: 46.2276, lng: 2.2137, name: "Lyon" }},
+                            {{ lat: 45.7640, lng: 4.8357, name: "Grenoble" }},
+                            {{ lat: 43.6043, lng: 1.4437, name: "Toulouse" }}
                         ];
                         
                         cities.forEach(city => {{
@@ -412,7 +412,7 @@ else:
                 
                 manual_location = st.text_input(
                     "",
-                    placeholder="e.g., Sydney Opera House, Uluru, Great Barrier Reef",
+                    placeholder="e.g., Eiffel Tower, Louvre, Notre-Dame",
                     key=f"manual_location_{st.session_state.index}"
                 )
                 
