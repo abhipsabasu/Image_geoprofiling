@@ -208,6 +208,9 @@ Following are the instructions for the same.
 3. If the screen freezes, do **NOT** refresh the page. Instead, wait for a few seconds for the internet connectivity to stabilize.
 4. After uploading all the photos, wait till you get a message saying 'Survey Complete'.
 
+**Bonus Images**:
+You can upload up to 20 additional images (total maximum: 30). Any additional images you upload (beyond the first 10) are voluntary. You will be paid a bonus of £0.40 for each additional image you upload.
+
 You have *60* minutes to upload the photos and answer the questions surrounding them. After you upload the photo, wait for the photo to be visible on screen, then answer the questions.
 """, unsafe_allow_html=True)
 
@@ -218,7 +221,7 @@ if not st.session_state.prolific_id:
         res = st.text_input("Please enter your country of residence", max_chars=24)
         privacy = st.radio(
             "Do you permit us to release your images publically as a dataset, or strictly use them for our research purpose?",
-            options=["You can make them public", "Only use them for your research"],
+            options=["You can make them public", "Only use them for research purposes, do not release them publically"],
         )
         submitted = st.form_submit_button("Submit")
         if submitted:
@@ -277,7 +280,7 @@ else:
         
 
         st.markdown(f"**Where in {country} was the photo taken? Use the search box within the map below to select the location where the photo was taken and then copy the search string once you are satisfied with its location on the map:** <span style='color: red;'>*</span>", unsafe_allow_html=True)
-        
+        st.info("💡 **Tip:** Ensure that the location you select is as accurate as possible. The location string you enter will be used to geocode the image and verify if it was taken in {country}.")
         # Warning that coordinates are required
         if not hasattr(st.session_state, 'location_text') or not st.session_state.location_text:
             st.error("🚨 **Search for the location where the photo was taken in the map text box below**")
