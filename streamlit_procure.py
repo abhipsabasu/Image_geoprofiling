@@ -150,8 +150,8 @@ Following are the instructions for the same.
 
 **What kind of images to upload**:
 
-- Photos should depict a variety of surroundings within {country}.
-- Avoid uploading similar photos to the ones that you have already uploaded.
+- Photos should depict a variety of surroundings within {country}. Try to avoid sharing images of well-known, highly-recognizable tourist attractions.
+- Upload a diverse and distinct set of images in terms of content.
 - Ensure the images are clear and well-lit.
 - Outdoor scenes are preferred.
 - Avoid uploading images with identifiable faces and license plates to protect privacy. 
@@ -176,7 +176,7 @@ Following are the instructions for the same.
 **Bonus Images**:
 You can upload up to 20 additional images (total maximum: 30). Any additional images you upload (beyond the first 10) are voluntary. You will be paid a bonus of £0.40 for each additional image you upload.
 
-You have *20* minutes to upload the photos and answer the questions surrounding them. After you upload the photo, wait for the photo to be visible on screen, then answer the questions.
+You have *20* minutes to upload the initial 10 photos and answer the questions surrounding them. After you upload the photo, wait for the photo to be visible on screen, then answer the questions.
 """, unsafe_allow_html=True)
 else:
     # Show View Instructions expander after Prolific ID is submitted
@@ -214,7 +214,7 @@ Following are the instructions for the same.
 **Bonus Images**:
 You can upload up to 20 additional images (total maximum: 30). Any additional images you upload (beyond the first 10) are voluntary. You will be paid a bonus of £0.40 for each additional image you upload.
 
-You have *20* minutes to upload the photos and answer the questions surrounding them. After you upload the photo, wait for the photo to be visible on screen, then answer the questions.
+You have *20* minutes to upload the initial 10 photos and answer the questions surrounding them. After you upload the photo, wait for the photo to be visible on screen, then answer the questions.
 """, unsafe_allow_html=True)
 
 if not st.session_state.prolific_id:
@@ -283,7 +283,7 @@ else:
         
 
         st.markdown(f"**Where in {country} was the photo taken? Use the search box within the map below to select the location where the photo was taken and then copy the search string once you are satisfied with its location on the map:** <span style='color: red;'>*</span>", unsafe_allow_html=True)
-        st.info("💡 **Tip:** Ensure that the location you select is as accurate as possible. The location string you enter will be used to geocode the image and verify if it was taken in {country}.")
+        st.info("💡 **Tip:** Ensure that the location you select is as precise as possible. The location string you enter will be used to geocode the image to obtain the coordinates.")
         # Warning that coordinates are required
         if not hasattr(st.session_state, 'location_text') or not st.session_state.location_text:
             st.error("🚨 **Search for the location where the photo was taken in the map text box below**")
