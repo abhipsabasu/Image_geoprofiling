@@ -163,7 +163,7 @@ Following are the instructions for the same.
 -   Try to upload images that represent diverse locations or settings.
 
 **What to do:**
-1.  **Upload 10 images**, one at a time.
+1.  **Upload 10 images (compulsory)**, one at a time. You may optionally upload up to 20 additional images (total maximum: 30).
 2.  For each image:
     -   **Select the location** where the photo was taken using the search box or map.
     -   **Rate** how clearly the photo suggests it was taken in {country}, and **list the clues** that helped you make that judgment.
@@ -173,7 +173,7 @@ Following are the instructions for the same.
 3. If the screen freezes, do **NOT** refresh the page. Instead, wait for a few seconds for the internet connectivity to stabilize.
 4. After uploading all the photos, wait till you get a message saying 'Survey Complete'.
 
-You have *20* minutes to upload the photos and answer the questions surrounding them. After you upload the photo, wait for the photo to be visible on screen, then answer the questions.
+You have *60* minutes to upload the photos and answer the questions surrounding them. After you upload the photo, wait for the photo to be visible on screen, then answer the questions.
 """, unsafe_allow_html=True)
 else:
     # Show View Instructions expander after Prolific ID is submitted
@@ -198,7 +198,7 @@ Following are the instructions for the same.
 -   Try to upload images that represent diverse locations or settings.
 
 **What to do:**
-1.  **Upload 10 images**, one at a time.
+1.  **Upload 10 images (compulsory)**, one at a time. You may optionally upload up to 20 additional images (total maximum: 30).
 2.  For each image:
     -   **Select the location** where the photo was taken using the search box or map.
     -   **Rate** how clearly the photo suggests it was taken in {country}, and **list the clues** that helped you make that judgment.
@@ -208,7 +208,7 @@ Following are the instructions for the same.
 3. If the screen freezes, do **NOT** refresh the page. Instead, wait for a few seconds for the internet connectivity to stabilize.
 4. After uploading all the photos, wait till you get a message saying 'Survey Complete'.
 
-You have *20* minutes to upload the photos and answer the questions surrounding them. After you upload the photo, wait for the photo to be visible on screen, then answer the questions.
+You have *60* minutes to upload the photos and answer the questions surrounding them. After you upload the photo, wait for the photo to be visible on screen, then answer the questions.
 """, unsafe_allow_html=True)
 
 if not st.session_state.prolific_id:
@@ -233,10 +233,14 @@ if not st.session_state.prolific_id:
                 st.error("Please enter a valid Prolific ID, birth country or residence country.")
 else:
     # --- MAIN APP LOGIC (This section runs only after Prolific ID is submitted) ---
-    if st.session_state.index < 10:
+    if st.session_state.index < 30:
         # Show progress
-        st.markdown(f"**📸 Progress: {st.session_state.index}/10 images completed**")
-        progress_bar = st.progress(st.session_state.index / 10)
+        if st.session_state.index < 10:
+            st.markdown(f"**📸 Progress: {st.session_state.index}/10 compulsory images completed**")
+            progress_bar = st.progress(st.session_state.index / 10)
+        else:
+            st.markdown(f"**📸 Progress: {st.session_state.index}/30 images completed (10 compulsory + {st.session_state.index - 10} optional)**")
+            progress_bar = st.progress(st.session_state.index / 30)
         
         # Show success message if exists
         if hasattr(st.session_state, 'show_success') and st.session_state.show_success:
@@ -247,12 +251,20 @@ else:
             st.session_state.success_message = ""
         
         st.markdown("Answer all questions (marked with <span style='color: red;'>*</span>)", unsafe_allow_html=True)
-        st.markdown(f"""
-        <div style='margin-bottom: 5px; padding-bottom: 0px;'>
-            <strong>Upload image {st.session_state.index + 1}</strong> 
-            <span style='color: red;'>*</span>
-        </div>
-        """, unsafe_allow_html=True)
+        if st.session_state.index < 10:
+            st.markdown(f"""
+            <div style='margin-bottom: 5px; padding-bottom: 0px;'>
+                <strong>Upload image {st.session_state.index + 1} (Compulsory)</strong> 
+                <span style='color: red;'>*</span>
+            </div>
+            """, unsafe_allow_html=True)
+        else:
+            st.markdown(f"""
+            <div style='margin-bottom: 5px; padding-bottom: 0px;'>
+                <strong>Upload image {st.session_state.index + 1} (Optional)</strong> 
+                <span style='color: blue;'>*</span>
+            </div>
+            """, unsafe_allow_html=True)
         
         uploaded_file = st.file_uploader("", type=["jpg", "jpeg", "png"], key=st.session_state.index)
         if uploaded_file:
@@ -505,51 +517,140 @@ else:
                 key=f'q6_year_{st.session_state.index}'
             )
 
-        if st.button("Submit and Next"):
-            if not uploaded_file or ((rating == 'Choose an option') or (rating in [2, 3] and clue_text in [None, ''])) or month == "Choose an option" or year == "Choose an option":
-                st.error('Please answer all the questions and upload a file.')
-            elif not hasattr(st.session_state, 'location_text') or not st.session_state.location_text:
-                st.error('Please select a location on the map first and capture the location description.')
-            else:
-                # Store image temporarily instead of uploading immediately
-                image_data = {
-                    "file_name": f"{st.session_state.prolific_id}_{st.session_state.index}.png",
-                    "file_path": f"{country}_images/{f'{st.session_state.prolific_id}_{st.session_state.index}.png'}",
-                    "encoded_content": encoded_content,
-                    "index": st.session_state.index
-                }
-                
-                # Add to temporary storage
-                st.session_state.temp_images.append(image_data)
-                
-                # Store response data (without uploading image yet)
-                st.session_state.responses.append({
-                    "name": st.session_state.prolific_id,
-                    "birth_country": st.session_state.birth_country,
-                    "residence": st.session_state.residence,
-                    "privacy": st.session_state.privacy,
-                    "image_url": image_data["file_path"],  # Will be updated after upload
-                    "rating": rating,
-                    "location_text": st.session_state.location_text,
-                    "popularity": popularity,
-                    "clues": clue_text,
-                    "month": month,
-                    "year": year,
-                })
-                
-                # Store success message in session state
-                st.session_state.show_success = True
-                st.session_state.success_message = f"✅ Image {st.session_state.index + 1} saved successfully!"
-                
-                # Clear location and reset index
-                st.session_state.location_text = None
-                st.session_state.index += 1
-                st.session_state.q1_index = 0
-                
-                # Force rerun to get fresh forms with new keys
-                st.rerun()
+        # Button logic based on current image count
+        if st.session_state.index < 9:  # Images 1-9: Single "Submit and Next" button (compulsory)
+            if st.button("Submit and Next"):
+                if not uploaded_file or ((rating == 'Choose an option') or (rating in [2, 3] and clue_text in [None, ''])) or month == "Choose an option" or year == "Choose an option":
+                    st.error('Please answer all the questions and upload a file.')
+                elif not hasattr(st.session_state, 'location_text') or not st.session_state.location_text:
+                    st.error('Please select a location on the map first and capture the location description.')
+                else:
+                    # Store image temporarily instead of uploading immediately
+                    image_data = {
+                        "file_name": f"{st.session_state.prolific_id}_{st.session_state.index}.png",
+                        "file_path": f"{country}_images/{f'{st.session_state.prolific_id}_{st.session_state.index}.png'}",
+                        "encoded_content": encoded_content,
+                        "index": st.session_state.index
+                    }
+                    
+                    # Add to temporary storage
+                    st.session_state.temp_images.append(image_data)
+                    
+                    # Store response data (without uploading image yet)
+                    st.session_state.responses.append({
+                        "name": st.session_state.prolific_id,
+                        "birth_country": st.session_state.birth_country,
+                        "residence": st.session_state.residence,
+                        "privacy": st.session_state.privacy,
+                        "image_url": image_data["file_path"],  # Will be updated after upload
+                        "rating": rating,
+                        "location_text": st.session_state.location_text,
+                        "popularity": popularity,
+                        "clues": clue_text,
+                        "month": month,
+                        "year": year,
+                    })
+                    
+                    # Store success message in session state
+                    st.session_state.show_success = True
+                    st.session_state.success_message = f"✅ Image {st.session_state.index + 1} saved successfully!"
+                    
+                    # Clear location and reset index
+                    st.session_state.location_text = None
+                    st.session_state.index += 1
+                    st.session_state.q1_index = 0
+                    
+                    # Force rerun to get fresh forms with new keys
+                    st.rerun()
+        else:  # Images 10+: Two buttons - "Next" and "Submit All" (optional images)
+            if st.session_state.index == 9:  # First optional image (10th overall)
+                st.info("🎉 **Great! You've completed the compulsory 10 images. Any additional images you upload now are optional and will help improve our dataset.**")
+            
+            col1, col2 = st.columns(2)
+            
+            with col1:
+                if st.button("Next", type="primary"):
+                    if not uploaded_file or ((rating == 'Choose an option') or (rating in [2, 3] and clue_text in [None, ''])) or month == "Choose an option" or year == "Choose an option":
+                        st.error('Please answer all the questions and upload a file.')
+                    elif not hasattr(st.session_state, 'location_text') or not st.session_state.location_text:
+                        st.error('Please select a location on the map first and capture the location description.')
+                    else:
+                        # Store image temporarily instead of uploading immediately
+                        image_data = {
+                            "file_name": f"{st.session_state.prolific_id}_{st.session_state.index}.png",
+                            "file_path": f"{country}_images/{f'{st.session_state.prolific_id}_{st.session_state.index}.png'}",
+                            "encoded_content": encoded_content,
+                            "index": st.session_state.index
+                        }
+                        
+                        # Add to temporary storage
+                        st.session_state.temp_images.append(image_data)
+                        
+                        # Store response data (without uploading image yet)
+                        st.session_state.responses.append({
+                            "name": st.session_state.prolific_id,
+                            "birth_country": st.session_state.birth_country,
+                            "residence": st.session_state.residence,
+                            "privacy": st.session_state.privacy,
+                            "image_url": image_data["file_path"],  # Will be updated after upload
+                            "rating": rating,
+                            "location_text": st.session_state.location_text,
+                            "popularity": popularity,
+                            "clues": clue_text,
+                            "month": month,
+                            "year": year,
+                        })
+                        
+                        # Store success message in session state
+                        st.session_state.show_success = True
+                        st.session_state.success_message = f"✅ Image {st.session_state.index + 1} saved successfully!"
+                        
+                        # Clear location and reset index
+                        st.session_state.location_text = None
+                        st.session_state.index += 1
+                        st.session_state.q1_index = 0
+                        
+                        # Force rerun to get fresh forms with new keys
+                        st.rerun()
+            
+            with col2:
+                if st.button("Submit All", type="secondary"):
+                    if not uploaded_file or ((rating == 'Choose an option') or (rating in [2, 3] and clue_text in [None, ''])) or month == "Choose an option" or year == "Choose an option":
+                        st.error('Please answer all the questions and upload a file.')
+                    elif not hasattr(st.session_state, 'location_text') or not st.session_state.location_text:
+                        st.error('Please select a location on the map first and capture the location description.')
+                    else:
+                        # Store the current image first
+                        image_data = {
+                            "file_name": f"{st.session_state.prolific_id}_{st.session_state.index}.png",
+                            "file_path": f"{country}_images/{f'{st.session_state.prolific_id}_{st.session_state.index}.png'}",
+                            "encoded_content": encoded_content,
+                            "index": st.session_state.index
+                        }
+                        
+                        # Add to temporary storage
+                        st.session_state.temp_images.append(image_data)
+                        
+                        # Store response data (without uploading image yet)
+                        st.session_state.responses.append({
+                            "name": st.session_state.prolific_id,
+                            "birth_country": st.session_state.birth_country,
+                            "residence": st.session_state.residence,
+                            "privacy": st.session_state.privacy,
+                            "image_url": image_data["file_path"],  # Will be updated after upload
+                            "rating": rating,
+                            "location_text": st.session_state.location_text,
+                            "popularity": popularity,
+                            "clues": clue_text,
+                            "month": month,
+                            "year": year,
+                        })
+                        
+                        # Set flag to proceed to upload all images
+                        st.session_state.submit_all = True
+                        st.rerun()
     else:
-        # Upload all images to GitHub at once
+        # Upload all images to GitHub at once (triggered by reaching 30 images or Submit All button)
         st.markdown("**📤 Uploading all images...**")
         
         upload_progress = st.progress(0)
