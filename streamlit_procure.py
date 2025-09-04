@@ -211,7 +211,7 @@ Following are the instructions for the same.
 **Bonus Images**:
 You can upload up to 20 additional images (total maximum: 30). Any additional images you upload (beyond the first 10) are voluntary. You will be paid a bonus of £0.40 for each additional image you upload.
 
-You have *60* minutes to upload the photos and answer the questions surrounding them. After you upload the photo, wait for the photo to be visible on screen, then answer the questions.
+You have *20* minutes to upload the photos and answer the questions surrounding them. After you upload the photo, wait for the photo to be visible on screen, then answer the questions.
 """, unsafe_allow_html=True)
 
 if not st.session_state.prolific_id:
