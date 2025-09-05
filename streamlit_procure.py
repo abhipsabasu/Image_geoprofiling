@@ -68,6 +68,9 @@ if 'q1_index' not in st.session_state:
 if 'temp_images' not in st.session_state:
     st.session_state.temp_images = []
 
+if 'submit_all' not in st.session_state:
+    st.session_state.submit_all = False
+
 def reset_selections():
     # Clear all form selections for the next image using a more robust method
     
@@ -239,7 +242,7 @@ if not st.session_state.prolific_id:
                 st.error("Please enter a valid Prolific ID, birth country or residence country.")
 else:
     # --- MAIN APP LOGIC (This section runs only after Prolific ID is submitted) ---
-    if st.session_state.index < 30:
+    if st.session_state.index < 30 and not (hasattr(st.session_state, 'submit_all') and st.session_state.submit_all):
         # Show progress
         if st.session_state.index < 10:
             st.markdown(f"**📸 Progress: {st.session_state.index}/10 compulsory images completed**")
