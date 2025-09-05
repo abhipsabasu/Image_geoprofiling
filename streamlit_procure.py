@@ -526,7 +526,7 @@ else:
         # Button logic based on current image count
         if st.session_state.index < 9:  # Images 1-9: Single "Submit and Next" button (compulsory)
             if st.button("Submit and Next"):
-                if not uploaded_file or ((rating == 'Choose an option') or (rating in [2, 3] and clue_text in [None, ''])) or month == "Choose an option" or year == "Choose an option":
+                if not uploaded_file or ((rating == 'Choose an option') or (rating in [2, 3] and clue_text in [None, ''])) or month == "Choose an option" or year == "Choose an option" or popularity == "Choose an option":
                     st.error('Please answer all the questions and upload a file.')
                 elif not hasattr(st.session_state, 'location_text') or not st.session_state.location_text:
                     st.error('Please select a location on the map first and capture the location description.')
@@ -576,7 +576,7 @@ else:
             
             with col1:
                 if st.button("Next", type="primary"):
-                    if not uploaded_file or ((rating == 'Choose an option') or (rating in [2, 3] and clue_text in [None, ''])) or month == "Choose an option" or year == "Choose an option":
+                    if not uploaded_file or ((rating == 'Choose an option') or (rating in [2, 3] and clue_text in [None, ''])) or month == "Choose an option" or year == "Choose an option" or popularity == "Choose an option":
                         st.error('Please answer all the questions and upload a file.')
                     elif not hasattr(st.session_state, 'location_text') or not st.session_state.location_text:
                         st.error('Please select a location on the map first and capture the location description.')
@@ -621,7 +621,7 @@ else:
             
             with col2:
                 if st.button("Submit All", type="secondary"):
-                    if not uploaded_file or ((rating == 'Choose an option') or (rating in [2, 3] and clue_text in [None, ''])) or month == "Choose an option" or year == "Choose an option":
+                    if not uploaded_file or ((rating == 'Choose an option') or (rating in [2, 3] and clue_text in [None, ''])) or month == "Choose an option" or year == "Choose an option" or popularity == "Choose an option":
                         st.error('Please answer all the questions and upload a file.')
                     elif not hasattr(st.session_state, 'location_text') or not st.session_state.location_text:
                         st.error('Please select a location on the map first and capture the location description.')
