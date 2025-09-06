@@ -195,6 +195,7 @@ Following are the instructions for the same.
 - Photos should depict a variety of surroundings within {country}. Try to avoid sharing images of well-known, highly-recognizable tourist attractions.
 - Upload a diverse and distinct set of images in terms of content.
 - Ensure the images are clear and well-lit.
+- Avoid uploading blurry images.
 - Outdoor scenes are preferred.
 - Avoid uploading images with identifiable faces and license plates to protect privacy. 
 
@@ -218,8 +219,7 @@ Following are the instructions for the same.
 **Bonus Images**:
 You can upload up to 20 additional images (total maximum: 30). Any additional images you upload (beyond the first 10) are voluntary. You will be paid a bonus of £0.40 for each additional image you upload.
 
-You have *20* minutes to upload the initial 10 photos and answer the questions surrounding them. After you upload the photo, wait for the photo to be visible on screen, then answer the questions.
-""", unsafe_allow_html=True)
+You have *20* minutes to upload the initial 10 photos and answer the questions surrounding them. After you upload the photo, wait for the photo to be visible on screen, then answer the questions.""", unsafe_allow_html=True)
 
 if not st.session_state.prolific_id:
     with st.form("prolific_form"):

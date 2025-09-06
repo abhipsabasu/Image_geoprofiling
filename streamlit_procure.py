@@ -195,6 +195,7 @@ Following are the instructions for the same.
 - Photos should depict a variety of surroundings within {country}. Try to avoid sharing images of well-known, highly-recognizable tourist attractions.
 - Upload a diverse and distinct set of images in terms of content.
 - Ensure the images are clear and well-lit.
+- Avoid uploading blurry images.
 - Outdoor scenes are preferred.
 - Avoid uploading images with identifiable faces and license plates to protect privacy. 
 
