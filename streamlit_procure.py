@@ -21,8 +21,8 @@ from geopy.geocoders import Nominatim
 from geopy.exc import GeocoderTimedOut, GeocoderUnavailable
 
 
-country = 'Kenya'
-continent = 'Africa'
+country = 'Chile'
+continent = 'South America'
 
 firebase_secrets = st.secrets["firebase"]
 token = firebase_secrets["github_token"]
@@ -91,7 +91,7 @@ def geocode_location(location_text):
     Convert location text to coordinates using Nominatim geocoding service
     """
     try:
-        # Add "Kenya" to the search query to improve accuracy for Kenyan locations
+        # Add "Chile" to the search query to improve accuracy for Chilean locations
         search_query = f"{location_text}, {country}"
         
         # Initialize geocoder
@@ -319,16 +319,16 @@ else:
                     function initMap() {{
                         const map = new google.maps.Map(document.getElementById("map"), {{
                             zoom: 6,
-                            center: {{ lat: -0.0236, lng: 37.9062 }}, // Kenya center
+                            center: {{ lat: -33.4489, lng: -70.6693 }}, // Chile center
                             mapTypeId: google.maps.MapTypeId.ROADMAP
                         }});
                         
                         // Add markers for major cities
                         const cities = [
-                            {{ lat: -1.2921, lng: 36.8219, name: "Nairobi" }},
-                            {{ lat: -4.0437, lng: 39.6682, name: "Mombasa" }},
-                            {{ lat: -0.4201, lng: 36.9476, name: "Nakuru" }},
-                            {{ lat: 0.5167, lng: 35.2833, name: "Eldoret" }}
+                            {{ lat: -33.4489, lng: -70.6693, name: "Santiago" }},
+                            {{ lat: -37.0347, lng: -72.0611, name: "Valparaiso" }},
+                            {{ lat: -36.6343, lng: -72.1346, name: "Viña del Mar" }},
+                            {{ lat: -33.5333, lng: -70.5833, name: "Concepción" }}
                         ];
                         
                         cities.forEach(city => {{
@@ -435,7 +435,7 @@ else:
                 
                 manual_location = st.text_input(
                     "",
-                    placeholder="e.g., Mount Kenya, Maasai Mara, Nairobi National Park",
+                    placeholder="e.g., Torres del Paine, Atacama Desert, Easter Island",
                     key=f"manual_location_{st.session_state.index}"
                 )
                 
@@ -447,10 +447,10 @@ else:
         else:
             # Fallback to Streamlit map if no Google Maps API key
             st.warning("⚠️ Google Maps API key not configured. Using default map.")
-            # Show a basic map of Kenya
+            # Show a basic map of Chile
             map_data = pd.DataFrame({
-                'latitude': [-1.2921, -4.0437, -0.4201, 0.5167],
-                'longitude': [36.8219, 39.6682, 36.9476, 35.2833]
+                'latitude': [-33.4489, -37.0347, -36.6343, -33.5333],
+                'longitude': [-70.6693, -72.0611, -72.1346, -70.5833]
             })
             st.map(map_data)
             st.info("💡 **Tip:** Use the search functionality above to select a location.")
