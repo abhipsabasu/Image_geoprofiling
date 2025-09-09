@@ -575,7 +575,7 @@ else:
         else:  # Images 10+: Two buttons - "Next" and "Submit All" (optional images)
             if st.session_state.index == 9:  # First optional image (10th overall)
                 st.info("🎉 🎉 **Great! You've completed the compulsory 10 images. YOU CAN MARK THE STUDY AS COMPLETE NOW ON THE PROLIFIC PLATFORM. YOUR COMPLETION CODE IS 'CNOCS4T7'. If you wish to upload any additional images, you can click on Next AFTER COMPLETING THE TASK ON PROLIFIC. We will pay you a bonus of £0.30 for each additional image you upload separately as bonus.**")
-                st.markdown(f"# **ATTENTION: PLEASE PASTE COMPLETION CODE 'CNOCS4T7' at the end of the study!**", unsafe_allow_html=True)
+                st.markdown(f"# **ATTENTION: PLEASE PASTE COMPLETION CODE 'CNOCS4T7' at the end of the study to the Prolific platform!**", unsafe_allow_html=True)
             
             col1, col2 = st.columns(2)
             
@@ -730,4 +730,4 @@ else:
         st.write(f"🗺️ **Locations:** All location descriptions captured")
         st.write(f"📅 **Timestamps:** Month/year data collected")
         st.markdown(f"📧 **Note**: If you wish to revoke your consent, please contact us at <a href='mailto:abhipsabasu@iisc.ac.in'>abhipsabasu@iisc.ac.in</a>.", unsafe_allow_html=True)
-        st.markdown(f"**ATTENTION: PLEASE PASTE COMPLETION CODE 'CNOCS4T7' at the end of the study!**", unsafe_allow_html=True)
+        st.markdown(f"**ATTENTION: PLEASE PASTE COMPLETION CODE 'CNOCS4T7' at the end of the study to the Prolific platform!**", unsafe_allow_html=True)
