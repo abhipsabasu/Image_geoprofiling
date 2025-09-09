@@ -175,10 +175,10 @@ Following are the instructions for the same.
     -   **Enter the month and year** when the photo was taken.
     -   **Click** "Submit and Next" to move to the next image.
 3. If the screen freezes, do **NOT** refresh the page. Instead, wait for a few seconds for the internet connectivity to stabilize.
-4. After uploading all the photos, wait till you get a message saying 'Survey Complete'.
+4. After uploading the 10 photos, you can submit the COMPLETION CODE displayed on the screen to Prolific and end the task formally.
 
 **Bonus Images**:
-You can upload up to 20 additional images (total maximum: 30). Any additional images you upload (beyond the first 10) are voluntary. You will be paid a bonus of £0.40 for each additional image you upload.
+After uploading the compulsory 10 photos and completing the task on Prolific, you can click on the Next button to continue the uploads. You can upload up to 20 additional images (total maximum: 30). Any additional images you upload (beyond the first 10) are voluntary. You will be paid a bonus of £0.30 for each additional image you upload individually as bonus.
 
 You have *20* minutes to upload the initial 10 photos and answer the questions surrounding them. After you upload the photo, wait for the photo to be visible on screen, then answer the questions.
 """, unsafe_allow_html=True)
@@ -214,10 +214,10 @@ Following are the instructions for the same.
     -   **Enter the month and year** when the photo was taken.
     -   **Click** "Submit and Next" to move to the next image.
 3. If the screen freezes, do **NOT** refresh the page. Instead, wait for a few seconds for the internet connectivity to stabilize.
-4. After uploading all the photos, wait till you get a message saying 'Survey Complete'.
+4. After uploading the 10 photos, you can submit the COMPLETION CODE displayed on the screen to Prolific and end the task formally.
 
 **Bonus Images**:
-You can upload up to 20 additional images (total maximum: 30). Any additional images you upload (beyond the first 10) are voluntary. You will be paid a bonus of £0.40 for each additional image you upload.
+After uploading the compulsory 10 photos and completing the task on Prolific, you can click on the Next button to continue the uploads. You can upload up to 20 additional images (total maximum: 30). Any additional images you upload (beyond the first 10) are voluntary. You will be paid a bonus of £0.30 for each additional image you upload individually as bonus.
 
 You have *20* minutes to upload the initial 10 photos and answer the questions surrounding them. After you upload the photo, wait for the photo to be visible on screen, then answer the questions.
 """, unsafe_allow_html=True)
@@ -575,7 +575,7 @@ else:
                     st.rerun()
         else:  # Images 10+: Two buttons - "Next" and "Submit All" (optional images)
             if st.session_state.index == 9:  # First optional image (10th overall)
-                st.info("🎉 **Great! You've completed the compulsory 10 images. Any additional images you upload now are optional and will help improve our dataset.**")
+                st.info("🎉 **Great! You've completed the compulsory 10 images. YOU CAN MARK THE STUDY AS COMPLETE NOW ON THE PROLIFIC PLATFORM. YOUR COMPLETION CODE IS 'CNOCS4T7'. If you wish to upload any additional images, you can click on Next AFTER COMPLETING THE TASK ON PROLIFIC. We will pay you a bonus of £0.30 for each additional image you upload separately as bonus.**")
             
             col1, col2 = st.columns(2)
             
@@ -730,3 +730,4 @@ else:
         st.write(f"🗺️ **Locations:** All location descriptions captured")
         st.write(f"📅 **Timestamps:** Month/year data collected")
         st.markdown(f"📧 **Note**: If you wish to revoke your consent, please contact us at <a href='mailto:abhipsabasu@iisc.ac.in'>abhipsabasu@iisc.ac.in</a>.", unsafe_allow_html=True)
+        st.markdown(f"**ATTENTION: PLEASE PASTE COMPLETION CODE 'CNOCS4T7' at the end of the study!**", unsafe_allow_html=True)
