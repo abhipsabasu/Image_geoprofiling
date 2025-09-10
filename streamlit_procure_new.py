@@ -155,7 +155,7 @@ Following are the instructions for the same.
 - Ensure the images are clear and well-lit.
 - Avoid uploading blurry images.
 - Outdoor scenes are preferred.
-- Avoid uploading images with identifiable faces and license plates to protect privacy. 
+- DO NOT upload images with identifiable faces and avoid those with license plates to protect privacy. 
 
 **Image Requirements**:
 
@@ -192,7 +192,7 @@ Following are the instructions for the same.
 - Ensure the images are clear and well-lit.
 - Avoid uploading blurry images.
 - Outdoor scenes are preferred.
-- Avoid uploading images with identifiable faces and license plates to protect privacy. 
+- DO NOT upload images with identifiable faces and avoid those with license plates to protect privacy. 
 
 **Image Requirements**:
 
@@ -239,8 +239,8 @@ else:
     # --- MAIN APP LOGIC (This section runs only after Prolific ID is submitted) ---
     if st.session_state.index < num_collect:
         # Show progress
-        st.markdown(f"**📸 Progress: {st.session_state.index}/10 images completed**")
-        progress_bar = st.progress(st.session_state.index / 10)
+        st.markdown(f"**📸 Progress: {st.session_state.index}/{num_collect} images completed**")
+        progress_bar = st.progress(st.session_state.index / num_collect)
         st.markdown("Answer all questions (marked with <span style='color: red;'>*</span>)", unsafe_allow_html=True)
         st.markdown(f"""
         <div style='margin-bottom: 5px; padding-bottom: 0px;'>
