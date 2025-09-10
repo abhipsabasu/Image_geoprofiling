@@ -140,7 +140,7 @@ def geocode_location(location_text):
 
 # ---- UI ----
 st.title(f"Image Collection from {country}")
-num_collect = 10
+num_collect = 30
 # Show instructions only before Prolific ID is submitted
 if not st.session_state.prolific_id:
     st.markdown(f"""
