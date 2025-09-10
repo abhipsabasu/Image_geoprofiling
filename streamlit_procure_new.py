@@ -150,9 +150,10 @@ Following are the instructions for the same.
 
 **What kind of images to upload**:
 
-- Photos should depict a variety of surroundings within {country}.
-- Avoid uploading similar photos to the ones that you have already uploaded.
+- Photos should depict a variety of surroundings within {country}. Try to avoid sharing images of well-known, highly-recognizable tourist attractions.
+- Upload a diverse and distinct set of images in terms of content.
 - Ensure the images are clear and well-lit.
+- Avoid uploading blurry images.
 - Outdoor scenes are preferred.
 - Avoid uploading images with identifiable faces and license plates to protect privacy. 
 
@@ -163,7 +164,7 @@ Following are the instructions for the same.
 -   Try to upload images that represent diverse locations or settings.
 
 **What to do:**
-1.  **Upload {num_collect} images**, one at a time.
+1.  **Upload {num_collect} images (compulsory)**, one at a time. You may optionally upload up to 20 additional images (total maximum: 30).
 2.  For each image:
     -   **Select the location** where the photo was taken using the search box or map.
     -   **Rate** how clearly the photo suggests it was taken in {country}, and **list the clues** that helped you make that judgment.
@@ -171,9 +172,10 @@ Following are the instructions for the same.
     -   **Enter the month and year** when the photo was taken.
     -   **Click** "Submit and Next" to move to the next image.
 3. If the screen freezes, do **NOT** refresh the page. Instead, wait for a few seconds for the internet connectivity to stabilize.
-4. After uploading all the photos, wait till you get a message saying 'Survey Complete'.
+4. After uploading the photos, you can submit the COMPLETION CODE displayed on the screen to Prolific and end the task formally.
 
-You have *20* minutes to upload the photos and answer the questions surrounding them. After you upload the photo, wait for the photo to be visible on screen, then answer the questions.
+
+You have *20* minutes to upload the photos and answer the questions surrounding them. After you upload each photo, wait for the photo to be visible on screen, then answer the questions.
 """, unsafe_allow_html=True)
 else:
     # Show View Instructions expander after Prolific ID is submitted
