@@ -152,7 +152,7 @@ Following are the instructions for the same.
 
 - Photos should depict a variety of surroundings within {country}. Try to avoid sharing images of well-known, highly-recognizable tourist attractions.
 - Upload a diverse and distinct set of images in terms of content.
-- Ensure the images are clear and well-lit.
+- Ensure the images are clear and well-lit. Dark images with low visibility will hamper our study.
 - Avoid uploading blurry images.
 - Outdoor scenes are preferred.
 - DO NOT upload images with identifiable faces and avoid those with license plates to protect privacy. 
@@ -164,7 +164,7 @@ Following are the instructions for the same.
 -   Try to upload images that represent diverse locations or settings.
 
 **What to do:**
-1.  **Upload {num_collect} images (compulsory)**, one at a time. You may optionally upload up to 20 additional images (total maximum: 30).
+1.  **Upload {num_collect} images (all compulsory)**, one at a time.
 2.  For each image:
     -   **Select the location** where the photo was taken using the search box or map.
     -   **Rate** how clearly the photo suggests it was taken in {country}, and **list the clues** that helped you make that judgment.
@@ -189,7 +189,7 @@ Following are the instructions for the same.
 
 - Photos should depict a variety of surroundings within {country}. Try to avoid sharing images of well-known, highly-recognizable tourist attractions.
 - Upload a diverse and distinct set of images in terms of content.
-- Ensure the images are clear and well-lit.
+- Ensure the images are clear and well-lit. Dark images with low visibility will hamper our study.
 - Avoid uploading blurry images.
 - Outdoor scenes are preferred.
 - DO NOT upload images with identifiable faces and avoid those with license plates to protect privacy. 
@@ -201,7 +201,7 @@ Following are the instructions for the same.
 -   Try to upload images that represent diverse locations or settings.
 
 **What to do:**
-1.  **Upload {num_collect} images (compulsory)**, one at a time. You may optionally upload up to 20 additional images (total maximum: 30).
+1.  **Upload {num_collect} images (all compulsory)**, one at a time.
 2.  For each image:
     -   **Select the location** where the photo was taken using the search box or map.
     -   **Rate** how clearly the photo suggests it was taken in {country}, and **list the clues** that helped you make that judgment.
