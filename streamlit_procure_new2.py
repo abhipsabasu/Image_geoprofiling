@@ -71,6 +71,81 @@ if 'temp_images' not in st.session_state:
 if 'submit_all' not in st.session_state:
     st.session_state.submit_all = False
 
+if 'initial_10_uploaded' not in st.session_state:
+    st.session_state.initial_10_uploaded = False
+
+def upload_images_to_github_and_firebase():
+    """
+    Upload all images in temp_images to GitHub and save metadata to Firebase
+    """
+    if not st.session_state.temp_images:
+        return {"success": False, "message": "No images to upload"}
+    
+    st.markdown("**📤 Uploading all images...**")
+    upload_progress = st.progress(0)
+    upload_status = st.empty()
+    
+    successful_uploads = 0
+    failed_uploads = 0
+    
+    for i, image_data in enumerate(st.session_state.temp_images):
+        try:
+            # Update progress
+            progress = (i + 1) / len(st.session_state.temp_images)
+            upload_progress.progress(progress)
+            upload_status.text(f"Uploading image {i + 1} of {len(st.session_state.temp_images)}...")
+            
+            # Upload to GitHub
+            api_url = f"https://api.github.com/repos/{owner}/{repo_name}/contents/{image_data['file_path']}"
+            
+            headers = {
+                "Authorization": f"Bearer {token}",
+                "Accept": "application/vnd.github.v3+json"
+            }
+
+            payload = {
+                "message": f"Upload {image_data['file_path']}",
+                "content": image_data['encoded_content'],
+                "branch": "main"
+            }
+
+            response = requests.put(api_url, headers=headers, json=payload)
+            if response.status_code in [200, 201]:
+                successful_uploads += 1
+                # Update the response with actual GitHub URL
+                st.session_state.responses[image_data['index']]['image_url'] = f"https://github.com/{owner}/{repo_name}/blob/main/{image_data['file_path']}"
+            else:
+                failed_uploads += 1
+                st.error(f"❌ Failed to upload {image_data['file_name']}: {response.status_code}")
+                
+        except Exception as e:
+            failed_uploads += 1
+            st.error(f"❌ Error uploading {image_data['file_name']}: {str(e)}")
+    
+    # Show final upload results
+    upload_progress.progress(1.0)
+    if failed_uploads == 0:
+        upload_status.success(f"✅ All {successful_uploads} images uploaded successfully!")
+    else:
+        upload_status.warning(f"⚠️ {successful_uploads} images uploaded, {failed_uploads} failed")
+    
+    # Save to Firebase
+    doc_ref = db.collection("Image_procurement").document(st.session_state.prolific_id)
+    doc_ref.set({
+        "prolific_id": st.session_state.prolific_id,
+        "birth_country": st.session_state.birth_country,
+        "country_of_residence": st.session_state.residence,
+        "privacy": st.session_state.privacy,
+        "timestamp": firestore.SERVER_TIMESTAMP,
+        "responses": st.session_state.responses
+    })
+    
+    return {
+        "success": True, 
+        "successful_uploads": successful_uploads, 
+        "failed_uploads": failed_uploads
+    }
+
 def reset_selections():
     # Clear all form selections for the next image using a more robust method
     
@@ -573,10 +648,106 @@ else:
                     
                     # Force rerun to get fresh forms with new keys
                     st.rerun()
-        else:  # Images 10+: Two buttons - "Next" and "Submit All" (optional images)
-            if st.session_state.index == 9:  # First optional image (10th overall)
+        elif st.session_state.index == 9:  # 10th image - special handling
+            if not st.session_state.initial_10_uploaded:
                 st.info("🎉 **Great! You've completed the compulsory 10 images. YOU CAN MARK THE STUDY AS COMPLETE NOW ON THE PROLIFIC PLATFORM. YOUR COMPLETION CODE IS 'CNOCS4T7'. If you wish to upload any additional images, you can click on Next AFTER COMPLETING THE TASK ON PROLIFIC. We will pay you a bonus of £0.30 for each additional image you upload separately as bonus.**")
+                st.markdown(f"# **ATTENTION: PLEASE PASTE COMPLETION CODE 'CNOCS4T7' at the end of the study to the Prolific platform!**", unsafe_allow_html=True)
             
+            col1, col2 = st.columns(2)
+            
+            with col1:
+                if st.button("Next", type="primary"):
+                    if not uploaded_file or ((rating == 'Choose an option') or (rating in [2, 3] and clue_text in [None, ''])) or month == "Choose an option" or year == "Choose an option" or popularity == "Choose an option":
+                        st.error('Please answer all the questions and upload a file.')
+                    elif not hasattr(st.session_state, 'location_text') or not st.session_state.location_text:
+                        st.error('Please select a location on the map first and capture the location description.')
+                    else:
+                        # Store the current image first
+                        image_data = {
+                            "file_name": f"{st.session_state.prolific_id}_{st.session_state.index}.png",
+                            "file_path": f"{country}_images/{f'{st.session_state.prolific_id}_{st.session_state.index}.png'}",
+                            "encoded_content": encoded_content,
+                            "index": st.session_state.index
+                        }
+                        
+                        # Add to temporary storage
+                        st.session_state.temp_images.append(image_data)
+                        
+                        # Store response data
+                        st.session_state.responses.append({
+                            "name": st.session_state.prolific_id,
+                            "birth_country": st.session_state.birth_country,
+                            "residence": st.session_state.residence,
+                            "privacy": st.session_state.privacy,
+                            "image_url": image_data["file_path"],
+                            "rating": rating,
+                            "location_text": st.session_state.location_text,
+                            "popularity": popularity,
+                            "clues": clue_text,
+                            "month": month,
+                            "year": year,
+                        })
+                        
+                        # Upload all images to GitHub and Firebase (first time)
+                        if not st.session_state.initial_10_uploaded:
+                            upload_result = upload_images_to_github_and_firebase()
+                            if upload_result["success"]:
+                                st.session_state.initial_10_uploaded = True
+                                st.success("✅ **Initial 10 images uploaded successfully!**")
+                        
+                        # Store success message in session state
+                        st.session_state.show_success = True
+                        st.session_state.success_message = f"✅ Image {st.session_state.index + 1} saved successfully!"
+                        
+                        # Clear location and reset index
+                        st.session_state.location_text = None
+                        st.session_state.index += 1
+                        st.session_state.q1_index = 0
+                        
+                        # Force rerun to get fresh forms with new keys
+                        st.rerun()
+            
+            with col2:
+                if st.button("Submit All", type="secondary"):
+                    if not uploaded_file or ((rating == 'Choose an option') or (rating in [2, 3] and clue_text in [None, ''])) or month == "Choose an option" or year == "Choose an option" or popularity == "Choose an option":
+                        st.error('Please answer all the questions and upload a file.')
+                    elif not hasattr(st.session_state, 'location_text') or not st.session_state.location_text:
+                        st.error('Please select a location on the map first and capture the location description.')
+                    else:
+                        # Store the current image first
+                        image_data = {
+                            "file_name": f"{st.session_state.prolific_id}_{st.session_state.index}.png",
+                            "file_path": f"{country}_images/{f'{st.session_state.prolific_id}_{st.session_state.index}.png'}",
+                            "encoded_content": encoded_content,
+                            "index": st.session_state.index
+                        }
+                        
+                        # Add to temporary storage
+                        st.session_state.temp_images.append(image_data)
+                        
+                        # Store response data
+                        st.session_state.responses.append({
+                            "name": st.session_state.prolific_id,
+                            "birth_country": st.session_state.birth_country,
+                            "residence": st.session_state.residence,
+                            "privacy": st.session_state.privacy,
+                            "image_url": image_data["file_path"],
+                            "rating": rating,
+                            "location_text": st.session_state.location_text,
+                            "popularity": popularity,
+                            "clues": clue_text,
+                            "month": month,
+                            "year": year,
+                        })
+                        
+                        # Upload all images to GitHub and Firebase
+                        upload_result = upload_images_to_github_and_firebase()
+                        if upload_result["success"]:
+                            st.session_state.initial_10_uploaded = True
+                            st.session_state.submit_all = True
+                            st.rerun()
+        
+        else:  # Images 11+: Two buttons - "Next" and "Submit All" (optional images)
             col1, col2 = st.columns(2)
             
             with col1:
@@ -657,77 +828,19 @@ else:
                             "year": year,
                         })
                         
-                        # Set flag to proceed to upload all images
-                        st.session_state.submit_all = True
-                        st.rerun()
+                        # Upload all images (initial 10 + additional ones)
+                        upload_result = upload_images_to_github_and_firebase()
+                        if upload_result["success"]:
+                            st.session_state.submit_all = True
+                            st.rerun()
     else:
-        # Upload all images to GitHub at once (triggered by reaching 30 images or Submit All button)
-        st.markdown("**📤 Uploading all images...**")
-        
-        upload_progress = st.progress(0)
-        upload_status = st.empty()
-        
-        successful_uploads = 0
-        failed_uploads = 0
-        
-        for i, image_data in enumerate(st.session_state.temp_images):
-            try:
-                # Update progress
-                progress = (i + 1) / len(st.session_state.temp_images)
-                upload_progress.progress(progress)
-                upload_status.text(f"Uploading image {i + 1} of {len(st.session_state.temp_images)}...")
-                
-                # Upload to GitHub
-                api_url = f"https://api.github.com/repos/{owner}/{repo_name}/contents/{image_data['file_path']}"
-                
-                headers = {
-                    "Authorization": f"Bearer {token}",
-                    "Accept": "application/vnd.github.v3+json"
-                }
-
-                payload = {
-                    "message": f"Upload {image_data['file_path']}",
-                    "content": image_data['encoded_content'],
-                    "branch": "main"
-                }
-
-                response = requests.put(api_url, headers=headers, json=payload)
-                if response.status_code in [200, 201]:
-                    successful_uploads += 1
-                    # Update the response with actual GitHub URL
-                    st.session_state.responses[image_data['index']]['image_url'] = f"https://github.com/{owner}/{repo_name}/blob/main/{image_data['file_path']}"
-                else:
-                    failed_uploads += 1
-                    st.error(f"❌ Failed to upload {image_data['file_name']}: {response.status_code}")
-                    
-            except Exception as e:
-                failed_uploads += 1
-                st.error(f"❌ Error uploading {image_data['file_name']}: {str(e)}")
-        
-        # Show final upload results
-        upload_progress.progress(1.0)
-        if failed_uploads == 0:
-            upload_status.success(f"✅ All {successful_uploads} images uploaded successfully!")
-        else:
-            upload_status.warning(f"⚠️ {successful_uploads} images uploaded, {failed_uploads} failed")
-        
-        # Save to Firebase
-        doc_ref = db.collection("Image_procurement").document(st.session_state.prolific_id)
-        doc_ref.set({
-            "prolific_id": st.session_state.prolific_id,
-            "birth_country": st.session_state.birth_country,
-            "country_of_residence": st.session_state.residence,
-            "privacy": st.session_state.privacy,
-            "timestamp": firestore.SERVER_TIMESTAMP,
-            "responses": st.session_state.responses
-        })
-        
+        # Survey completion screen (triggered by Submit All button)
         st.session_state.submitted_all = True
         st.success("🎉 Survey complete! Thank you!")
         st.write(f"✅ **Survey Results:**")
-        st.write(f"📸 **Images:** {successful_uploads} uploaded successfully")
+        st.write(f"📸 **Images:** {len(st.session_state.temp_images)} uploaded successfully")
         st.write(f"📊 **Responses:** {len(st.session_state.responses)} recorded")
         st.write(f"🗺️ **Locations:** All location descriptions captured")
         st.write(f"📅 **Timestamps:** Month/year data collected")
         st.markdown(f"📧 **Note**: If you wish to revoke your consent, please contact us at <a href='mailto:abhipsabasu@iisc.ac.in'>abhipsabasu@iisc.ac.in</a>.", unsafe_allow_html=True)
-        st.markdown(f"**ATTENTION: PLEASE PASTE COMPLETION CODE 'CNOCS4T7' at the end of the study!**", unsafe_allow_html=True)
+        st.markdown(f"**ATTENTION: PLEASE PASTE COMPLETION CODE 'CNOCS4T7' at the end of the study to the Prolific platform!**", unsafe_allow_html=True)
