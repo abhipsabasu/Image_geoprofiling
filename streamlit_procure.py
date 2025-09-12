@@ -21,8 +21,8 @@ from geopy.geocoders import Nominatim
 from geopy.exc import GeocoderTimedOut, GeocoderUnavailable
 
 
-country = 'Chile'
-continent = 'South America'
+country = 'Canada'
+continent = 'North America'
 
 firebase_secrets = st.secrets["firebase"]
 token = firebase_secrets["github_token"]
@@ -88,7 +88,7 @@ def geocode_location(location_text):
     Convert location text to coordinates using Nominatim geocoding service
     """
     try:
-        # Add "India" to the search query to improve accuracy for Indian locations
+        # Add "Canada" to the search query to improve accuracy for Canadian locations
         search_query = f"{location_text}, {country}"
         
         # Initialize geocoder
@@ -290,17 +290,18 @@ else:
                 <script>
                     function initMap() {{
                         const map = new google.maps.Map(document.getElementById("map"), {{
-                            zoom: 5,
-                            center: {{ lat: -33.4489, lng: -70.6693 }}, // Chile center
+                            zoom: 4,
+                            center: {{ lat: 56.1304, lng: -106.3468 }}, // Canada center
                             mapTypeId: google.maps.MapTypeId.ROADMAP
                         }});
                         
                         // Add markers for major cities
                         const cities = [
-                            {{ lat: -33.4489, lng: -70.6693, name: "Santiago" }},
-                            {{ lat: -51.7061, lng: -72.5458, name: "Puerto Natales" }},
-                            {{ lat: -53.1642, lng: -70.9124, name: "Punta Arenas" }},
-                            {{ lat: -37.0249, lng: -72.0669, name: "Valparaíso" }}
+                            {{ lat: 45.5017, lng: -73.5673, name: "Montreal" }},
+                            {{ lat: 43.6532, lng: -79.3832, name: "Toronto" }},
+                            {{ lat: 49.2827, lng: -123.1207, name: "Vancouver" }},
+                            {{ lat: 51.0447, lng: -114.0719, name: "Calgary" }},
+                            {{ lat: 53.5461, lng: -113.4938, name: "Edmonton" }}
                         ];
                         
                         cities.forEach(city => {{
@@ -407,7 +408,7 @@ else:
                 
                 manual_location = st.text_input(
                     "",
-                    placeholder="e.g., Santiago, Puerto Natales, Punta Arenas, Valparaíso",
+                    placeholder="e.g., Toronto, Vancouver, Montreal, Calgary, Edmonton",
                     key=f"manual_location_{st.session_state.index}"
                 )
                 
@@ -419,10 +420,10 @@ else:
         else:
             # Fallback to Streamlit map if no Google Maps API key
             st.warning("⚠️ Google Maps API key not configured. Using default map.")
-            # Show a basic map of India
+            # Show a basic map of Canada
             map_data = pd.DataFrame({
-                'latitude': [-33.4489, -51.7061, -53.1642, -37.0249],
-                'longitude': [-70.6693, -72.5458, -70.9124, -72.0669]
+                'latitude': [45.5017, 43.6532, 49.2827, 51.0447, 53.5461],
+                'longitude': [-73.5673, -79.3832, -123.1207, -114.0719, -113.4938]
             })
             st.map(map_data)
             st.info("💡 **Tip:** Use the search functionality above to select a location.")
