@@ -212,7 +212,7 @@ Following are the instructions for the same.
 4. After uploading the photos, you can submit the COMPLETION CODE displayed on the screen to Prolific and end the task formally.
 
 
-You have *60* minutes to upload the photos and answer the questions surrounding them. After you upload each photo, wait for the photo to be visible on screen, then answer the questions.
+You have *{num_collect*2}* minutes to upload the photos and answer the questions surrounding them. After you upload each photo, wait for the photo to be visible on screen, then answer the questions.
 """, unsafe_allow_html=True)
 
 if not st.session_state.prolific_id:
