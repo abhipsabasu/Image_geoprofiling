@@ -140,7 +140,7 @@ def geocode_location(location_text):
 
 # ---- UI ----
 st.title(f"Image Collection from {country}")
-num_collect = 10
+num_collect = 30
 # Show instructions only before Prolific ID is submitted
 if not st.session_state.prolific_id:
     st.markdown(f"""
@@ -405,7 +405,7 @@ else:
                 
                 # Add a text input for manual location entry
                 st.markdown("<div style='margin-bottom: 0px; padding-bottom: 0px;'><strong>Enter the location you selected on the map:</strong> <span style='color: red;'>*</span></div>", unsafe_allow_html=True)
-                
+                x
                 manual_location = st.text_input(
                     "",
                     placeholder="e.g., Sydney, Melbourne, Brisbane, Perth, Adelaide",
