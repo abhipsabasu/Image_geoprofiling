@@ -21,8 +21,8 @@ from geopy.geocoders import Nominatim
 from geopy.exc import GeocoderTimedOut, GeocoderUnavailable
 
 
-country = 'Australia'
-continent = 'Oceania'
+country = 'France'
+continent = 'Europe'
 
 firebase_secrets = st.secrets["firebase"]
 token = firebase_secrets["github_token"]
@@ -88,7 +88,7 @@ def geocode_location(location_text):
     Convert location text to coordinates using Nominatim geocoding service
     """
     try:
-        # Add "Australia" to the search query to improve accuracy for Australian locations
+        # Add "France" to the search query to improve accuracy for French locations
         search_query = f"{location_text}, {country}"
         
         # Initialize geocoder
@@ -290,18 +290,18 @@ else:
                 <script>
                     function initMap() {{
                         const map = new google.maps.Map(document.getElementById("map"), {{
-                            zoom: 4,
-                            center: {{ lat: -25.2744, lng: 133.7751 }}, // Australia center
+                            zoom: 6,
+                            center: {{ lat: 46.2276, lng: 2.2137 }}, // France center
                             mapTypeId: google.maps.MapTypeId.ROADMAP
                         }});
                         
                         // Add markers for major cities
                         const cities = [
-                            {{ lat: -33.8688, lng: 151.2093, name: "Sydney" }},
-                            {{ lat: -37.8136, lng: 144.9631, name: "Melbourne" }},
-                            {{ lat: -27.4698, lng: 153.0251, name: "Brisbane" }},
-                            {{ lat: -31.9505, lng: 115.8605, name: "Perth" }},
-                            {{ lat: -34.9285, lng: 138.6007, name: "Adelaide" }}
+                            {{ lat: 48.8566, lng: 2.3522, name: "Paris" }},
+                            {{ lat: 45.7640, lng: 4.8357, name: "Lyon" }},
+                            {{ lat: 43.2965, lng: 5.3698, name: "Marseille" }},
+                            {{ lat: 43.6047, lng: 1.4442, name: "Toulouse" }},
+                            {{ lat: 47.2184, lng: -1.5536, name: "Nantes" }}
                         ];
                         
                         cities.forEach(city => {{
@@ -407,7 +407,7 @@ else:
                 st.markdown("<div style='margin-bottom: 0px; padding-bottom: 0px;'><strong>Enter the location you selected on the map:</strong> <span style='color: red;'>*</span></div>", unsafe_allow_html=True)
                 manual_location = st.text_input(
                     "",
-                    placeholder="e.g., Sydney, Melbourne, Brisbane, Perth, Adelaide",
+                    placeholder="e.g., Paris, Lyon, Marseille, Toulouse, Nantes",
                     key=f"manual_location_{st.session_state.index}"
                 )
                 
@@ -419,10 +419,10 @@ else:
         else:
             # Fallback to Streamlit map if no Google Maps API key
             st.warning("⚠️ Google Maps API key not configured. Using default map.")
-            # Show a basic map of Australia
+            # Show a basic map of France
             map_data = pd.DataFrame({
-                'latitude': [-33.8688, -37.8136, -27.4698, -31.9505, -34.9285],
-                'longitude': [151.2093, 144.9631, 153.0251, 115.8605, 138.6007]
+                'latitude': [48.8566, 45.7640, 43.2965, 43.6047, 47.2184],
+                'longitude': [2.3522, 4.8357, 5.3698, 1.4442, -1.5536]
             })
             st.map(map_data)
             st.info("💡 **Tip:** Use the search functionality above to select a location.")
