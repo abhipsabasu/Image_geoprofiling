@@ -21,8 +21,8 @@ from geopy.geocoders import Nominatim
 from geopy.exc import GeocoderTimedOut, GeocoderUnavailable
 
 
-country = 'France'
-continent = 'Europe'
+country = 'Mexico'
+continent = 'North America'
 
 firebase_secrets = st.secrets["firebase"]
 token = firebase_secrets["github_token"]
@@ -140,7 +140,7 @@ def geocode_location(location_text):
 
 # ---- UI ----
 st.title(f"Image Collection from {country}")
-num_collect = 20
+num_collect = 30
 # Show instructions only before Prolific ID is submitted
 if not st.session_state.prolific_id:
     st.markdown(f"""
@@ -291,17 +291,16 @@ else:
                     function initMap() {{
                         const map = new google.maps.Map(document.getElementById("map"), {{
                             zoom: 6,
-                            center: {{ lat: 46.2276, lng: 2.2137 }}, // France center
+                            center: {{ lat: 20.6597, lng: -100.3318 }}, // Mexico center
                             mapTypeId: google.maps.MapTypeId.ROADMAP
                         }});
                         
                         // Add markers for major cities
                         const cities = [
-                            {{ lat: 48.8566, lng: 2.3522, name: "Paris" }},
-                            {{ lat: 45.7640, lng: 4.8357, name: "Lyon" }},
-                            {{ lat: 43.2965, lng: 5.3698, name: "Marseille" }},
-                            {{ lat: 43.6047, lng: 1.4442, name: "Toulouse" }},
-                            {{ lat: 47.2184, lng: -1.5536, name: "Nantes" }}
+                            {{ lat: 20.6597, lng: -100.3318, name: "Mexico City" }},
+                            {{ lat: 23.6345, lng: -102.5528, name: "Guadalajara" }},
+                            {{ lat: 19.4326, lng: -99.1332, name: "Puebla" }},
+                            {{ lat: 21.1619, lng: -86.8466, name: "Cancún" }},
                         ];
                         
                         cities.forEach(city => {{
@@ -407,7 +406,7 @@ else:
                 st.markdown("<div style='margin-bottom: 0px; padding-bottom: 0px;'><strong>Enter the location you selected on the map:</strong> <span style='color: red;'>*</span></div>", unsafe_allow_html=True)
                 manual_location = st.text_input(
                     "",
-                    placeholder="e.g., Paris, Lyon, Marseille, Toulouse, Nantes",
+                    placeholder="e.g., Mexico City, Guadalajara, Puebla, Cancún",
                     key=f"manual_location_{st.session_state.index}"
                 )
                 
@@ -419,10 +418,10 @@ else:
         else:
             # Fallback to Streamlit map if no Google Maps API key
             st.warning("⚠️ Google Maps API key not configured. Using default map.")
-            # Show a basic map of France
+            # Show a basic map of Mexico
             map_data = pd.DataFrame({
-                'latitude': [48.8566, 45.7640, 43.2965, 43.6047, 47.2184],
-                'longitude': [2.3522, 4.8357, 5.3698, 1.4442, -1.5536]
+                'latitude': [20.6597, 23.6345, 19.4326, 21.1619],
+                'longitude': [-100.3318, -102.5528, -99.1332, -86.8466]
             })
             st.map(map_data)
             st.info("💡 **Tip:** Use the search functionality above to select a location.")
