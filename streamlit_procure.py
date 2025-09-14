@@ -21,8 +21,8 @@ from geopy.geocoders import Nominatim
 from geopy.exc import GeocoderTimedOut, GeocoderUnavailable
 
 
-country = 'Canada'
-continent = 'North America'
+country = 'Brazil'
+continent = 'South America'
 
 firebase_secrets = st.secrets["firebase"]
 token = firebase_secrets["github_token"]
@@ -140,7 +140,7 @@ def geocode_location(location_text):
 
 # ---- UI ----
 st.title(f"Image Collection from {country}")
-num_collect = 10
+num_collect = 20
 # Show instructions only before Prolific ID is submitted
 if not st.session_state.prolific_id:
     st.markdown(f"""
@@ -291,17 +291,16 @@ else:
                     function initMap() {{
                         const map = new google.maps.Map(document.getElementById("map"), {{
                             zoom: 4,
-                            center: {{ lat: 56.1304, lng: -106.3468 }}, // Canada center
+                            center: {{ lat: -15.7801, lng: -47.9292 }}, // Brazil center
                             mapTypeId: google.maps.MapTypeId.ROADMAP
                         }});
                         
                         // Add markers for major cities
                         const cities = [
-                            {{ lat: 45.5017, lng: -73.5673, name: "Montreal" }},
-                            {{ lat: 43.6532, lng: -79.3832, name: "Toronto" }},
-                            {{ lat: 49.2827, lng: -123.1207, name: "Vancouver" }},
-                            {{ lat: 51.0447, lng: -114.0719, name: "Calgary" }},
-                            {{ lat: 53.5461, lng: -113.4938, name: "Edmonton" }}
+                            {{ lat: -15.7801, lng: -47.9292, name: "Brasília" }},
+                            {{ lat: -14.2350, lng: -51.9253, name: "Cuiabá" }},
+                            {{ lat: -19.9167, lng: -43.9333, name: "Belo Horizonte" }},
+                            {{ lat: -23.5505, lng: -46.6333, name: "São Paulo" }},
                         ];
                         
                         cities.forEach(city => {{
@@ -408,7 +407,7 @@ else:
                 
                 manual_location = st.text_input(
                     "",
-                    placeholder="e.g., Toronto, Vancouver, Montreal, Calgary, Edmonton",
+                    placeholder="e.g., Brasília, Cuiabá, Belo Horizonte, São Paulo",
                     key=f"manual_location_{st.session_state.index}"
                 )
                 
@@ -420,10 +419,10 @@ else:
         else:
             # Fallback to Streamlit map if no Google Maps API key
             st.warning("⚠️ Google Maps API key not configured. Using default map.")
-            # Show a basic map of Canada
+            # Show a basic map of Brazil
             map_data = pd.DataFrame({
-                'latitude': [45.5017, 43.6532, 49.2827, 51.0447, 53.5461],
-                'longitude': [-73.5673, -79.3832, -123.1207, -114.0719, -113.4938]
+                'latitude': [-15.7801, -14.2350, -19.9167, -23.5505],
+                'longitude': [-47.9292, -51.9253, -43.9333, -46.6333]
             })
             st.map(map_data)
             st.info("💡 **Tip:** Use the search functionality above to select a location.")
