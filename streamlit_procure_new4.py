@@ -21,7 +21,7 @@ from geopy.geocoders import Nominatim
 from geopy.exc import GeocoderTimedOut, GeocoderUnavailable
 
 
-country = 'Mexico'
+country = 'United States'
 continent = 'North America'
 
 firebase_secrets = st.secrets["firebase"]
@@ -88,7 +88,7 @@ def geocode_location(location_text):
     Convert location text to coordinates using Nominatim geocoding service
     """
     try:
-        # Add "France" to the search query to improve accuracy for French locations
+        # Add "United States" to the search query to improve accuracy for US locations
         search_query = f"{location_text}, {country}"
         
         # Initialize geocoder
@@ -290,17 +290,18 @@ else:
                 <script>
                     function initMap() {{
                         const map = new google.maps.Map(document.getElementById("map"), {{
-                            zoom: 6,
-                            center: {{ lat: 20.6597, lng: -100.3318 }}, // Mexico center
+                            zoom: 4,
+                            center: {{ lat: 39.8283, lng: -98.5795 }}, // United States center
                             mapTypeId: google.maps.MapTypeId.ROADMAP
                         }});
                         
                         // Add markers for major cities
                         const cities = [
-                            {{ lat: 20.6597, lng: -100.3318, name: "Mexico City" }},
-                            {{ lat: 23.6345, lng: -102.5528, name: "Guadalajara" }},
-                            {{ lat: 19.4326, lng: -99.1332, name: "Puebla" }},
-                            {{ lat: 21.1619, lng: -86.8466, name: "Cancún" }},
+                            {{ lat: 40.7128, lng: -74.0060, name: "New York" }},
+                            {{ lat: 34.0522, lng: -118.2437, name: "Los Angeles" }},
+                            {{ lat: 41.8781, lng: -87.6298, name: "Chicago" }},
+                            {{ lat: 29.7604, lng: -95.3698, name: "Houston" }},
+                            {{ lat: 33.4484, lng: -112.0740, name: "Phoenix" }}
                         ];
                         
                         cities.forEach(city => {{
@@ -406,7 +407,7 @@ else:
                 st.markdown("<div style='margin-bottom: 0px; padding-bottom: 0px;'><strong>Enter the location you selected on the map:</strong> <span style='color: red;'>*</span></div>", unsafe_allow_html=True)
                 manual_location = st.text_input(
                     "",
-                    placeholder="e.g., Mexico City, Guadalajara, Puebla, Cancún",
+                    placeholder="e.g., New York, Los Angeles, Chicago, Houston, Phoenix",
                     key=f"manual_location_{st.session_state.index}"
                 )
                 
@@ -418,10 +419,10 @@ else:
         else:
             # Fallback to Streamlit map if no Google Maps API key
             st.warning("⚠️ Google Maps API key not configured. Using default map.")
-            # Show a basic map of Mexico
+            # Show a basic map of United States
             map_data = pd.DataFrame({
-                'latitude': [20.6597, 23.6345, 19.4326, 21.1619],
-                'longitude': [-100.3318, -102.5528, -99.1332, -86.8466]
+                'latitude': [40.7128, 34.0522, 41.8781, 29.7604, 33.4484],
+                'longitude': [-74.0060, -118.2437, -87.6298, -95.3698, -112.0740]
             })
             st.map(map_data)
             st.info("💡 **Tip:** Use the search functionality above to select a location.")
