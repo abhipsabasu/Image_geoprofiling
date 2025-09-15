@@ -21,8 +21,8 @@ from geopy.geocoders import Nominatim
 from geopy.exc import GeocoderTimedOut, GeocoderUnavailable
 
 
-country = 'Australia'
-continent = 'Oceania'
+country = 'South Africa'
+continent = 'Africa'
 
 firebase_secrets = st.secrets["firebase"]
 token = firebase_secrets["github_token"]
@@ -88,7 +88,7 @@ def geocode_location(location_text):
     Convert location text to coordinates using Nominatim geocoding service
     """
     try:
-        # Add "Australia" to the search query to improve accuracy for Australian locations
+        # Add "South Africa" to the search query to improve accuracy for South African locations
         search_query = f"{location_text}, {country}"
         
         # Initialize geocoder
@@ -290,18 +290,18 @@ else:
                 <script>
                     function initMap() {{
                         const map = new google.maps.Map(document.getElementById("map"), {{
-                            zoom: 4,
-                            center: {{ lat: -25.2744, lng: 133.7751 }}, // Australia center
+                            zoom: 5,
+                            center: {{ lat: -30.5595, lng: 22.9375 }}, // South Africa center
                             mapTypeId: google.maps.MapTypeId.ROADMAP
                         }});
                         
                         // Add markers for major cities
                         const cities = [
-                            {{ lat: -33.8688, lng: 151.2093, name: "Sydney" }},
-                            {{ lat: -37.8136, lng: 144.9631, name: "Melbourne" }},
-                            {{ lat: -27.4698, lng: 153.0251, name: "Brisbane" }},
-                            {{ lat: -31.9505, lng: 115.8605, name: "Perth" }},
-                            {{ lat: -34.9285, lng: 138.6007, name: "Adelaide" }}
+                            {{ lat: -26.2041, lng: 28.0473, name: "Johannesburg" }},
+                            {{ lat: -33.9249, lng: 18.4241, name: "Cape Town" }},
+                            {{ lat: -29.8587, lng: 31.0218, name: "Durban" }},
+                            {{ lat: -25.7479, lng: 28.2293, name: "Pretoria" }},
+                            {{ lat: -26.2041, lng: 28.0473, name: "Soweto" }}
                         ];
                         
                         cities.forEach(city => {{
@@ -407,7 +407,7 @@ else:
                 st.markdown("<div style='margin-bottom: 0px; padding-bottom: 0px;'><strong>Enter the location you selected on the map:</strong> <span style='color: red;'>*</span></div>", unsafe_allow_html=True)
                 manual_location = st.text_input(
                     "",
-                    placeholder="e.g., Sydney, Melbourne, Brisbane, Perth, Adelaide",
+                    placeholder="e.g., Johannesburg, Cape Town, Durban, Pretoria, Soweto",
                     key=f"manual_location_{st.session_state.index}"
                 )
                 
@@ -419,10 +419,10 @@ else:
         else:
             # Fallback to Streamlit map if no Google Maps API key
             st.warning("⚠️ Google Maps API key not configured. Using default map.")
-            # Show a basic map of Australia
+            # Show a basic map of South Africa
             map_data = pd.DataFrame({
-                'latitude': [-33.8688, -37.8136, -27.4698, -31.9505, -34.9285],
-                'longitude': [151.2093, 144.9631, 153.0251, 115.8605, 138.6007]
+                'latitude': [-26.2041, -33.9249, -29.8587, -25.7479, -26.2041],
+                'longitude': [28.0473, 18.4241, 31.0218, 28.2293, 28.0473]
             })
             st.map(map_data)
             st.info("💡 **Tip:** Use the search functionality above to select a location.")
