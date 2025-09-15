@@ -21,7 +21,7 @@ from geopy.geocoders import Nominatim
 from geopy.exc import GeocoderTimedOut, GeocoderUnavailable
 
 
-country = 'United States'
+country = 'The United States'
 continent = 'North America'
 
 firebase_secrets = st.secrets["firebase"]
