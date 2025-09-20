@@ -21,8 +21,8 @@ from geopy.geocoders import Nominatim
 from geopy.exc import GeocoderTimedOut, GeocoderUnavailable
 
 
-country = 'Greece'
-continent = 'Europe'
+country = 'South Korea'
+continent = 'Asia'
 
 firebase_secrets = st.secrets["firebase"]
 token = firebase_secrets["github_token"]
@@ -88,7 +88,7 @@ def geocode_location(location_text):
     Convert location text to coordinates using Nominatim geocoding service
     """
     try:
-        # Add "Greece" to the search query to improve accuracy for Greek locations
+        # Add "South Korea" to the search query to improve accuracy for South Korean locations
         search_query = f"{location_text}, {country}"
         
         # Initialize geocoder
@@ -291,17 +291,22 @@ else:
                     function initMap() {{
                         const map = new google.maps.Map(document.getElementById("map"), {{
                             zoom: 6,
-                            center: {{ lat: 39.0742, lng: 21.8243 }}, // Greece center
+                            center: {{ lat: 35.9078, lng: 127.7669 }}, // South Korea center
                             mapTypeId: google.maps.MapTypeId.ROADMAP
                         }});
                         
                         // Add markers for major cities
                         const cities = [
-                            {{ lat: 37.9755, lng: 23.7348, name: "Athens" }},
-                            {{ lat: 40.6401, lng: 22.9444, name: "Thessaloniki" }},
-                            {{ lat: 38.2466, lng: 21.7346, name: "Patras" }},
-                            {{ lat: 35.3080, lng: 25.0775, name: "Heraklion" }},
-                            {{ lat: 36.3932, lng: 25.4615, name: "Santorini" }}
+                            {{ lat: 37.5665, lng: 126.9780, name: "Seoul" }},
+                            {{ lat: 35.1796, lng: 129.0756, name: "Busan" }},
+                            {{ lat: 35.8714, lng: 128.6014, name: "Daegu" }},
+                            {{ lat: 36.3504, lng: 127.3845, name: "Daejeon" }},
+                            {{ lat: 37.2636, lng: 127.0286, name: "Suwon" }},
+                            {{ lat: 37.4563, lng: 126.7052, name: "Incheon" }},
+                            {{ lat: 35.1595, lng: 126.8526, name: "Gwangju" }},
+                            {{ lat: 36.0190, lng: 129.3435, name: "Ulsan" }},
+                            {{ lat: 36.5684, lng: 128.7294, name: "Andong" }},
+                            {{ lat: 37.2636, lng: 127.0286, name: "Seongnam" }}
                         ];
                         
                         cities.forEach(city => {{
@@ -407,7 +412,7 @@ else:
                 st.markdown("<div style='margin-bottom: 0px; padding-bottom: 0px;'><strong>Enter the location you selected on the map:</strong> <span style='color: red;'>*</span></div>", unsafe_allow_html=True)
                 manual_location = st.text_input(
                     "",
-                    placeholder="e.g., Athens, Thessaloniki, Patras, Heraklion, Santorini",
+                    placeholder="e.g., Seoul, Busan, Daegu, Daejeon, Suwon",
                     key=f"manual_location_{st.session_state.index}"
                 )
                 
@@ -419,10 +424,10 @@ else:
         else:
             # Fallback to Streamlit map if no Google Maps API key
             st.warning("⚠️ Google Maps API key not configured. Using default map.")
-            # Show a basic map of Greece
+            # Show a basic map of South Korea
             map_data = pd.DataFrame({
-                'latitude': [37.9755, 40.6401, 38.2466, 35.3080, 36.3932],
-                'longitude': [23.7348, 22.9444, 21.7346, 25.0775, 25.4615]
+                'latitude': [35.9078, 37.5665, 35.1796, 35.8714, 36.3504],
+                'longitude': [127.7669, 126.9780, 129.0756, 128.6014, 127.3845]
             })
             st.map(map_data)
             st.info("💡 **Tip:** Use the search functionality above to select a location.")
