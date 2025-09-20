@@ -21,8 +21,8 @@ from geopy.geocoders import Nominatim
 from geopy.exc import GeocoderTimedOut, GeocoderUnavailable
 
 
-country = 'India'
-continent = 'Asia'
+country = 'Portugal'
+continent = 'Europe'
 
 firebase_secrets = st.secrets["firebase"]
 token = firebase_secrets["github_token"]
@@ -88,7 +88,7 @@ def geocode_location(location_text):
     Convert location text to coordinates using Nominatim geocoding service
     """
     try:
-        # Add "India" to the search query to improve accuracy for Indian locations
+        # Add "Portugal" to the search query to improve accuracy for Portuguese locations
         search_query = f"{location_text}, {country}"
         
         # Initialize geocoder
@@ -291,16 +291,22 @@ else:
                     function initMap() {{
                         const map = new google.maps.Map(document.getElementById("map"), {{
                             zoom: 5,
-                            center: {{ lat: 20.5937, lng: 78.9629 }}, // India center
+                            center: {{ lat: 39.3999, lng: -8.2245 }}, // Portugal center
                             mapTypeId: google.maps.MapTypeId.ROADMAP
                         }});
                         
                         // Add markers for major cities
                         const cities = [
-                            {{ lat: 19.0760, lng: 72.8777, name: "Mumbai" }},
-                            {{ lat: 28.7041, lng: 77.1025, name: "Delhi" }},
-                            {{ lat: 12.9716, lng: 77.5946, name: "Bangalore" }},
-                            {{ lat: 13.0827, lng: 80.2707, name: "Chennai" }}
+                            {{ lat: 38.7223, lng: -9.1393, name: "Lisbon" }},
+                            {{ lat: 41.1579, lng: -8.6291, name: "Porto" }},
+                            {{ lat: 40.6405, lng: -8.6538, name: "Aveiro" }},
+                            {{ lat: 38.5667, lng: -7.9000, name: "Évora" }},
+                            {{ lat: 37.0194, lng: -7.9322, name: "Faro" }},
+                            {{ lat: 39.7436, lng: -8.8071, name: "Leiria" }},
+                            {{ lat: 40.2033, lng: -8.4103, name: "Coimbra" }},
+                            {{ lat: 41.5454, lng: -8.4265, name: "Braga" }},
+                            {{ lat: 38.5244, lng: -8.8882, name: "Setúbal" }},
+                            {{ lat: 39.2369, lng: -8.6850, name: "Santarém" }}
                         ];
                         
                         cities.forEach(city => {{
@@ -407,7 +413,7 @@ else:
                 
                 manual_location = st.text_input(
                     "",
-                    placeholder="e.g., Taj Mahal, Agra, Uttar Pradesh, India",
+                    placeholder="e.g., Lisbon, Porto, Aveiro, Évora, Faro",
                     key=f"manual_location_{st.session_state.index}"
                 )
                 
@@ -419,10 +425,10 @@ else:
         else:
             # Fallback to Streamlit map if no Google Maps API key
             st.warning("⚠️ Google Maps API key not configured. Using default map.")
-            # Show a basic map of India
+            # Show a basic map of Portugal
             map_data = pd.DataFrame({
-                'latitude': [20.5937, 19.0760, 28.7041, 12.9716],
-                'longitude': [78.9629, 72.8777, 77.1025, 77.5946]
+                'latitude': [39.3999, 38.7223, 41.1579, 40.6405, 38.5667],
+                'longitude': [-8.2245, -9.1393, -8.6291, -8.6538, -7.9000]
             })
             st.map(map_data)
             st.info("💡 **Tip:** Use the search functionality above to select a location.")
