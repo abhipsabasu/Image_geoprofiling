@@ -21,8 +21,8 @@ from geopy.geocoders import Nominatim
 from geopy.exc import GeocoderTimedOut, GeocoderUnavailable
 
 
-country = 'The United States'
-continent = 'North America'
+country = 'Poland'
+continent = 'Europe'
 
 firebase_secrets = st.secrets["firebase"]
 token = firebase_secrets["github_token"]
@@ -88,7 +88,7 @@ def geocode_location(location_text):
     Convert location text to coordinates using Nominatim geocoding service
     """
     try:
-        # Add "United States" to the search query to improve accuracy for US locations
+        # Add "Poland" to the search query to improve accuracy for Polish locations
         search_query = f"{location_text}, {country}"
         
         # Initialize geocoder
@@ -291,17 +291,22 @@ else:
                     function initMap() {{
                         const map = new google.maps.Map(document.getElementById("map"), {{
                             zoom: 4,
-                            center: {{ lat: 39.8283, lng: -98.5795 }}, // United States center
+                            center: {{ lat: 52.2297, lng: 21.0122 }}, // Poland center (Warsaw)
                             mapTypeId: google.maps.MapTypeId.ROADMAP
                         }});
                         
                         // Add markers for major cities
                         const cities = [
-                            {{ lat: 40.7128, lng: -74.0060, name: "New York" }},
-                            {{ lat: 34.0522, lng: -118.2437, name: "Los Angeles" }},
-                            {{ lat: 41.8781, lng: -87.6298, name: "Chicago" }},
-                            {{ lat: 29.7604, lng: -95.3698, name: "Houston" }},
-                            {{ lat: 33.4484, lng: -112.0740, name: "Phoenix" }}
+                            {{ lat: 52.2297, lng: 21.0122, name: "Warsaw" }},
+                            {{ lat: 50.0755, lng: 19.9445, name: "Kraków" }},
+                            {{ lat: 51.1079, lng: 17.0385, name: "Wrocław" }},
+                            {{ lat: 54.3520, lng: 18.6466, name: "Gdańsk" }},
+                            {{ lat: 52.4064, lng: 16.9252, name: "Poznań" }},
+                            {{ lat: 50.2649, lng: 19.0238, name: "Katowice" }},
+                            {{ lat: 53.4285, lng: 14.5528, name: "Szczecin" }},
+                            {{ lat: 50.0413, lng: 21.9991, name: "Rzeszów" }},
+                            {{ lat: 53.1325, lng: 23.1688, name: "Białystok" }},
+                            {{ lat: 50.3013, lng: 18.5795, name: "Gliwice" }}
                         ];
                         
                         cities.forEach(city => {{
@@ -407,7 +412,7 @@ else:
                 st.markdown("<div style='margin-bottom: 0px; padding-bottom: 0px;'><strong>Enter the location you selected on the map:</strong> <span style='color: red;'>*</span></div>", unsafe_allow_html=True)
                 manual_location = st.text_input(
                     "",
-                    placeholder="e.g., New York, Los Angeles, Chicago, Houston, Phoenix",
+                    placeholder="e.g., Warsaw, Kraków, Wrocław, Gdańsk, Poznań",
                     key=f"manual_location_{st.session_state.index}"
                 )
                 
@@ -419,10 +424,10 @@ else:
         else:
             # Fallback to Streamlit map if no Google Maps API key
             st.warning("⚠️ Google Maps API key not configured. Using default map.")
-            # Show a basic map of United States
+            # Show a basic map of Poland
             map_data = pd.DataFrame({
-                'latitude': [40.7128, 34.0522, 41.8781, 29.7604, 33.4484],
-                'longitude': [-74.0060, -118.2437, -87.6298, -95.3698, -112.0740]
+                'latitude': [52.2297, 50.0755, 51.1079, 54.3520, 52.4064],
+                'longitude': [21.0122, 19.9445, 17.0385, 18.6466, 16.9252]
             })
             st.map(map_data)
             st.info("💡 **Tip:** Use the search functionality above to select a location.")
