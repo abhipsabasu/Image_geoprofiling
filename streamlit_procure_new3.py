@@ -21,8 +21,8 @@ from geopy.geocoders import Nominatim
 from geopy.exc import GeocoderTimedOut, GeocoderUnavailable
 
 
-country = 'South Africa'
-continent = 'Africa'
+country = 'Israel'
+continent = 'Asia'
 
 firebase_secrets = st.secrets["firebase"]
 token = firebase_secrets["github_token"]
@@ -88,7 +88,7 @@ def geocode_location(location_text):
     Convert location text to coordinates using Nominatim geocoding service
     """
     try:
-        # Add "South Africa" to the search query to improve accuracy for South African locations
+        # Add "Israel" to the search query to improve accuracy for Israeli locations
         search_query = f"{location_text}, {country}"
         
         # Initialize geocoder
@@ -291,17 +291,22 @@ else:
                     function initMap() {{
                         const map = new google.maps.Map(document.getElementById("map"), {{
                             zoom: 5,
-                            center: {{ lat: -30.5595, lng: 22.9375 }}, // South Africa center
+                            center: {{ lat: 31.0461, lng: 34.8516 }}, // Israel center
                             mapTypeId: google.maps.MapTypeId.ROADMAP
                         }});
                         
                         // Add markers for major cities
                         const cities = [
-                            {{ lat: -26.2041, lng: 28.0473, name: "Johannesburg" }},
-                            {{ lat: -33.9249, lng: 18.4241, name: "Cape Town" }},
-                            {{ lat: -29.8587, lng: 31.0218, name: "Durban" }},
-                            {{ lat: -25.7479, lng: 28.2293, name: "Pretoria" }},
-                            {{ lat: -26.2041, lng: 28.0473, name: "Soweto" }}
+                            {{ lat: 31.7683, lng: 35.2137, name: "Jerusalem" }},
+                            {{ lat: 32.0853, lng: 34.7818, name: "Tel Aviv" }},
+                            {{ lat: 32.7940, lng: 35.0048, name: "Haifa" }},
+                            {{ lat: 31.2518, lng: 34.7915, name: "Beersheba" }},
+                            {{ lat: 32.3215, lng: 34.8532, name: "Netanya" }},
+                            {{ lat: 32.0853, lng: 34.7818, name: "Ramat Gan" }},
+                            {{ lat: 32.7940, lng: 35.0048, name: "Nazareth" }},
+                            {{ lat: 31.2518, lng: 34.7915, name: "Eilat" }},
+                            {{ lat: 32.3215, lng: 34.8532, name: "Herzliya" }},
+                            {{ lat: 32.7940, lng: 35.0048, name: "Tiberias" }}
                         ];
                         
                         cities.forEach(city => {{
@@ -407,7 +412,7 @@ else:
                 st.markdown("<div style='margin-bottom: 0px; padding-bottom: 0px;'><strong>Enter the location you selected on the map:</strong> <span style='color: red;'>*</span></div>", unsafe_allow_html=True)
                 manual_location = st.text_input(
                     "",
-                    placeholder="e.g., Johannesburg, Cape Town, Durban, Pretoria, Soweto",
+                    placeholder="e.g., Jerusalem, Tel Aviv, Haifa, Beersheba, Netanya",
                     key=f"manual_location_{st.session_state.index}"
                 )
                 
@@ -419,10 +424,10 @@ else:
         else:
             # Fallback to Streamlit map if no Google Maps API key
             st.warning("⚠️ Google Maps API key not configured. Using default map.")
-            # Show a basic map of South Africa
+            # Show a basic map of Israel
             map_data = pd.DataFrame({
-                'latitude': [-26.2041, -33.9249, -29.8587, -25.7479, -26.2041],
-                'longitude': [28.0473, 18.4241, 31.0218, 28.2293, 28.0473]
+                'latitude': [31.0461, 31.7683, 32.0853, 32.7940, 31.2518],
+                'longitude': [34.8516, 35.2137, 34.7818, 35.0048, 34.7915]
             })
             st.map(map_data)
             st.info("💡 **Tip:** Use the search functionality above to select a location.")
