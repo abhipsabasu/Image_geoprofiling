@@ -21,8 +21,8 @@ from geopy.geocoders import Nominatim
 from geopy.exc import GeocoderTimedOut, GeocoderUnavailable
 
 
-country = 'Brazil'
-continent = 'South America'
+country = 'United Kingdom'
+continent = 'Europe'
 
 firebase_secrets = st.secrets["firebase"]
 token = firebase_secrets["github_token"]
@@ -88,7 +88,7 @@ def geocode_location(location_text):
     Convert location text to coordinates using Nominatim geocoding service
     """
     try:
-        # Add "Canada" to the search query to improve accuracy for Canadian locations
+        # Add "United Kingdom" to the search query to improve accuracy for UK locations
         search_query = f"{location_text}, {country}"
         
         # Initialize geocoder
@@ -140,7 +140,7 @@ def geocode_location(location_text):
 
 # ---- UI ----
 st.title(f"Image Collection from {country}")
-num_collect = 20
+num_collect = 30
 # Show instructions only before Prolific ID is submitted
 if not st.session_state.prolific_id:
     st.markdown(f"""
@@ -269,7 +269,6 @@ else:
             
         
         
-
         
         # Create a Google Map with search functionality
         st.markdown("**🗺️ Location Map:**")
@@ -290,17 +289,25 @@ else:
                 <script>
                     function initMap() {{
                         const map = new google.maps.Map(document.getElementById("map"), {{
-                            zoom: 4,
-                            center: {{ lat: -15.7801, lng: -47.9292 }}, // Brazil center
+                            zoom: 6,
+                            center: {{ lat: 54.7024, lng: -3.2766 }}, // UK center
                             mapTypeId: google.maps.MapTypeId.ROADMAP
                         }});
                         
                         // Add markers for major cities
                         const cities = [
-                            {{ lat: -15.7801, lng: -47.9292, name: "Brasília" }},
-                            {{ lat: -14.2350, lng: -51.9253, name: "Cuiabá" }},
-                            {{ lat: -19.9167, lng: -43.9333, name: "Belo Horizonte" }},
-                            {{ lat: -23.5505, lng: -46.6333, name: "São Paulo" }},
+                            {{ lat: 51.5074, lng: -0.1278, name: "London" }},
+                            {{ lat: 53.4808, lng: -2.2426, name: "Manchester" }},
+                            {{ lat: 52.4862, lng: -1.8904, name: "Birmingham" }},
+                            {{ lat: 55.9533, lng: -3.1883, name: "Edinburgh" }},
+                            {{ lat: 53.8008, lng: -1.5491, name: "Leeds" }},
+                            {{ lat: 52.2053, lng: 0.1218, name: "Cambridge" }},
+                            {{ lat: 51.4545, lng: -2.5879, name: "Bristol" }},
+                            {{ lat: 53.4084, lng: -2.9916, name: "Liverpool" }},
+                            {{ lat: 50.8225, lng: -0.1372, name: "Brighton" }},
+                            {{ lat: 55.8642, lng: -4.2518, name: "Glasgow" }},
+                            {{ lat: 52.6309, lng: 1.2974, name: "Norwich" }},
+                            {{ lat: 50.3755, lng: -4.1427, name: "Plymouth" }}
                         ];
                         
                         cities.forEach(city => {{
@@ -407,7 +414,7 @@ else:
                 
                 manual_location = st.text_input(
                     "",
-                    placeholder="e.g., Brasília, Cuiabá, Belo Horizonte, São Paulo",
+                    placeholder="e.g., London, Manchester, Birmingham, Edinburgh, Leeds",
                     key=f"manual_location_{st.session_state.index}"
                 )
                 
@@ -419,10 +426,10 @@ else:
         else:
             # Fallback to Streamlit map if no Google Maps API key
             st.warning("⚠️ Google Maps API key not configured. Using default map.")
-            # Show a basic map of Brazil
+            # Show a basic map of UK
             map_data = pd.DataFrame({
-                'latitude': [-15.7801, -14.2350, -19.9167, -23.5505],
-                'longitude': [-47.9292, -51.9253, -43.9333, -46.6333]
+                'latitude': [51.5074, 53.4808, 52.4862, 55.9533, 53.8008],
+                'longitude': [-0.1278, -2.2426, -1.8904, -3.1883, -1.5491]
             })
             st.map(map_data)
             st.info("💡 **Tip:** Use the search functionality above to select a location.")
@@ -509,7 +516,7 @@ else:
                 # Store image temporarily instead of uploading immediately
                 image_data = {
                     "file_name": f"{st.session_state.prolific_id}_{st.session_state.index}.png",
-                    "file_path": f"{country}_images/{f'{st.session_state.prolific_id}_{st.session_state.index}.png'}",
+                    "file_path": f"{country.replace(' ', '_')}_images/{f'{st.session_state.prolific_id}_{st.session_state.index}.png'}",
                     "encoded_content": encoded_content,
                     "index": st.session_state.index
                 }
