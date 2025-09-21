@@ -21,7 +21,7 @@ from geopy.geocoders import Nominatim
 from geopy.exc import GeocoderTimedOut, GeocoderUnavailable
 
 
-country = 'Poland'
+country = 'Norway'
 continent = 'Europe'
 
 firebase_secrets = st.secrets["firebase"]
@@ -88,7 +88,7 @@ def geocode_location(location_text):
     Convert location text to coordinates using Nominatim geocoding service
     """
     try:
-        # Add "Poland" to the search query to improve accuracy for Polish locations
+        # Add "Norway" to the search query to improve accuracy for Norwegian locations
         search_query = f"{location_text}, {country}"
         
         # Initialize geocoder
@@ -291,22 +291,22 @@ else:
                     function initMap() {{
                         const map = new google.maps.Map(document.getElementById("map"), {{
                             zoom: 4,
-                            center: {{ lat: 52.2297, lng: 21.0122 }}, // Poland center (Warsaw)
+                            center: {{ lat: 60.4720, lng: 8.4689 }}, // Norway center
                             mapTypeId: google.maps.MapTypeId.ROADMAP
                         }});
                         
                         // Add markers for major cities
                         const cities = [
-                            {{ lat: 52.2297, lng: 21.0122, name: "Warsaw" }},
-                            {{ lat: 50.0755, lng: 19.9445, name: "Kraków" }},
-                            {{ lat: 51.1079, lng: 17.0385, name: "Wrocław" }},
-                            {{ lat: 54.3520, lng: 18.6466, name: "Gdańsk" }},
-                            {{ lat: 52.4064, lng: 16.9252, name: "Poznań" }},
-                            {{ lat: 50.2649, lng: 19.0238, name: "Katowice" }},
-                            {{ lat: 53.4285, lng: 14.5528, name: "Szczecin" }},
-                            {{ lat: 50.0413, lng: 21.9991, name: "Rzeszów" }},
-                            {{ lat: 53.1325, lng: 23.1688, name: "Białystok" }},
-                            {{ lat: 50.3013, lng: 18.5795, name: "Gliwice" }}
+                            {{ lat: 59.9139, lng: 10.7522, name: "Oslo" }},
+                            {{ lat: 60.3913, lng: 5.3221, name: "Bergen" }},
+                            {{ lat: 63.4305, lng: 10.3951, name: "Trondheim" }},
+                            {{ lat: 58.1467, lng: 7.9956, name: "Kristiansand" }},
+                            {{ lat: 59.7439, lng: 10.2049, name: "Drammen" }},
+                            {{ lat: 60.3913, lng: 5.3221, name: "Stavanger" }},
+                            {{ lat: 63.4305, lng: 10.3951, name: "Ålesund" }},
+                            {{ lat: 58.1467, lng: 7.9956, name: "Fredrikstad" }},
+                            {{ lat: 59.7439, lng: 10.2049, name: "Tromsø" }},
+                            {{ lat: 60.3913, lng: 5.3221, name: "Sandnes" }}
                         ];
                         
                         cities.forEach(city => {{
@@ -412,7 +412,7 @@ else:
                 st.markdown("<div style='margin-bottom: 0px; padding-bottom: 0px;'><strong>Enter the location you selected on the map:</strong> <span style='color: red;'>*</span></div>", unsafe_allow_html=True)
                 manual_location = st.text_input(
                     "",
-                    placeholder="e.g., Warsaw, Kraków, Wrocław, Gdańsk, Poznań",
+                    placeholder="e.g., Oslo, Bergen, Trondheim, Kristiansand, Drammen",
                     key=f"manual_location_{st.session_state.index}"
                 )
                 
@@ -424,10 +424,10 @@ else:
         else:
             # Fallback to Streamlit map if no Google Maps API key
             st.warning("⚠️ Google Maps API key not configured. Using default map.")
-            # Show a basic map of Poland
+            # Show a basic map of Norway
             map_data = pd.DataFrame({
-                'latitude': [52.2297, 50.0755, 51.1079, 54.3520, 52.4064],
-                'longitude': [21.0122, 19.9445, 17.0385, 18.6466, 16.9252]
+                'latitude': [60.4720, 59.9139, 60.3913, 63.4305, 58.1467],
+                'longitude': [8.4689, 10.7522, 5.3221, 10.3951, 7.9956]
             })
             st.map(map_data)
             st.info("💡 **Tip:** Use the search functionality above to select a location.")
