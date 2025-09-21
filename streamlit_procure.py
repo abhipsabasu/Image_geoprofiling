@@ -21,7 +21,7 @@ from geopy.geocoders import Nominatim
 from geopy.exc import GeocoderTimedOut, GeocoderUnavailable
 
 
-country = 'United Kingdom'
+country = 'Slovenia'
 continent = 'Europe'
 
 firebase_secrets = st.secrets["firebase"]
@@ -88,7 +88,7 @@ def geocode_location(location_text):
     Convert location text to coordinates using Nominatim geocoding service
     """
     try:
-        # Add "United Kingdom" to the search query to improve accuracy for UK locations
+        # Add "Slovenia" to the search query to improve accuracy for Slovenian locations
         search_query = f"{location_text}, {country}"
         
         # Initialize geocoder
@@ -290,24 +290,24 @@ else:
                     function initMap() {{
                         const map = new google.maps.Map(document.getElementById("map"), {{
                             zoom: 6,
-                            center: {{ lat: 54.7024, lng: -3.2766 }}, // UK center
+                            center: {{ lat: 46.1512, lng: 14.9955 }}, // Slovenia center
                             mapTypeId: google.maps.MapTypeId.ROADMAP
                         }});
                         
                         // Add markers for major cities
                         const cities = [
-                            {{ lat: 51.5074, lng: -0.1278, name: "London" }},
-                            {{ lat: 53.4808, lng: -2.2426, name: "Manchester" }},
-                            {{ lat: 52.4862, lng: -1.8904, name: "Birmingham" }},
-                            {{ lat: 55.9533, lng: -3.1883, name: "Edinburgh" }},
-                            {{ lat: 53.8008, lng: -1.5491, name: "Leeds" }},
-                            {{ lat: 52.2053, lng: 0.1218, name: "Cambridge" }},
-                            {{ lat: 51.4545, lng: -2.5879, name: "Bristol" }},
-                            {{ lat: 53.4084, lng: -2.9916, name: "Liverpool" }},
-                            {{ lat: 50.8225, lng: -0.1372, name: "Brighton" }},
-                            {{ lat: 55.8642, lng: -4.2518, name: "Glasgow" }},
-                            {{ lat: 52.6309, lng: 1.2974, name: "Norwich" }},
-                            {{ lat: 50.3755, lng: -4.1427, name: "Plymouth" }}
+                            {{ lat: 46.0569, lng: 14.5058, name: "Ljubljana" }},
+                            {{ lat: 46.2389, lng: 15.2667, name: "Maribor" }},
+                            {{ lat: 45.5481, lng: 13.7301, name: "Koper" }},
+                            {{ lat: 46.4200, lng: 15.8700, name: "Celje" }},
+                            {{ lat: 45.9600, lng: 13.6600, name: "Nova Gorica" }},
+                            {{ lat: 46.2389, lng: 15.2667, name: "Kranj" }},
+                            {{ lat: 45.5481, lng: 13.7301, name: "Velenje" }},
+                            {{ lat: 46.4200, lng: 15.8700, name: "Ptuj" }},
+                            {{ lat: 45.9600, lng: 13.6600, name: "Trbovlje" }},
+                            {{ lat: 46.2389, lng: 15.2667, name: "Kamnik" }},
+                            {{ lat: 45.5481, lng: 13.7301, name: "Jesenice" }},
+                            {{ lat: 46.4200, lng: 15.8700, name: "Domžale" }}
                         ];
                         
                         cities.forEach(city => {{
@@ -414,7 +414,7 @@ else:
                 
                 manual_location = st.text_input(
                     "",
-                    placeholder="e.g., London, Manchester, Birmingham, Edinburgh, Leeds",
+                    placeholder="e.g., Ljubljana, Maribor, Koper, Celje, Nova Gorica",
                     key=f"manual_location_{st.session_state.index}"
                 )
                 
@@ -426,10 +426,10 @@ else:
         else:
             # Fallback to Streamlit map if no Google Maps API key
             st.warning("⚠️ Google Maps API key not configured. Using default map.")
-            # Show a basic map of UK
+            # Show a basic map of Slovenia
             map_data = pd.DataFrame({
-                'latitude': [51.5074, 53.4808, 52.4862, 55.9533, 53.8008],
-                'longitude': [-0.1278, -2.2426, -1.8904, -3.1883, -1.5491]
+                'latitude': [46.1512, 46.0569, 46.2389, 45.5481, 46.4200],
+                'longitude': [14.9955, 14.5058, 15.2667, 13.7301, 15.8700]
             })
             st.map(map_data)
             st.info("💡 **Tip:** Use the search functionality above to select a location.")
