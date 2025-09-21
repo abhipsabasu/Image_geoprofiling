@@ -21,7 +21,7 @@ from geopy.geocoders import Nominatim
 from geopy.exc import GeocoderTimedOut, GeocoderUnavailable
 
 
-country = 'Italy'
+country = 'Slovakia'
 continent = 'Europe'
 
 firebase_secrets = st.secrets["firebase"]
@@ -88,7 +88,7 @@ def geocode_location(location_text):
     Convert location text to coordinates using Nominatim geocoding service
     """
     try:
-        # Add "Italy" to the search query to improve accuracy for Italian locations
+        # Add "Slovakia" to the search query to improve accuracy for Slovak locations
         search_query = f"{location_text}, {country}"
         
         # Initialize geocoder
@@ -291,22 +291,22 @@ else:
                     function initMap() {{
                         const map = new google.maps.Map(document.getElementById("map"), {{
                             zoom: 6,
-                            center: {{ lat: 41.8719, lng: 12.5674 }}, // Italy center
+                            center: {{ lat: 48.6690, lng: 19.6990 }}, // Slovakia center
                             mapTypeId: google.maps.MapTypeId.ROADMAP
                         }});
                         
                         // Add markers for major cities
                         const cities = [
-                            {{ lat: 41.9028, lng: 12.4964, name: "Rome" }},
-                            {{ lat: 45.4642, lng: 9.1900, name: "Milan" }},
-                            {{ lat: 40.8518, lng: 14.2681, name: "Naples" }},
-                            {{ lat: 44.4949, lng: 11.3426, name: "Bologna" }},
-                            {{ lat: 43.7696, lng: 11.2558, name: "Florence" }},
-                            {{ lat: 45.0703, lng: 7.6869, name: "Turin" }},
-                            {{ lat: 41.1177, lng: 16.8719, name: "Bari" }},
-                            {{ lat: 38.1157, lng: 13.3615, name: "Palermo" }},
-                            {{ lat: 45.4372, lng: 12.3346, name: "Venice" }},
-                            {{ lat: 41.9028, lng: 12.4964, name: "Genoa" }}
+                            {{ lat: 48.1486, lng: 17.1077, name: "Bratislava" }},
+                            {{ lat: 48.6690, lng: 19.6990, name: "Košice" }},
+                            {{ lat: 49.0614, lng: 20.2970, name: "Prešov" }},
+                            {{ lat: 48.7363, lng: 19.1460, name: "Žilina" }},
+                            {{ lat: 48.2917, lng: 18.7544, name: "Nitra" }},
+                            {{ lat: 48.7363, lng: 19.1460, name: "Banská Bystrica" }},
+                            {{ lat: 48.2917, lng: 18.7544, name: "Trnava" }},
+                            {{ lat: 48.7363, lng: 19.1460, name: "Trenčín" }},
+                            {{ lat: 48.2917, lng: 18.7544, name: "Martin" }},
+                            {{ lat: 48.7363, lng: 19.1460, name: "Poprad" }}
                         ];
                         
                         cities.forEach(city => {{
@@ -412,7 +412,7 @@ else:
                 st.markdown("<div style='margin-bottom: 0px; padding-bottom: 0px;'><strong>Enter the location you selected on the map:</strong> <span style='color: red;'>*</span></div>", unsafe_allow_html=True)
                 manual_location = st.text_input(
                     "",
-                    placeholder="e.g., Rome, Milan, Naples, Bologna, Florence",
+                    placeholder="e.g., Bratislava, Košice, Prešov, Žilina, Nitra",
                     key=f"manual_location_{st.session_state.index}"
                 )
                 
@@ -424,10 +424,10 @@ else:
         else:
             # Fallback to Streamlit map if no Google Maps API key
             st.warning("⚠️ Google Maps API key not configured. Using default map.")
-            # Show a basic map of Italy
+            # Show a basic map of Slovakia
             map_data = pd.DataFrame({
-                'latitude': [41.8719, 41.9028, 45.4642, 40.8518, 44.4949],
-                'longitude': [12.5674, 12.4964, 9.1900, 14.2681, 11.3426]
+                'latitude': [48.6690, 48.1486, 48.6690, 49.0614, 48.7363],
+                'longitude': [19.6990, 17.1077, 19.6990, 20.2970, 19.1460]
             })
             st.map(map_data)
             st.info("💡 **Tip:** Use the search functionality above to select a location.")
