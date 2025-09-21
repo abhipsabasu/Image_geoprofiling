@@ -21,7 +21,7 @@ from geopy.geocoders import Nominatim
 from geopy.exc import GeocoderTimedOut, GeocoderUnavailable
 
 
-country = 'Estonia'
+country = 'Denmark'
 continent = 'Europe'
 
 firebase_secrets = st.secrets["firebase"]
@@ -88,7 +88,7 @@ def geocode_location(location_text):
     Convert location text to coordinates using Nominatim geocoding service
     """
     try:
-        # Add "Estonia" to the search query to improve accuracy for Estonian locations
+        # Add "Denmark" to the search query to improve accuracy for Danish locations
         search_query = f"{location_text}, {country}"
         
         # Initialize geocoder
@@ -291,17 +291,22 @@ else:
                     function initMap() {{
                         const map = new google.maps.Map(document.getElementById("map"), {{
                             zoom: 7,
-                            center: {{ lat: 58.5953, lng: 25.0136 }}, // Estonia center
+                            center: {{ lat: 56.2639, lng: 9.5018 }}, // Denmark center
                             mapTypeId: google.maps.MapTypeId.ROADMAP
                         }});
                         
                         // Add markers for major cities
                         const cities = [
-                            {{ lat: 59.4370, lng: 24.7536, name: "Tallinn" }},
-                            {{ lat: 58.3801, lng: 26.7225, name: "Tartu" }},
-                            {{ lat: 58.3859, lng: 24.4971, name: "Pärnu" }},
-                            {{ lat: 59.3772, lng: 28.1903, name: "Narva" }},
-                            {{ lat: 58.7520, lng: 26.4085, name: "Viljandi" }}
+                            {{ lat: 55.6761, lng: 12.5683, name: "Copenhagen" }},
+                            {{ lat: 56.1572, lng: 10.2107, name: "Aarhus" }},
+                            {{ lat: 55.4038, lng: 10.4024, name: "Odense" }},
+                            {{ lat: 55.4904, lng: 9.4722, name: "Aalborg" }},
+                            {{ lat: 55.4687, lng: 9.9202, name: "Esbjerg" }},
+                            {{ lat: 55.6761, lng: 12.5683, name: "Roskilde" }},
+                            {{ lat: 56.1572, lng: 10.2107, name: "Horsens" }},
+                            {{ lat: 55.4038, lng: 10.4024, name: "Kolding" }},
+                            {{ lat: 55.4904, lng: 9.4722, name: "Randers" }},
+                            {{ lat: 55.4687, lng: 9.9202, name: "Vejle" }}
                         ];
                         
                         cities.forEach(city => {{
@@ -407,7 +412,7 @@ else:
                 st.markdown("<div style='margin-bottom: 0px; padding-bottom: 0px;'><strong>Enter the location you selected on the map:</strong> <span style='color: red;'>*</span></div>", unsafe_allow_html=True)
                 manual_location = st.text_input(
                     "",
-                    placeholder="e.g., Tallinn, Tartu, Pärnu, Narva, Viljandi",
+                    placeholder="e.g., Copenhagen, Aarhus, Odense, Aalborg, Esbjerg",
                     key=f"manual_location_{st.session_state.index}"
                 )
                 
@@ -419,10 +424,10 @@ else:
         else:
             # Fallback to Streamlit map if no Google Maps API key
             st.warning("⚠️ Google Maps API key not configured. Using default map.")
-            # Show a basic map of Estonia
+            # Show a basic map of Denmark
             map_data = pd.DataFrame({
-                'latitude': [59.4370, 58.3801, 58.3859, 59.3772, 58.7520],
-                'longitude': [24.7536, 26.7225, 24.4971, 28.1903, 26.4085]
+                'latitude': [56.2639, 55.6761, 56.1572, 55.4038, 55.4904],
+                'longitude': [9.5018, 12.5683, 10.2107, 10.4024, 9.4722]
             })
             st.map(map_data)
             st.info("💡 **Tip:** Use the search functionality above to select a location.")
