@@ -21,7 +21,7 @@ from geopy.geocoders import Nominatim
 from geopy.exc import GeocoderTimedOut, GeocoderUnavailable
 
 
-country = 'Portugal'
+country = 'Latvia'
 continent = 'Europe'
 
 firebase_secrets = st.secrets["firebase"]
@@ -88,7 +88,7 @@ def geocode_location(location_text):
     Convert location text to coordinates using Nominatim geocoding service
     """
     try:
-        # Add "Portugal" to the search query to improve accuracy for Portuguese locations
+        # Add "Latvia" to the search query to improve accuracy for Latvian locations
         search_query = f"{location_text}, {country}"
         
         # Initialize geocoder
@@ -291,22 +291,22 @@ else:
                     function initMap() {{
                         const map = new google.maps.Map(document.getElementById("map"), {{
                             zoom: 5,
-                            center: {{ lat: 39.3999, lng: -8.2245 }}, // Portugal center
+                            center: {{ lat: 56.8796, lng: 24.6032 }}, // Latvia center
                             mapTypeId: google.maps.MapTypeId.ROADMAP
                         }});
                         
                         // Add markers for major cities
                         const cities = [
-                            {{ lat: 38.7223, lng: -9.1393, name: "Lisbon" }},
-                            {{ lat: 41.1579, lng: -8.6291, name: "Porto" }},
-                            {{ lat: 40.6405, lng: -8.6538, name: "Aveiro" }},
-                            {{ lat: 38.5667, lng: -7.9000, name: "Évora" }},
-                            {{ lat: 37.0194, lng: -7.9322, name: "Faro" }},
-                            {{ lat: 39.7436, lng: -8.8071, name: "Leiria" }},
-                            {{ lat: 40.2033, lng: -8.4103, name: "Coimbra" }},
-                            {{ lat: 41.5454, lng: -8.4265, name: "Braga" }},
-                            {{ lat: 38.5244, lng: -8.8882, name: "Setúbal" }},
-                            {{ lat: 39.2369, lng: -8.6850, name: "Santarém" }}
+                            {{ lat: 56.9496, lng: 24.1052, name: "Riga" }},
+                            {{ lat: 56.5400, lng: 21.0100, name: "Liepāja" }},
+                            {{ lat: 57.5400, lng: 25.4200, name: "Valmiera" }},
+                            {{ lat: 56.5100, lng: 25.8600, name: "Jelgava" }},
+                            {{ lat: 56.8500, lng: 24.6000, name: "Jūrmala" }},
+                            {{ lat: 56.5400, lng: 21.0100, name: "Ventspils" }},
+                            {{ lat: 57.5400, lng: 25.4200, name: "Cēsis" }},
+                            {{ lat: 56.5100, lng: 25.8600, name: "Daugavpils" }},
+                            {{ lat: 56.8500, lng: 24.6000, name: "Rēzekne" }},
+                            {{ lat: 56.5400, lng: 21.0100, name: "Kuldīga" }}
                         ];
                         
                         cities.forEach(city => {{
@@ -413,7 +413,7 @@ else:
                 
                 manual_location = st.text_input(
                     "",
-                    placeholder="e.g., Lisbon, Porto, Aveiro, Évora, Faro",
+                    placeholder="e.g., Riga, Liepāja, Valmiera, Jelgava, Jūrmala",
                     key=f"manual_location_{st.session_state.index}"
                 )
                 
@@ -425,10 +425,10 @@ else:
         else:
             # Fallback to Streamlit map if no Google Maps API key
             st.warning("⚠️ Google Maps API key not configured. Using default map.")
-            # Show a basic map of Portugal
+            # Show a basic map of Latvia
             map_data = pd.DataFrame({
-                'latitude': [39.3999, 38.7223, 41.1579, 40.6405, 38.5667],
-                'longitude': [-8.2245, -9.1393, -8.6291, -8.6538, -7.9000]
+                'latitude': [56.8796, 56.9496, 56.5400, 57.5400, 56.5100],
+                'longitude': [24.6032, 24.1052, 21.0100, 25.4200, 25.8600]
             })
             st.map(map_data)
             st.info("💡 **Tip:** Use the search functionality above to select a location.")
